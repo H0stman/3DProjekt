@@ -1,6 +1,6 @@
 #include "Window.hpp"
 
-Window::Window(HINSTANCE hInstance, LPCWSTR wspTitle)
+Window::Window(LPCWSTR wspTitle)
 {
     wc = { };
     wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC; //Flags [Redraw on width/height change from resize/movement] See: https://msdn.microsoft.com/en-us/library/windows/desktop/ff729176(v=vs.85).aspx
@@ -28,7 +28,7 @@ Window::Window(HINSTANCE hInstance, LPCWSTR wspTitle)
 
         NULL,       // Parent window    
         NULL,       // Menu
-        hInstance,  // Instance handle
+        (HINSTANCE)GetModuleHandle(nullptr),  // Instance handle
         NULL        // Additional application data
     );
 }

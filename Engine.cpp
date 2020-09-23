@@ -1,10 +1,10 @@
 #include "Engine.hpp"
 
-Engine* Engine::instance{ nullptr };
+Engine* Engine::instance = nullptr;
 
-Engine::Engine(/*HINSTANCE hInstance, LPCWSTR wspTitle*/) /*: wnd(hInstance, wspTitle)*/
+Engine::Engine() : wnd(L"3D Engine")
 {
-	/*DXGI_SWAP_CHAIN_DESC swap_chain_descr = { 0 };
+	DXGI_SWAP_CHAIN_DESC swap_chain_descr = { 0 };
 	swap_chain_descr.BufferDesc.RefreshRate.Numerator = 0;
 	swap_chain_descr.BufferDesc.RefreshRate.Denominator = 1;
 	swap_chain_descr.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
@@ -14,9 +14,16 @@ Engine::Engine(/*HINSTANCE hInstance, LPCWSTR wspTitle*/) /*: wnd(hInstance, wsp
 	swap_chain_descr.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 	swap_chain_descr.BufferCount = 2;
 	swap_chain_descr.OutputWindow = wnd.GetHandle();
-	swap_chain_descr.Windowed = true;*/
+	swap_chain_descr.Windowed = true;
 
+	D3D_FEATURE_LEVEL feature_level[] = { D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0 };
 
+	UINT flags = D3D11_CREATE_DEVICE_SINGLETHREADED;
+#if defined(DEBUG) || defined(_DEBUG)
+	flags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
+
+	HRESULT hr = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, flags, nullptr, 0, D3D11_SDK_VERSION, &swap_chain_descr, &swapchain, &device, feature_level, &devicecontext);
 }
 
 Engine::~Engine()
@@ -26,6 +33,6 @@ Engine::~Engine()
 Engine *Engine::getInstance()
 {
     if (!instance)
-        instance = new Engine;
+        instance = new Engine();
     return instance;
 }

@@ -1,16 +1,16 @@
+#define DEBUG
+
 #include "Engine.hpp"
 
 INT APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ INT nShowCmd)
 {
-    Window wnd = Window(hInstance, L"3D Project engine");
-
-    if (!wnd.GetHandle())
-        return 0;
-
-    ShowWindow(wnd.GetHandle(), nShowCmd);
-
     Engine* engine = Engine::getInstance();
 
+    if (!engine->wnd.GetHandle())
+        return 0;
+
+    ShowWindow(engine->wnd.GetHandle(), nShowCmd);
+   
     // Run the message loop.
 
     MSG msg = { };
