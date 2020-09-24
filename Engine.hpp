@@ -1,18 +1,24 @@
 #pragma once
 #include <d3d11_4.h>
-#include <dxgi.h>
+#include <dxgi1_6.h>
+#include "Window.hpp"
 #include <wrl\client.h>
 
 class Engine
 {
-	/*enum RenderType { VANILLA, DEFERRED, SHADOWMAP, BLUR }
+	static Engine* instance;
+	ID3D11Device *device;
+	ID3D11DeviceContext *devicecontext;
+	IDXGISwapChain* swapchain;
 
-	Engine* pEngine;
+	enum RenderType { VANILLA, DEFERRED, SHADOWMAP, BLUR };
+
 
 	Engine();
 	~Engine();
 
 public:
-	void Initialize();*/
-};
+	Window wnd;
+	static Engine *getInstance();
 
+};
