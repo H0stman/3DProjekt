@@ -1,5 +1,7 @@
 #pragma once
 #include <d3d11_4.h>
+#include <dxgi.h>
+#include <wrl\client.h>
 
 class Engine
 {
