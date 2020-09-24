@@ -4,6 +4,7 @@
 #include <DirectXTK\Mouse.h>
 #include <DirectXTK\Keyboard.h>
 #include "Window.hpp"
+#include <wrl\client.h>
 #include "Camera.hpp"
 
 using namespace DirectX;

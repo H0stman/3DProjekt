@@ -144,21 +144,47 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="ComputeShader.cpp" />
+    <ClCompile Include="DomainShader.cpp" />
     <ClCompile Include="Engine.cpp" />
+    <ClCompile Include="HullShader.cpp" />
+    <ClCompile Include="PixelShader.cpp" />
+    <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="VertexShader.cpp" />
     <ClCompile Include="Window.cpp" />
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.hpp" />
+    <ClInclude Include="ComputeShader.hpp" />
+    <ClInclude Include="DomainShader.hpp" />
     <ClInclude Include="Engine.hpp" />
+    <ClInclude Include="HullShader.hpp" />
     <ClInclude Include="IDrawable.hpp" />
     <ClInclude Include="IRender.hpp" />
+    <ClInclude Include="PixelShader.hpp" />
+    <ClInclude Include="IShader.hpp" />
     <ClInclude Include="Texture.hpp" />
+    <ClInclude Include="VertexShader.hpp" />
     <ClInclude Include="Window.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="DomainShader.hlsl" />
+    <FxCompile Include="gaussianblurshader.hlsl" />
+    <FxCompile Include="HullShader.hlsl" />
+    <FxCompile Include="pixelshader.hlsl" />
+    <FxCompile Include="pixelshader2D.hlsl" />
+    <FxCompile Include="pixelshader_GBuffer.hlsl" />
+    <FxCompile Include="pixelshader_light.hlsl" />
+    <FxCompile Include="vertexshader.hlsl" />
+    <FxCompile Include="vertexshader2D.hlsl" />
+    <FxCompile Include="vertexshader4tesselation.hlsl" />
+    <FxCompile Include="vertexshader_deferred.hlsl" />
+    <FxCompile Include="vertexshader_shadow.hlsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
