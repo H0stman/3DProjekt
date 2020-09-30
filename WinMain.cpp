@@ -6,16 +6,17 @@ INT APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 {
     Engine* engine = Engine::GetInstance();
 
-    if (!engine->wnd.GetHandle())
+    if (!engine->window.GetHandle())
         return 0;
 
-    ShowWindow(engine->wnd.GetHandle(), nShowCmd);
+    ShowWindow(engine->window.GetHandle(), nShowCmd);
    
     // Run the message loop.
 
     MSG msg = { };
     while (GetMessage(&msg, NULL, 0, 0))
     {
+        engine->UpdateCameraPosition();
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }

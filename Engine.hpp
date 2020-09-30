@@ -1,8 +1,11 @@
 #pragma once
 #include <d3d11_4.h>
 #include <dxgi1_6.h>
+#include <DirectXTK\Mouse.h>
+#include <DirectXTK\Keyboard.h>
 #include "Window.hpp"
 #include <wrl\client.h>
+#include "Camera.hpp"
 #include <DirectXMath.h>
 
 using namespace DirectX;
@@ -16,13 +19,18 @@ class Engine
 
 	enum RenderType { VANILLA, DEFERRED, SHADOWMAP, BLUR };
 
+	Mouse mouse;
+	Keyboard keyboard;
 
 	Engine();
 	~Engine();
 
 public:
-	Window wnd;
+	Camera camera;
+	Window window;
 	static Engine *GetInstance();
+	void UpdateCameraPosition();
+
 	ID3D11Device* GetDevice();
 	ID3D11DeviceContext* GetContext();
 };

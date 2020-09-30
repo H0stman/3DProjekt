@@ -8,7 +8,7 @@ class Window
 
 	Window& operator=(const Window&) = delete; // no self-assignments
 public:
-
+	
 	Window(LPCWSTR wspTitle);
 	HWND GetHandle();
 	static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
