@@ -23,16 +23,28 @@ Engine::Engine() : wnd(L"3D Engine")
 	flags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
-	HRESULT hr = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, flags, nullptr, 0, D3D11_SDK_VERSION, &swap_chain_descr, &swapchain, &device, feature_level, &devicecontext);
+	HRESULT hr = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, flags, nullptr, 0, D3D11_SDK_VERSION, &swap_chain_descr, &swapchain, &device, feature_level, &context);
 }
 
 Engine::~Engine()
 {
 }
 
-Engine *Engine::getInstance()
+Engine *Engine::GetInstance()
 {
     if (!instance)
         instance = new Engine();
     return instance;
 }
+
+
+ID3D11Device* Engine::GetDevice()
+{
+	return device;
+}
+
+ID3D11DeviceContext* Engine::GetContext()
+{
+	return context;
+}
+

@@ -4,7 +4,7 @@
 class DomainShader : public IShader
 {
 private:
-	Microsoft::WRL::ComPtr<ID3D11DomainShader> m_DomainShader;
+	Microsoft::WRL::ComPtr<ID3D11DomainShader> domainshader;
 private:
 	DomainShader(const DomainShader& origShader) = delete;
 	DomainShader& operator=(const DomainShader& origShader) = delete;

@@ -16,7 +16,7 @@ struct Shader_Setup_Details {
 class IShader
 {
 protected:
-	Microsoft::WRL::ComPtr<ID3DBlob> m_ShaderBlob;
+	Microsoft::WRL::ComPtr<ID3DBlob> shaderblob;
 private:
 	IShader(const IShader& origShader) = delete;
 	IShader& operator=(const IShader& origShader) = delete;

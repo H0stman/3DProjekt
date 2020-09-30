@@ -12,7 +12,7 @@ const bool HullShader::Initialize(ID3D11Device* device, Shader_Setup_Details &se
 									 setup.target,		//Vertex shader revision.
 									 setup.flags1,		//Flags, in our case adding more debug output.
 									 setup.flags2,		//Additional flags.
-									 &m_ShaderBlob,		//Our vertex shader blob to be filled.
+									 &shaderblob,		//Our vertex shader blob to be filled.
 									 &errorBlob);		//Error blob that will catch additional error messages.
 	if (FAILED(HR))
 	{
@@ -25,10 +25,10 @@ const bool HullShader::Initialize(ID3D11Device* device, Shader_Setup_Details &se
 		return false;
 	}
 	/*****Vertexshader creation*****/
-	HR = device->CreateHullShader( m_ShaderBlob->GetBufferPointer(),	//Pointer to the compiled Vertex shader.
-									   m_ShaderBlob->GetBufferSize(),		//Size of the compiled shader.
+	HR = device->CreateHullShader( shaderblob->GetBufferPointer(),	//Pointer to the compiled Vertex shader.
+									   shaderblob->GetBufferSize(),		//Size of the compiled shader.
 									   nullptr,									//Advanced topic, not used here.
-									   &m_HullShader);						//Address of the pointer to the vertex shader interface.
+									   &hullshader);						//Address of the pointer to the vertex shader interface.
 	if (FAILED(HR))
 	{
 		MessageBox(nullptr, L"Error creating vertex shader.", L"ERROR", MB_OK);
@@ -43,7 +43,7 @@ const bool HullShader::Initialize(ID3D11Device* device, Shader_Setup_Details &se
 void HullShader::SetShader(ID3D11DeviceContext* deviceContext) const
 {
 	/*****Setting the vertex shader*****/
-	deviceContext->HSSetShader(m_HullShader.Get(), nullptr, 0u);
+	deviceContext->HSSetShader(hullshader.Get(), nullptr, 0u);
 }
 
 void HullShader::UnSetShader(ID3D11DeviceContext* deviceContext) const

@@ -45,7 +45,7 @@
     <ClCompile Include="VertexShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Shader.cpp">
+    <ClCompile Include="IShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -91,6 +91,9 @@
     <None Include=".gitignore" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="vertexshader4tesselation.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
     <FxCompile Include="DomainShader.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
@@ -122,9 +125,6 @@
       <Filter>Resource Files</Filter>
     </FxCompile>
     <FxCompile Include="vertexshader2D.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="vertexshader4tesselation.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
   </ItemGroup>

@@ -4,7 +4,7 @@
 class VertexShader : public IShader
 {
 private:
-	Microsoft::WRL::ComPtr<ID3D11VertexShader> m_VertexShader;
+	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexshader;
 private:
 	VertexShader(const VertexShader& origShader) = delete;
 	VertexShader& operator=(const VertexShader& origShader) = delete;

@@ -12,7 +12,7 @@ const bool PixelShader::Initialize(ID3D11Device* device, Shader_Setup_Details &s
 									 setup.target,			//Pixel shader target (version).
 									 setup.flags1,			//Flags, in our case adding more debug output.
 									 setup.flags2,			//Additional flags.
-									 &m_ShaderBlob,			//The pixel shader blob to be filled.
+									 &shaderblob,			//The pixel shader blob to be filled.
 									 &errorBlob);			//Error blob that will catch additional error messages.
 	if (FAILED(HR))
 	{
@@ -26,10 +26,10 @@ const bool PixelShader::Initialize(ID3D11Device* device, Shader_Setup_Details &s
 	}
 
 	/*****Pixel shader creation*****/
-	HR = device->CreatePixelShader(   m_ShaderBlob->GetBufferPointer(),			//Pointer to the compiled Pixel shader buffer.
-								      m_ShaderBlob->GetBufferSize(),			//Size of the compiled Pixel shader buffer.
+	HR = device->CreatePixelShader(   shaderblob->GetBufferPointer(),			//Pointer to the compiled Pixel shader buffer.
+								      shaderblob->GetBufferSize(),			//Size of the compiled Pixel shader buffer.
 								      nullptr,									//Advanced topic, not used here.
-								      &m_PixelShader);							//Address of pointer to the Pixel VertexShader.
+								      &pixelshader);							//Address of pointer to the Pixel VertexShader.
 	if (FAILED(HR))
 	{
 		MessageBox(nullptr, L"Error creating Pixel VertexShader", L"ERROR", MB_OK);
@@ -44,7 +44,7 @@ const bool PixelShader::Initialize(ID3D11Device* device, Shader_Setup_Details &s
 void PixelShader::SetShader(ID3D11DeviceContext* deviceContext) const
 {
 	/*****Setting the Pixel shader*****/
-	deviceContext->PSSetShader(m_PixelShader.Get(), nullptr, 0u);
+	deviceContext->PSSetShader(pixelshader.Get(), nullptr, 0u);
 }
 
 void PixelShader::UnSetShader(ID3D11DeviceContext* deviceContext) const

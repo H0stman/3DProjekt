@@ -12,7 +12,7 @@ const bool ComputeShader::Initialize(ID3D11Device* device, Shader_Setup_Details 
 									 setup.target,			//Compute shader target (version).
 									 setup.flags1,			//Flags, in our case adding more debug output.
 									 setup.flags2,			//Additional flags.
-									 &m_ShaderBlob,			//The compute shader blob to be filled.
+									 &shaderblob,			//The compute shader blob to be filled.
 									 &pErrorBlob);			//Error blob that will catch additional error messages.
 	if (FAILED(HR))
 	{
@@ -25,10 +25,10 @@ const bool ComputeShader::Initialize(ID3D11Device* device, Shader_Setup_Details 
 	}
 
 	/*****Compute shader creation*****/
-	HR = device->CreateComputeShader( m_ShaderBlob->GetBufferPointer(),			//Pointer to the compiled Compute shader buffer.
-								      m_ShaderBlob->GetBufferSize(),			//Size of the compiled Compute shader buffer.
+	HR = device->CreateComputeShader( shaderblob->GetBufferPointer(),			//Pointer to the compiled Compute shader buffer.
+								      shaderblob->GetBufferSize(),			//Size of the compiled Compute shader buffer.
 								      nullptr,									//Advanced topic, not used here.
-								      &m_ComputeShader);						//Address of pointer to the Compute VertexShader.
+								      &computeshader);						//Address of pointer to the Compute VertexShader.
 	if (FAILED(HR))
 	{
 		MessageBox(nullptr, L"Error creating ComputeShader", L"ERROR", MB_OK);
@@ -40,7 +40,7 @@ const bool ComputeShader::Initialize(ID3D11Device* device, Shader_Setup_Details 
 void ComputeShader::SetShader(ID3D11DeviceContext* deviceContext) const
 {
 	/*****Setting the Compute shader*****/
-	deviceContext->CSSetShader(m_ComputeShader.Get(), nullptr, 0u);
+	deviceContext->CSSetShader(computeshader.Get(), nullptr, 0u);
 }
 
 void ComputeShader::UnSetShader(ID3D11DeviceContext* deviceContext) const

@@ -4,7 +4,7 @@
 class HullShader : public IShader
 {
 private:
-	Microsoft::WRL::ComPtr<ID3D11HullShader> m_HullShader;
+	Microsoft::WRL::ComPtr<ID3D11HullShader> hullshader;
 private:
 	HullShader(const HullShader& origShader) = delete;
 	HullShader& operator=(const HullShader& origShader) = delete;

@@ -12,7 +12,7 @@ const bool VertexShader::Initialize(ID3D11Device* device, Shader_Setup_Details &
 									 setup.target,		//Vertex shader revision.
 									 setup.flags1,		//Flags, in our case adding more debug output.
 									 setup.flags2,		//Additional flags.
-									 &m_ShaderBlob,		//Our vertex shader blob to be filled.
+									 &shaderblob,		//Our vertex shader blob to be filled.
 									 &errorBlob);		//Error blob that will catch additional error messages.
 	if (FAILED(HR))
 	{
@@ -25,10 +25,10 @@ const bool VertexShader::Initialize(ID3D11Device* device, Shader_Setup_Details &
 		return false;
 	}
 	/*****Vertexshader creation*****/
-	HR = device->CreateVertexShader( m_ShaderBlob->GetBufferPointer(),	//Pointer to the compiled Vertex shader.
-									   m_ShaderBlob->GetBufferSize(),		//Size of the compiled shader.
+	HR = device->CreateVertexShader( shaderblob->GetBufferPointer(),	//Pointer to the compiled Vertex shader.
+									   shaderblob->GetBufferSize(),		//Size of the compiled shader.
 									   nullptr,									//Advanced topic, not used here.
-									   &m_VertexShader);						//Address of the pointer to the vertex shader interface.
+									   &vertexshader);						//Address of the pointer to the vertex shader interface.
 	if (FAILED(HR))
 	{
 		MessageBox(nullptr, L"Error creating vertex shader.", L"ERROR", MB_OK);
@@ -43,7 +43,7 @@ const bool VertexShader::Initialize(ID3D11Device* device, Shader_Setup_Details &
 void VertexShader::SetShader(ID3D11DeviceContext* deviceContext) const
 {
 	/*****Setting the vertex shader*****/
-	deviceContext->VSSetShader(m_VertexShader.Get(), nullptr, 0u);
+	deviceContext->VSSetShader(vertexshader.Get(), nullptr, 0u);
 }
 
 void VertexShader::UnSetShader(ID3D11DeviceContext* deviceContext) const

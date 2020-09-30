@@ -1,6 +1,6 @@
 #include "Texture.hpp"
 
-bool Texture::Initialize(ID3D11Device* device, int texWidth, int texHeight) {
+bool Texture::Initialize(int texWidth, int texHeight) {
 	D3D11_TEXTURE2D_DESC texDesc;
 	ZeroMemory(&texDesc, sizeof(texDesc));
 	texDesc.Width = texWidth;
@@ -14,7 +14,8 @@ bool Texture::Initialize(ID3D11Device* device, int texWidth, int texHeight) {
 	texDesc.CPUAccessFlags = 0;
 	texDesc.MiscFlags = 0;
 
-	HRESULT hr = device->CreateTexture2D(&texDesc, NULL, &texture);
+	Engine *engine = Engine::GetInstance();
+	HRESULT hr = engine->GetDevice()->CreateTexture2D(&texDesc, NULL, &texture);
 	if (FAILED(hr)) {
 		return false;
 	}
@@ -24,7 +25,7 @@ bool Texture::Initialize(ID3D11Device* device, int texWidth, int texHeight) {
 	rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 	rtvDesc.Texture2D.MipSlice = 0;
 
-	hr = device->CreateRenderTargetView(texture.Get(), &rtvDesc, &rendertargetview);
+	hr = engine->GetDevice()->CreateRenderTargetView(texture.Get(), &rtvDesc, &rendertargetview);
 	if (FAILED(hr)) {
 		return false;
 	}
@@ -35,7 +36,7 @@ bool Texture::Initialize(ID3D11Device* device, int texWidth, int texHeight) {
 	srvDesc.Texture2D.MostDetailedMip = 0;
 	srvDesc.Texture2D.MipLevels = 1;
 
-	hr = device->CreateShaderResourceView(texture.Get(), &srvDesc, &shaderresourceview);
+	hr = engine->GetDevice()->CreateShaderResourceView(texture.Get(), &srvDesc, &shaderresourceview);
 	if (FAILED(hr)) {
 		return false;
 	}
@@ -45,7 +46,7 @@ bool Texture::Initialize(ID3D11Device* device, int texWidth, int texHeight) {
 	uavDesc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2D;
 	uavDesc.Texture2D.MipSlice = rtvDesc.Texture2D.MipSlice;
 
-	hr = device->CreateUnorderedAccessView(texture.Get(), &uavDesc, &unorderedaccessview);
+	hr = engine->GetDevice()->CreateUnorderedAccessView(texture.Get(), &uavDesc, &unorderedaccessview);
 	if (FAILED(hr)) {
 		return false;
 	}
@@ -69,10 +70,11 @@ ID3D11UnorderedAccessView* Texture::GetUnorderedAccessView() {
 	return unorderedaccessview.Get();
 }
 
-bool Texture::LoadTexture(ID3D11Device* device, std::string file)
+bool Texture::LoadTexture(std::wstring file)
 {
+	Engine *engine = Engine::GetInstance();
 	/*****Create Texture from file*****/
-	HRESULT HR = DirectX::CreateWICTextureFromFile(device, CA2W(file.c_str()), &m_Texture, &m_ShaderResourceView);
+	HRESULT HR = CreateWICTextureFromFile(engine->GetDevice(), file.c_str(), textureResource.GetAddressOf(), shaderresourceview.GetAddressOf());
 	if (FAILED(HR))
 	{
 		MessageBox(nullptr, L"Error creating texture from file.", L"ERROR", MB_OK);
@@ -82,12 +84,13 @@ bool Texture::LoadTexture(ID3D11Device* device, std::string file)
 	return true;
 }
 
-void Texture::Clear(ID3D11DeviceContext* context, float red, float green, float blue, float alpha) {
+void Texture::Clear(float red, float green, float blue, float alpha) {
+	Engine *engine = Engine::GetInstance();
 	float color[4];
 	color[0] = red;
 	color[1] = green;
 	color[2] = blue;
 	color[3] = alpha;
-	context->ClearRenderTargetView(rendertargetview.Get(), color);
+	engine->GetContext()->ClearRenderTargetView(rendertargetview.Get(), color);
 }
 

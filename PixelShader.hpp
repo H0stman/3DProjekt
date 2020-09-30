@@ -4,7 +4,7 @@
 class PixelShader : public IShader
 {
 private:
-	Microsoft::WRL::ComPtr<ID3D11PixelShader> m_PixelShader;
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelshader;
 private:
 	PixelShader(const PixelShader& origShader) = delete;
 	PixelShader& operator=(const PixelShader& origShader) = delete;

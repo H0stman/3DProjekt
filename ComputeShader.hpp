@@ -4,7 +4,7 @@
 class ComputeShader : public IShader
 {
 private:
-	Microsoft::WRL::ComPtr<ID3D11ComputeShader> m_ComputeShader;
+	Microsoft::WRL::ComPtr<ID3D11ComputeShader> computeshader;
 private:
 	ComputeShader(const ComputeShader& origShader) = delete;
 	ComputeShader& operator=(const ComputeShader& origShader) = delete;
