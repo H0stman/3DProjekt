@@ -150,6 +150,7 @@
     <ClCompile Include="HullShader.cpp" />
     <ClCompile Include="PixelShader.cpp" />
     <ClCompile Include="IShader.cpp" />
+    <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="VanillaRenderer.cpp" />
     <ClCompile Include="VertexShader.cpp" />
@@ -166,6 +167,7 @@
     <ClInclude Include="IRenderer.hpp" />
     <ClInclude Include="PixelShader.hpp" />
     <ClInclude Include="IShader.hpp" />
+    <ClInclude Include="Terrain.hpp" />
     <ClInclude Include="Texture.hpp" />
     <ClInclude Include="VanillaRenderer.hpp" />
     <ClInclude Include="VertexShader.hpp" />

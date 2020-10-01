@@ -3,6 +3,7 @@
 #include <dxgi1_6.h>
 #include <wrl\client.h>
 #include <string>
+#include <vector>
 #include <DirectXTK\Mouse.h>
 #include <DirectXTK\Keyboard.h>
 #include <DirectXMath.h>
