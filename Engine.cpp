@@ -44,12 +44,6 @@ Engine *Engine::GetInstance()
     return instance;
 }
 
-void Engine::Release()
-{
-	this->~Engine();
-}
-
-
 ID3D11Device* Engine::GetDevice()
 {
 	return device;
@@ -63,6 +57,8 @@ ID3D11DeviceContext* Engine::GetContext()
 
 void Engine::UpdateCameraPosition()
 {
+	mouse.SetWindow(window.GetHandle());
+	mouse.SetMode(Mouse::MODE_RELATIVE);
 	OutputDebugStringW((std::to_wstring(mouse.GetState().x) + L'\n').c_str());
 	//OutputDebugStringW(std::to_wstring(L'\n').c_str());
 }

@@ -58,14 +58,20 @@ LRESULT Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             return 0;
     }
     case WM_MOUSEMOVE:
+    {
         DirectX::Mouse::ProcessMessage(uMsg, wParam, lParam);
         break;
+    }
     case WM_ACTIVATEAPP:
+    {
         DirectX::Mouse::ProcessMessage(uMsg, wParam, lParam);
         break;
+    }
     case WM_MOUSEHOVER:
+    {
         DirectX::Mouse::ProcessMessage(uMsg, wParam, lParam);
         break;
+    }
     }
 
     return DefWindowProc(hwnd, uMsg, wParam, lParam);

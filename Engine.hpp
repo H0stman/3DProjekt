@@ -25,16 +25,17 @@ class Engine
 	Keyboard keyboard;
 
 	Engine();
-	~Engine();
+	
 	
 
 public:
 	
 	Camera camera;
 	Window window;
+
 	static Engine *GetInstance();
-	void Release();
 	void UpdateCameraPosition();
+	~Engine();
 
 	ID3D11Device* GetDevice();
 	ID3D11DeviceContext* GetContext();

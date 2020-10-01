@@ -20,6 +20,6 @@ INT APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         DispatchMessage(&msg);
     }
 
-    engine->Release();
+    delete engine;
     return 0;
 }
