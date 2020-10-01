@@ -12,14 +12,14 @@ INT APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     ShowWindow(engine->window.GetHandle(), nShowCmd);
    
     // Run the message loop.
-
     MSG msg = { };
-    while (GetMessage(&msg, NULL, 0, 0))
-    {
+    while (GetMessage(&msg, nullptr, 0, 0))
+    { 
         engine->UpdateCameraPosition();
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
 
+    engine->Release();
     return 0;
 }

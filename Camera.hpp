@@ -7,13 +7,14 @@ class Camera
 {
 	XMFLOAT3 position;
 	XMVECTOR updirection;
-	XMMATRIX viewmatrix;
-	XMMATRIX projectionmatrix;
-	
+	XMMATRIX viewmatrix, projectionmatrix;
+	float pitch, yaw;
 
 public:
 	Camera();
-
+	XMMATRIX GetViewMatrix();
+	XMMATRIX GetProjectionMatrix();
+	XMFLOAT3 GetPosition();
 
 };
 

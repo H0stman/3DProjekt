@@ -1,10 +1,12 @@
 #pragma once
 #include <d3d11_4.h>
 #include <dxgi1_6.h>
+#include <wrl\client.h>
+#include <string>
 #include <DirectXTK\Mouse.h>
 #include <DirectXTK\Keyboard.h>
 #include "Window.hpp"
-#include <wrl\client.h>
+
 #include "Camera.hpp"
 #include <DirectXMath.h>
 
@@ -24,11 +26,14 @@ class Engine
 
 	Engine();
 	~Engine();
+	
 
 public:
+	
 	Camera camera;
 	Window window;
 	static Engine *GetInstance();
+	void Release();
 	void UpdateCameraPosition();
 
 	ID3D11Device* GetDevice();

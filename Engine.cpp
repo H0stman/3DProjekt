@@ -2,7 +2,7 @@
 
 Engine* Engine::instance = nullptr;
 
-Engine::Engine() : window(L"3D Engine")
+Engine::Engine() : window(L"3D Engine"), mouse(), keyboard()
 {
 	DXGI_SWAP_CHAIN_DESC swap_chain_descr = { 0 };
 	swap_chain_descr.BufferDesc.RefreshRate.Numerator = 0;
@@ -25,12 +25,16 @@ Engine::Engine() : window(L"3D Engine")
 
 	HRESULT hr = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, flags, nullptr, 0, D3D11_SDK_VERSION, &swap_chain_descr, &swapchain, &device, feature_level, &context);
 
-	mouse.SetMode(Mouse::MODE_RELATIVE);
 	mouse.SetWindow(window.GetHandle());
+	mouse.SetMode(Mouse::MODE_RELATIVE);
+	
 }
 
 Engine::~Engine()
 {
+	device->Release();
+	context->Release();
+	swapchain->Release();
 }
 
 Engine *Engine::GetInstance()
@@ -38,6 +42,11 @@ Engine *Engine::GetInstance()
     if (!instance)
         instance = new Engine();
     return instance;
+}
+
+void Engine::Release()
+{
+	this->~Engine();
 }
 
 
@@ -54,5 +63,6 @@ ID3D11DeviceContext* Engine::GetContext()
 
 void Engine::UpdateCameraPosition()
 {
-	
+	OutputDebugStringW((std::to_wstring(mouse.GetState().x) + L'\n').c_str());
+	//OutputDebugStringW(std::to_wstring(L'\n').c_str());
 }

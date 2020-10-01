@@ -1,6 +1,7 @@
 #include "Texture.hpp"
 
-bool Texture::Initialize(int texWidth, int texHeight) {
+bool Texture::Initialize(int texWidth, int texHeight) 
+{
 	D3D11_TEXTURE2D_DESC texDesc;
 	ZeroMemory(&texDesc, sizeof(texDesc));
 	texDesc.Width = texWidth;
@@ -16,9 +17,8 @@ bool Texture::Initialize(int texWidth, int texHeight) {
 
 	Engine *engine = Engine::GetInstance();
 	HRESULT hr = engine->GetDevice()->CreateTexture2D(&texDesc, NULL, &texture);
-	if (FAILED(hr)) {
+	if (FAILED(hr)) 
 		return false;
-	}
 
 	D3D11_RENDER_TARGET_VIEW_DESC rtvDesc;
 	rtvDesc.Format = texDesc.Format;
@@ -26,7 +26,8 @@ bool Texture::Initialize(int texWidth, int texHeight) {
 	rtvDesc.Texture2D.MipSlice = 0;
 
 	hr = engine->GetDevice()->CreateRenderTargetView(texture.Get(), &rtvDesc, &rendertargetview);
-	if (FAILED(hr)) {
+	if (FAILED(hr)) 
+	{
 		return false;
 	}
 
