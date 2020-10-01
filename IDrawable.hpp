@@ -5,6 +5,6 @@ class IDrawable
 {
 
 public:
-	virtual void PrimePipeline() = 0;
+	virtual void PrimePipeline(UINT pipelinesettings) = 0;
 };
 

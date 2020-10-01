@@ -7,8 +7,8 @@
 #include <DirectXTK\Keyboard.h>
 #include <DirectXMath.h>
 
-#include "Camera.hpp"
 #include "Window.hpp"
+#include "Camera.hpp"
 #include "IDrawable.hpp"
 
 using namespace DirectX;
