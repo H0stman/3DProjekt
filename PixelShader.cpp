@@ -1,8 +1,14 @@
 #include "PixelShader.hpp"
 
-const bool PixelShader::Initialize(ID3D11Device* device, Shader_Setup_Details &setup)
+PixelShader::~PixelShader()
+{
+	pixelshader->Release();
+}
+
+const bool PixelShader::Initialize(Shader_Setup_Details &setup)
 {
 	ID3DBlob *errorBlob;
+	ID3D11Device *device = Engine::GetInstance()->GetDevice();
 
 	/*****Pixelshader compilation*****/
 	HRESULT HR = D3DCompileFromFile( setup.fileName,		//Name of the pixel shader.
@@ -27,7 +33,7 @@ const bool PixelShader::Initialize(ID3D11Device* device, Shader_Setup_Details &s
 
 	/*****Pixel shader creation*****/
 	HR = device->CreatePixelShader(   shaderblob->GetBufferPointer(),			//Pointer to the compiled Pixel shader buffer.
-								      shaderblob->GetBufferSize(),			//Size of the compiled Pixel shader buffer.
+								      shaderblob->GetBufferSize(),				//Size of the compiled Pixel shader buffer.
 								      nullptr,									//Advanced topic, not used here.
 								      &pixelshader);							//Address of pointer to the Pixel VertexShader.
 	if (FAILED(HR))
@@ -41,14 +47,14 @@ const bool PixelShader::Initialize(ID3D11Device* device, Shader_Setup_Details &s
 	return true;
 }
 
-void PixelShader::SetShader(ID3D11DeviceContext* deviceContext) const
+void PixelShader::SetShader() const
 {
 	/*****Setting the Pixel shader*****/
-	deviceContext->PSSetShader(pixelshader.Get(), nullptr, 0u);
+	Engine::GetInstance()->GetContext()->PSSetShader(pixelshader, nullptr, 0u);
 }
 
-void PixelShader::UnSetShader(ID3D11DeviceContext* deviceContext) const
+void PixelShader::UnSetShader() const
 {
 	/*****Setting the Pixel shader*****/
-	deviceContext->PSSetShader(nullptr, nullptr, 0u);
+	Engine::GetInstance()->GetContext()->PSSetShader(nullptr, nullptr, 0u);
 }

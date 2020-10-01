@@ -1,9 +1,10 @@
 #pragma once
 #include "Engine.hpp"
 
-class IRender
+class IRenderer
 {
 public:
+	virtual ~IRenderer();
 	virtual void Draw(IDrawable **ppDrawables, UINT numDrawables) = 0;
 };
 
