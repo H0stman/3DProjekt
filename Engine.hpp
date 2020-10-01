@@ -5,10 +5,9 @@
 #include <string>
 #include <DirectXTK\Mouse.h>
 #include <DirectXTK\Keyboard.h>
-
-#include "Camera.hpp"
 #include <DirectXMath.h>
 
+#include "Camera.hpp"
 #include "Window.hpp"
 #include "IDrawable.hpp"
 
