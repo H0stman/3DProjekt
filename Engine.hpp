@@ -3,10 +3,12 @@
 #include <dxgi1_6.h>
 #include <DirectXTK\Mouse.h>
 #include <DirectXTK\Keyboard.h>
-#include "Window.hpp"
 #include <wrl\client.h>
 #include "Camera.hpp"
 #include <DirectXMath.h>
+
+#include "Window.hpp"
+#include "IDrawable.hpp"
 
 using namespace DirectX;
 

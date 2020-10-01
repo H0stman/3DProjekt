@@ -4,6 +4,6 @@
 class IRender
 {
 public:
-	virtual void Draw(UINT uIndexCount, UINT uStartIndexLocation, INT baseVertexLocation) = 0;
+	virtual void Draw(IDrawable **ppDrawables, UINT numDrawables) = 0;
 };
 
