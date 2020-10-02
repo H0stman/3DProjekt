@@ -1,5 +1,9 @@
 #include "PixelShader.hpp"
 
+PixelShader::PixelShader() : pixelshader { nullptr }
+{
+}
+
 PixelShader::~PixelShader()
 {
 	pixelshader->Release();

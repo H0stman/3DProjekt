@@ -9,5 +9,5 @@ public:
 	VanillaRenderer();
 	~VanillaRenderer();
 
-	void Draw(IDrawable **ppDrawables, UINT numDrawables);
+	void Draw(UINT numDrawables, IDrawable** ppDrawables, UINT numTargets, Texture **ppRenderTargets);
 };

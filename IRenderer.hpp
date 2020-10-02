@@ -5,6 +5,6 @@ class IRenderer
 {
 public:
 	virtual ~IRenderer();
-	virtual void Draw(IDrawable **ppDrawables, UINT numDrawables) = 0;
+	virtual void Draw(UINT numDrawables, IDrawable** ppDrawables, UINT numTargets, Texture **ppRenderTargets) = 0;
 };
 

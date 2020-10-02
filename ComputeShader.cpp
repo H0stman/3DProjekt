@@ -1,8 +1,9 @@
 #include "ComputeShader.hpp"
 
-const bool ComputeShader::Initialize(ID3D11Device* device, Shader_Setup_Details &setup)
+const bool ComputeShader::Initialize(Shader_Setup_Details &setup)
 {
-	Microsoft::WRL::ComPtr<ID3DBlob> pErrorBlob;
+	ID3D11Device* device = Engine::GetInstance()->GetDevice();
+	ID3DBlob *pErrorBlob;
 
 	/*****Computeshader compilation*****/
 	HRESULT HR = D3DCompileFromFile( setup.fileName,		//Name of the pixel shader.
@@ -16,7 +17,7 @@ const bool ComputeShader::Initialize(ID3D11Device* device, Shader_Setup_Details 
 									 &pErrorBlob);			//Error blob that will catch additional error messages.
 	if (FAILED(HR))
 	{
-		if (pErrorBlob.Get() != nullptr)
+		if (pErrorBlob != nullptr)
 		{
 			OutputDebugStringA((char*)pErrorBlob->GetBufferPointer());			//Will yield additional debug information from Compute shader.
 		}
@@ -37,14 +38,16 @@ const bool ComputeShader::Initialize(ID3D11Device* device, Shader_Setup_Details 
 	return true;
 }
 
-void ComputeShader::SetShader(ID3D11DeviceContext* deviceContext) const
+void ComputeShader::SetShader() const
 {
+	ID3D11DeviceContext* context = Engine::GetInstance()->GetContext();
 	/*****Setting the Compute shader*****/
-	deviceContext->CSSetShader(computeshader.Get(), nullptr, 0u);
+	context->CSSetShader(computeshader.Get(), nullptr, 0u);
 }
 
-void ComputeShader::UnSetShader(ID3D11DeviceContext* deviceContext) const
+void ComputeShader::UnSetShader() const
 {
+	ID3D11DeviceContext* context = Engine::GetInstance()->GetContext();
 	/*****Setting the Compute shader*****/
-	deviceContext->CSSetShader(nullptr, nullptr, 0u);
+	context->CSSetShader(nullptr, nullptr, 0u);
 }
