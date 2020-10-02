@@ -4,18 +4,18 @@
 Window::Window(LPCWSTR wspTitle)
 {
     wc = { 0 };
-    wc.style = CS_HREDRAW | CS_VREDRAW; //Flags [Redraw on width/height change from resize/movement] See: https://msdn.microsoft.com/en-us/library/windows/desktop/ff729176(v=vs.85).aspx
-    wc.lpfnWndProc = WindowProc; //Pointer to Window Proc function for handling messages from this window
-    wc.cbClsExtra = 0; //# of extra bytes to allocate following the window-class structure. We are not currently using this.
-    wc.cbWndExtra = 0; //# of extra bytes to allocate following the window instance. We are not currently using this.
-    wc.hInstance = (HINSTANCE)GetModuleHandle(nullptr); //Handle to the instance that contains the Window Procedure
-    wc.hIcon = nullptr;   //Handle to the class icon. Must be a handle to an icon resource. We are not currently assigning an icon, so this is null.
-    wc.hIconSm = nullptr; //Handle to small icon for this class. We are not currently assigning an icon, so this is null.
-    wc.hCursor = LoadCursor(nullptr, IDC_ARROW); //Default Cursor - If we leave this null, we have to explicitly set the cursor's shape each time it enters the window.
-    wc.hbrBackground = (HBRUSH)COLOR_WINDOW; //Handle to the class background brush for the window's background color - we will leave this blank for now and later set this to black. For stock brushes, see: https://msdn.microsoft.com/en-us/library/windows/desktop/dd144925(v=vs.85).aspx
-    wc.lpszMenuName = nullptr; //Pointer to a null terminated character string for the menu. We are not using a menu yet, so this will be NULL.
-    wc.lpszClassName = CLASS_NAME; //Pointer to null terminated string of our class name for this window.
-    wc.cbSize = sizeof(WNDCLASSEX); //Need to fill in the size of our struct for cbSize
+    wc.style = CS_HREDRAW | CS_VREDRAW;                  //Flags [Redraw on width/height change from resize/movement] See: https://msdn.microsoft.com/en-us/library/windows/desktop/ff729176(v=vs.85).aspx
+    wc.lpfnWndProc = WindowProc;                         //Pointer to Window Proc function for handling messages from this window
+    wc.cbClsExtra = 0;                                   //# of extra bytes to allocate following the window-class structure. We are not currently using this.
+    wc.cbWndExtra = 0;                                   //# of extra bytes to allocate following the window instance. We are not currently using this.
+    wc.hInstance = (HINSTANCE)GetModuleHandle(nullptr);  //Handle to the instance that contains the Window Procedure
+    wc.hIcon = nullptr;                                  //Handle to the class icon. Must be a handle to an icon resource. We are not currently assigning an icon, so this is null.
+    wc.hIconSm = nullptr;                                //Handle to small icon for this class. We are not currently assigning an icon, so this is null.
+    wc.hCursor = LoadCursor(nullptr, IDC_ARROW);         //Default Cursor - If we leave this null, we have to explicitly set the cursor's shape each time it enters the window.
+    wc.hbrBackground = (HBRUSH)COLOR_WINDOW;             //Handle to the class background brush for the window's background color - we will leave this blank for now and later set this to black. For stock brushes, see: https://msdn.microsoft.com/en-us/library/windows/desktop/dd144925(v=vs.85).aspx
+    wc.lpszMenuName = nullptr;                           //Pointer to a null terminated character string for the menu. We are not using a menu yet, so this will be NULL.
+    wc.lpszClassName = CLASS_NAME;                       //Pointer to null terminated string of our class name for this window.
+    wc.cbSize = sizeof(WNDCLASSEX);                      //Need to fill in the size of our struct for cbSize
 
     RegisterClassEx(&wc);
     hndl = CreateWindowEx(
@@ -46,11 +46,6 @@ Window::Window(LPCWSTR wspTitle)
        OutputDebugStringW(messageBuffer);
     }
 
-}
-
-INT Window::GetHeight()
-{
-   return height;
 }
 
 LRESULT Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -106,4 +101,7 @@ INT Window::GetWidth()
    return width;
 }
 
-
+INT Window::GetHeight()
+{
+   return height;
+}

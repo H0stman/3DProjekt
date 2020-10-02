@@ -125,9 +125,11 @@ Terrain::Terrain(PCSTR filename)
 
 void Terrain::PrimePipeline(UINT pipelinesettings)
 {
+	stride = sizeof(vertex);
+	offset = 0;
 	if ((pipelinesettings & Engine::VANILLA) != 0)
 	{
-		// Create index buffer
+		//Create index buffer
 
 		D3D11_BUFFER_DESC indexBufferDesc;
 		ZeroMemory(&indexBufferDesc, sizeof(indexBufferDesc));
@@ -144,7 +146,7 @@ void Terrain::PrimePipeline(UINT pipelinesettings)
 
 		HRESULT hr = Engine::GetInstance()->GetDevice()->CreateBuffer(&indexBufferDesc, &initData, &indexbuffer);
 
-		// Create vertex buffer
+		//Create vertex buffer
 
 		D3D11_BUFFER_DESC vertexBufferDesc;
 		ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
@@ -160,7 +162,7 @@ void Terrain::PrimePipeline(UINT pipelinesettings)
 		vertexBufferData.pSysMem = &vertices[0];
 		hr = Engine::GetInstance()->GetDevice()->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &vertexbuffer);
 
-		// Create rasterizer states
+		//Create rasterizer states
 
 		D3D11_RASTERIZER_DESC rdesc;
 
@@ -170,23 +172,19 @@ void Terrain::PrimePipeline(UINT pipelinesettings)
 		rdesc.FrontCounterClockwise = true;
 		hr = Engine::GetInstance()->GetDevice()->CreateRasterizerState(&rdesc, &ccwcullmode);
 
-		rdesc.FrontCounterClockwise = false;
+		/*** Set pipeline to appropriate state ***/
 
-		hr = Engine::GetInstance()->GetDevice()->CreateRasterizerState(&rdesc, &cwcullmode);
-
-		/*** Setup pipeline to appropriate state ***/
-
-		// Set primitive topology
+		//Set primitive topology
 
 		Engine::GetInstance()->GetContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		// Set rasterizer state
+		//Set rasterizer state
 
 		Engine::GetInstance()->GetContext()->RSSetState(ccwcullmode);
 
-		// Bind resources
+		//Bind resources
 
-		Engine::GetInstance()->GetContext()->IASetVertexBuffers(0u, 1, &indexbuffer, &stride, &offset);
+		Engine::GetInstance()->GetContext()->IASetVertexBuffers(0u, 1, &vertexbuffer, &stride, &offset);
 		Engine::GetInstance()->GetContext()->IASetIndexBuffer(indexbuffer, DXGI_FORMAT_R32_UINT, 0);
 	}
 

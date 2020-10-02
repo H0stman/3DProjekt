@@ -11,14 +11,24 @@ INT APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
     ShowWindow(engine->window.GetHandle(), nShowCmd);
    
-    // Run the message loop.
+    
     MSG msg = { };
-    while (GetMessage(&msg, nullptr, 0, 0))
-    { 
-        engine->UpdateCameraPosition();
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
+
+    while (engine->Run())
+    {
+       // Run the message loop.
+       while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+       {
+          TranslateMessage(&msg);
+          DispatchMessage(&msg);
+       }
+
+       // If no messages in message queue, do DirextX stuff...
+
+       engine->UpdateCameraPosition();
     }
+
+    
 
     delete engine;
     return 0;

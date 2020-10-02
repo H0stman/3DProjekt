@@ -17,12 +17,12 @@ class Terrain : private IDrawable
 	UINT facecount, vertexcount, stride, offset;
 
 	ID3D11Buffer *indexbuffer, *vertexbuffer;
-	ID3D11RasterizerState* ccwcullmode, *cwcullmode;
+	ID3D11RasterizerState* ccwcullmode;
 
 public:
 	Terrain(PCSTR filename);
 	~Terrain();
 
-	void PrimePipeline(UINT pipelinesettings) override;
+	VOID PrimePipeline(UINT pipelinesettings) override;
 };
 

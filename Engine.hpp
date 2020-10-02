@@ -25,6 +25,8 @@ class Engine
 	Mouse mouse;
 	Keyboard keyboard;
 
+	BOOL runing;
+
 	Engine();
 
 public:
@@ -35,7 +37,8 @@ public:
 	Window window;
 
 	static Engine *GetInstance();
-	void UpdateCameraPosition();
+	BOOL Run();
+	VOID UpdateCameraPosition();
 	~Engine();
 
 	ID3D11Device* GetDevice();

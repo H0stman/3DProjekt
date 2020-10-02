@@ -8,7 +8,7 @@ class Camera
 {
 	XMFLOAT3 position;
 	XMVECTOR updirection;
-	XMMATRIX view, projection, orthographic, perspective;
+	XMMATRIX view, projection;
 	float pitch, yaw;
 
 public:
@@ -16,6 +16,7 @@ public:
 	XMMATRIX GetViewMatrix();
 	XMMATRIX GetProjectionMatrix();
 	XMFLOAT3 GetPosition();
-
+	VOID OrthographicProjection(INT windowWidth, INT windowHeight);
+	VOID PerspectiveProjection(INT windowWidth, INT windowHeight);
 };
 
