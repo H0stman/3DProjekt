@@ -9,7 +9,7 @@ private:
 	PixelShader(const PixelShader& origShader) = delete;
 	PixelShader& operator=(const PixelShader& origShader) = delete;
 public:
-	PixelShader() = default;
+	PixelShader();
 	~PixelShader();
 	const bool Initialize(Shader_Setup_Details &setup) override;
 

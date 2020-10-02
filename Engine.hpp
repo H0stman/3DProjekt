@@ -11,6 +11,7 @@
 #include "Window.hpp"
 #include "Camera.hpp"
 #include "IDrawable.hpp"
+#include "Texture.hpp"
 
 using namespace DirectX;
 
