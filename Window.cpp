@@ -32,6 +32,25 @@ Window::Window(LPCWSTR wspTitle)
         (HINSTANCE)GetModuleHandle(nullptr),  // Instance handle
         nullptr        // Additional application data
     );
+
+    RECT rect;
+    if (GetWindowRect(hndl, &rect))
+    {
+       width = rect.right - rect.left;
+       height = rect.bottom - rect.top;
+    }
+    else
+    {
+       PWSTR messageBuffer;
+       DWORD size = FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_ALLOCATE_BUFFER, nullptr, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (PWSTR)&messageBuffer, 0, nullptr);
+       OutputDebugStringW(messageBuffer);
+    }
+
+}
+
+INT Window::GetHeight()
+{
+   return height;
 }
 
 LRESULT Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -80,6 +99,11 @@ LRESULT Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 HWND Window::GetHandle()
 {
     return hndl;
+}
+
+INT Window::GetWidth()
+{
+   return width;
 }
 
 

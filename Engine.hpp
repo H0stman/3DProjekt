@@ -1,12 +1,12 @@
 #pragma once
 #include <d3d11_4.h>
 #include <dxgi1_6.h>
-#include <wrl\client.h>
-#include <string>
-#include <vector>
+#include <DirectXMath.h>
 #include <DirectXTK\Mouse.h>
 #include <DirectXTK\Keyboard.h>
-#include <DirectXMath.h>
+#include <string>
+#include <vector>
+
 
 #include "Window.hpp"
 #include "Camera.hpp"
@@ -21,17 +21,15 @@ class Engine
 	ID3D11DeviceContext *context;
 	IDXGISwapChain* swapchain;
 
-	enum RenderType { VANILLA, DEFERRED, SHADOWMAP, BLUR };
-
 	Mouse mouse;
 	Keyboard keyboard;
 
 	Engine();
-	
-	
 
 public:
 	
+	enum RenderType { VANILLA = 1, DEFERRED = 2, SHADOWMAP = 4, BLUR = 8 };
+
 	Camera camera;
 	Window window;
 

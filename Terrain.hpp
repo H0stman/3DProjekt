@@ -13,14 +13,11 @@ class Terrain : private IDrawable
 	std::vector<vertex> vertices;
 	std::vector<DWORD> indices;
 	HeightMapInfo hminfo;
-	UINT facecount, vertexcount;
 
-	ID3D11Buffer* indexbuffer;
-	ID3D11Buffer* vertexbuffer;
-	
+	UINT facecount, vertexcount, stride, offset;
 
-	void ReadFileData(PCSTR filename);
-	void CreateVerticesAndIndexList();
+	ID3D11Buffer *indexbuffer, *vertexbuffer;
+	ID3D11RasterizerState* ccwcullmode, *cwcullmode;
 
 public:
 	Terrain(PCSTR filename);

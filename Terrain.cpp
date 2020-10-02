@@ -1,7 +1,12 @@
 #include "Terrain.hpp"
 
-void Terrain::ReadFileData(PCSTR filename)
+Terrain::Terrain(PCSTR filename)
 {
+	facecount, vertexcount = 0u;
+	UINT stride = sizeof(vertex);
+	UINT offset = 0u;
+	vertices.clear();
+	indices.clear();
 	FILE* filePtr;                            // Point to the current position in the file
 	BITMAPFILEHEADER bitmapFileHeader;        // Structure which stores information about file
 	BITMAPINFOHEADER bitmapInfoHeader;        // Structure which stores information about image
@@ -64,10 +69,8 @@ void Terrain::ReadFileData(PCSTR filename)
 
 	delete[] bitmapImage;
 	bitmapImage = 0;
-}
 
-void Terrain::CreateVerticesAndIndexList()
-{
+
 	INT cols = hminfo.terrainWidth;
 	INT rows = hminfo.terrainHeight;
 
@@ -120,52 +123,73 @@ void Terrain::CreateVerticesAndIndexList()
 	}
 }
 
-Terrain::Terrain(PCSTR filename)
-{
-	facecount, vertexcount = 0;
-	vertices.clear();
-	indices.clear();
-	ReadFileData(filename);
-	CreateVerticesAndIndexList();
-}
-
 void Terrain::PrimePipeline(UINT pipelinesettings)
 {
+	if ((pipelinesettings & Engine::VANILLA) != 0)
+	{
+		// Create index buffer
 
-	// Create index buffer
+		D3D11_BUFFER_DESC indexBufferDesc;
+		ZeroMemory(&indexBufferDesc, sizeof(indexBufferDesc));
+		indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		indexBufferDesc.ByteWidth = sizeof(DWORD) * facecount * 3;
+		indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+		indexBufferDesc.CPUAccessFlags = 0;
+		indexBufferDesc.MiscFlags = 0;
 
-	D3D11_BUFFER_DESC indexBufferDesc;
-	ZeroMemory(&indexBufferDesc, sizeof(indexBufferDesc));
-	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	indexBufferDesc.ByteWidth = sizeof(DWORD) * facecount * 3;
-	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	indexBufferDesc.CPUAccessFlags = 0;
-	indexBufferDesc.MiscFlags = 0;
+		D3D11_SUBRESOURCE_DATA initData;
+		ZeroMemory(&initData, sizeof(D3D11_SUBRESOURCE_DATA));
 
-	D3D11_SUBRESOURCE_DATA initData;
-	ZeroMemory(&initData, sizeof(D3D11_SUBRESOURCE_DATA));
+		initData.pSysMem = &indices[0];
 
-	initData.pSysMem = &indices[0];
+		HRESULT hr = Engine::GetInstance()->GetDevice()->CreateBuffer(&indexBufferDesc, &initData, &indexbuffer);
 
-	HRESULT hr = Engine::GetInstance()->GetDevice()->CreateBuffer(&indexBufferDesc, &initData, &indexbuffer);
+		// Create vertex buffer
 
-	// Create vertex buffer
+		D3D11_BUFFER_DESC vertexBufferDesc;
+		ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
+		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		vertexBufferDesc.ByteWidth = sizeof(vertex) * vertexcount;
+		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		vertexBufferDesc.CPUAccessFlags = 0;
+		vertexBufferDesc.MiscFlags = 0;
 
-	D3D11_BUFFER_DESC vertexBufferDesc;
-	ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
-	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	vertexBufferDesc.ByteWidth = sizeof(vertex) * vertexcount;
-	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	vertexBufferDesc.CPUAccessFlags = 0;
-	vertexBufferDesc.MiscFlags = 0;
+		D3D11_SUBRESOURCE_DATA vertexBufferData;
 
-	D3D11_SUBRESOURCE_DATA vertexBufferData;
+		ZeroMemory(&vertexBufferData, sizeof(vertexBufferData));
+		vertexBufferData.pSysMem = &vertices[0];
+		hr = Engine::GetInstance()->GetDevice()->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &vertexbuffer);
 
-	ZeroMemory(&vertexBufferData, sizeof(vertexBufferData));
-	vertexBufferData.pSysMem = &vertices[0];
-	hr = Engine::GetInstance()->GetDevice()->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &vertexbuffer);
+		// Create rasterizer states
 
-	// Setup pipeline to appropriate state : TODO
+		D3D11_RASTERIZER_DESC rdesc;
+
+		ZeroMemory(&rdesc, sizeof(D3D11_RASTERIZER_DESC));
+		rdesc.FillMode = D3D11_FILL_SOLID;
+		rdesc.CullMode = D3D11_CULL_BACK;
+		rdesc.FrontCounterClockwise = true;
+		hr = Engine::GetInstance()->GetDevice()->CreateRasterizerState(&rdesc, &ccwcullmode);
+
+		rdesc.FrontCounterClockwise = false;
+
+		hr = Engine::GetInstance()->GetDevice()->CreateRasterizerState(&rdesc, &cwcullmode);
+
+		/*** Setup pipeline to appropriate state ***/
+
+		// Set primitive topology
+
+		Engine::GetInstance()->GetContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		// Set rasterizer state
+
+		Engine::GetInstance()->GetContext()->RSSetState(ccwcullmode);
+
+		// Bind resources
+
+		Engine::GetInstance()->GetContext()->IASetVertexBuffers(0u, 1, &indexbuffer, &stride, &offset);
+		Engine::GetInstance()->GetContext()->IASetIndexBuffer(indexbuffer, DXGI_FORMAT_R32_UINT, 0);
+	}
+
 
 
 
