@@ -25,7 +25,6 @@ class Engine
 	Mouse mouse;
 	Keyboard keyboard;
 
-	BOOL runing;
 
 	Engine();
 
