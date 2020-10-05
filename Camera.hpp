@@ -1,6 +1,7 @@
 #pragma once
 #include <DirectXMath.h>
-#include "Window.hpp"
+#include "Engine.hpp"
+
 
 using namespace DirectX;
 
@@ -12,11 +13,11 @@ class Camera
 	FLOAT pitch, yaw;
 
 public:
-	Camera(INT windowWidth, INT windowHeight);
+	Camera();
 	XMMATRIX GetViewMatrix();
 	XMMATRIX GetProjectionMatrix();
 	XMFLOAT3 GetPosition();
-	VOID SetOrthographicProjection(INT windowWidth, INT windowHeight);
-	VOID SetPerspectiveProjection(INT windowWidth, INT windowHeight);
+	VOID SetOrthographicProjection();
+	VOID SetPerspectiveProjection();
 };
 

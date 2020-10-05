@@ -3,11 +3,11 @@
 
 class Terrain : IDrawable
 {
-	struct HeightMapInfo // Heightmap structure
+	struct HeightMapInfo //Heightmap structure
 	{
-		INT terrainWidth;				// Width of heightmap
-		INT terrainHeight;			// Height (Length) of heightmap
-		XMFLOAT3* heightMap;			// Array to store terrain's vertex positions
+		INT terrainWidth;				//Width of heightmap
+		INT terrainHeight;			//Height (Length) of heightmap
+		XMFLOAT3* heightMap;			//Array to store terrain's vertex positions
 	};
 
 	std::vector<vertex> vertices;
@@ -24,5 +24,8 @@ public:
 	~Terrain();
 
 	VOID PrimePipeline(UINT pipelinesettings) override;
+	UINT GetIndexCount() override;
+	UINT GetStartIndexLocation() override;
+	INT GetBaseVertexLoation() override;
 };
 

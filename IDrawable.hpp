@@ -16,5 +16,8 @@ protected:
 public:
 	virtual ~IDrawable();
 	virtual void PrimePipeline(UINT pipelinesettings) = 0;
+	virtual UINT GetIndexCount() = 0;
+	virtual UINT GetStartIndexLocation() = 0;
+	virtual INT GetBaseVertexLoation() = 0;
 };
 

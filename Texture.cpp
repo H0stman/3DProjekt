@@ -1,6 +1,6 @@
 #include "Texture.hpp"
 
-bool Texture::Initialize(int texWidth, int texHeight) 
+Texture::Texture(INT texWidth, INT texHeight) : rendertargetview(nullptr), shaderresourceview(nullptr), textureResource(nullptr), texture(nullptr), unorderedaccessview(nullptr)
 {
 	D3D11_TEXTURE2D_DESC texDesc;
 	ZeroMemory(&texDesc, sizeof(texDesc));
@@ -15,20 +15,24 @@ bool Texture::Initialize(int texWidth, int texHeight)
 	texDesc.CPUAccessFlags = 0;
 	texDesc.MiscFlags = 0;
 
-	Engine *engine = Engine::GetInstance();
-	HRESULT hr = engine->GetDevice()->CreateTexture2D(&texDesc, NULL, &texture);
-	if (FAILED(hr)) 
-		return false;
+	Engine* engine = Engine::GetInstance();
+	HRESULT hr = engine->GetDevice()->CreateTexture2D(&texDesc, nullptr, &texture);
+	_com_error err(hr);
+
+	if (FAILED(hr))
+		OutputDebugStringW(err.ErrorMessage());
+		
 
 	D3D11_RENDER_TARGET_VIEW_DESC rtvDesc;
 	rtvDesc.Format = texDesc.Format;
 	rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 	rtvDesc.Texture2D.MipSlice = 0;
 
-	hr = engine->GetDevice()->CreateRenderTargetView(texture.Get(), &rtvDesc, &rendertargetview);
-	if (FAILED(hr)) 
+	hr = engine->GetDevice()->CreateRenderTargetView(texture, &rtvDesc, &rendertargetview);
+	if (FAILED(hr))
 	{
-		return false;
+		err = _com_error(hr);
+		OutputDebugStringW(err.ErrorMessage());
 	}
 
 	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
@@ -37,9 +41,11 @@ bool Texture::Initialize(int texWidth, int texHeight)
 	srvDesc.Texture2D.MostDetailedMip = 0;
 	srvDesc.Texture2D.MipLevels = 1;
 
-	hr = engine->GetDevice()->CreateShaderResourceView(texture.Get(), &srvDesc, &shaderresourceview);
-	if (FAILED(hr)) {
-		return false;
+	hr = engine->GetDevice()->CreateShaderResourceView(texture, &srvDesc, &shaderresourceview);
+	if (FAILED(hr))
+	{
+		err = _com_error(hr);
+		OutputDebugStringW(err.ErrorMessage());
 	}
 
 	D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
@@ -47,51 +53,67 @@ bool Texture::Initialize(int texWidth, int texHeight)
 	uavDesc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2D;
 	uavDesc.Texture2D.MipSlice = rtvDesc.Texture2D.MipSlice;
 
-	hr = engine->GetDevice()->CreateUnorderedAccessView(texture.Get(), &uavDesc, &unorderedaccessview);
-	if (FAILED(hr)) {
-		return false;
+	hr = engine->GetDevice()->CreateUnorderedAccessView(texture, &uavDesc, &unorderedaccessview);
+
+	if (FAILED(hr))
+	{
+		err = _com_error(hr);
+		OutputDebugStringW(err.ErrorMessage());
 	}
-
-	return true;
 }
 
-ID3D11Texture2D* Texture::GetTexture() {
-	return texture.Get();
+Texture::~Texture()
+{
+	texture->Release();
+	textureResource->Release();
+	rendertargetview->Release();
+	shaderresourceview->Release();
+	unorderedaccessview->Release();
 }
 
-ID3D11RenderTargetView* Texture::GetRenderTargetView() {
-	return rendertargetview.Get();
+ID3D11Texture2D* Texture::GetTexture()
+{
+	return texture;
 }
 
-ID3D11ShaderResourceView* Texture::GetShaderResourceView() {
-	return shaderresourceview.Get();
+ID3D11RenderTargetView* Texture::GetRenderTargetView() 
+{
+	return rendertargetview;
 }
 
-ID3D11UnorderedAccessView* Texture::GetUnorderedAccessView() {
-	return unorderedaccessview.Get();
+ID3D11ShaderResourceView* Texture::GetShaderResourceView() 
+{
+	return shaderresourceview;
 }
 
-bool Texture::LoadTexture(std::wstring file)
+ID3D11UnorderedAccessView* Texture::GetUnorderedAccessView() 
+{
+	return unorderedaccessview;
+}
+
+BOOL Texture::LoadTexture(std::wstring file)
 {
 	Engine *engine = Engine::GetInstance();
-	/*****Create Texture from file*****/
-	HRESULT HR = CreateWICTextureFromFile(engine->GetDevice(), file.c_str(), textureResource.GetAddressOf(), shaderresourceview.GetAddressOf());
-	if (FAILED(HR))
-	{
-		MessageBox(nullptr, L"Error creating texture from file.", L"ERROR", MB_OK);
-		return false;
-	}
 
-	return true;
+	//Create Texture from file
+
+	HRESULT hr = CreateWICTextureFromFile(engine->GetDevice(), file.c_str(), &textureResource, &shaderresourceview);
+	_com_error err(hr);
+
+	if (FAILED(hr))
+		OutputDebugStringW(err.ErrorMessage());
+
+	return TRUE;
 }
 
-void Texture::Clear(float red, float green, float blue, float alpha) {
+VOID Texture::Clear(FLOAT red, FLOAT green, FLOAT blue, FLOAT alpha) 
+{
 	Engine *engine = Engine::GetInstance();
 	float color[4];
 	color[0] = red;
 	color[1] = green;
 	color[2] = blue;
 	color[3] = alpha;
-	engine->GetContext()->ClearRenderTargetView(rendertargetview.Get(), color);
+	engine->GetContext()->ClearRenderTargetView(rendertargetview, color);
 }
 

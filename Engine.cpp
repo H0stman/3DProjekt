@@ -2,7 +2,7 @@
 
 Engine* Engine::instance = nullptr;
 
-Engine::Engine() : window(L"3D Engine"), camera(window.GetWidth(),window.GetHeight()), mouse(), keyboard()
+Engine::Engine() : window(L"3D Engine"), camera(), mouse(), keyboard()
 {
 	DXGI_SWAP_CHAIN_DESC swap_chain_descr = { 0 };
 	swap_chain_descr.BufferDesc.RefreshRate.Numerator = 0;

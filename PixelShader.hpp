@@ -13,6 +13,6 @@ public:
 	~PixelShader();
 	const bool Initialize(Shader_Setup_Details &setup) override;
 
-	 void SetShader() const override;
-	 void UnSetShader() const override;
+	void SetShader() const override;
+	void UnSetShader() const override;
 };

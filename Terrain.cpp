@@ -193,3 +193,18 @@ void Terrain::PrimePipeline(UINT pipelinesettings)
 
 }
 
+UINT Terrain::GetIndexCount()
+{
+	return indices.size();
+}
+
+UINT Terrain::GetStartIndexLocation()
+{
+	return 0u;
+}
+
+INT Terrain::GetBaseVertexLoation()
+{
+	return 0u;
+}
+
