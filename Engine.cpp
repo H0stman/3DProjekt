@@ -30,13 +30,13 @@ Engine::Engine() : window(L"3D Engine"), camera(window.GetWidth(),window.GetHeig
 
 	/***RENDER TARGET VIEW CREATION***/
 	ID3D11Texture2D* pBackBuffer;
-	hr = swapchain->GetBuffer(0u, __uuidof(ID3D11Texture2D), &pBackBuffer);
+	hr = swapchain->GetBuffer(0u, __uuidof(ID3D11Texture2D), (void**)&pBackBuffer);
 	if (FAILED(hr))
-		MessageBox(window.GetHandle(), L"Error generating back buffer for Render target view.", L"ERROR", MB_OK);
+		OutputDebugString(L"Error generating back buffer for Render target view.\n");
 
-	hr = device->CreateRenderTargetView(pBackBuffer, nullptr, &rendertargetview);
+	hr = device->CreateRenderTargetView(pBackBuffer, nullptr, &backbuffer);
 	if (FAILED(hr))
-		MessageBox(window.GetHandle(), L"Error generating back buffer for Render target view.", L"ERROR", MB_OK);
+		OutputDebugString(L"Error generating back buffer for Render target view.\n");
 
 	/*****DEPTH/STENCIL VIEW CREATION*****/
 	D3D11_TEXTURE2D_DESC depthBufferDescriptor;
@@ -57,11 +57,11 @@ Engine::Engine() : window(L"3D Engine"), camera(window.GetWidth(),window.GetHeig
 	ID3D11Texture2D* pDepthStencilBuffer;
 	hr = device->CreateTexture2D(&depthBufferDescriptor, nullptr, &pDepthStencilBuffer);
 	if (FAILED(hr))
-		MessageBox(window.GetHandle(), L"Error generating buffer for depth/stencil view.", L"ERROR", MB_OK);
+		OutputDebugString(L"Error generating buffer for depth/stencil view.\n");
 
 	hr = device->CreateDepthStencilView(pDepthStencilBuffer, nullptr, &depthstencilview);
 	if (FAILED(hr))
-		MessageBox(window.GetHandle(), L"Error generating depth/stencil view.", L"ERROR", MB_OK);
+		OutputDebugString(L"Error generating depth/stencil view.\n");
 
 	D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
 	ZeroMemory(&depthStencilDesc, sizeof(depthStencilDesc));
@@ -83,11 +83,11 @@ Engine::Engine() : window(L"3D Engine"), camera(window.GetWidth(),window.GetHeig
 
 	device->CreateDepthStencilState(&depthStencilDesc, &defaultstencilstate);
 	depthStencilDesc.DepthEnable = false;
-	device->CreateDepthStencilState(&depthStencilDesc, &nozbufferstencilstate);
+	device->CreateDepthStencilState(&depthStencilDesc, &nozstencilstate);
 	context->OMSetDepthStencilState(defaultstencilstate, 0u);
 
-	rendertexture.Initialize(device, window.GetWidth(), window.GetHeight());
-	blurtexture.Initialize(device, window.GetWidth(), window.GetHeight());
+	//rendertexture.Initialize(device, window.GetWidth(), window.GetHeight());
+	//blurtexture.Initialize(device, window.GetWidth(), window.GetHeight());
 
 	/*****SETTING THE VIEWPORT*****/
 	ZeroMemory(&defaultviewport, sizeof(D3D11_VIEWPORT));
@@ -140,3 +140,11 @@ void Engine::UpdateCameraPosition()
 	//OutputDebugStringW((std::to_wstring(mouse.GetState().x) + L'\n').c_str());
 	
 }
+ID3D11RenderTargetView* Engine::GetBackbuffer(){
+	return backbuffer;
+}
+
+ID3D11DepthStencilView* Engine::GetDepthStencil(){
+	return depthstencilview;
+}
+

@@ -1,7 +1,8 @@
 #include "DomainShader.hpp"
 
-const bool DomainShader::Initialize(ID3D11Device* device, Shader_Setup_Details &setup)
+const bool DomainShader::Initialize(Shader_Setup_Details &setup)
 {
+	ID3D11Device* device = Engine::GetInstance()->GetDevice();
 	ID3DBlob *errorBlob;
 
 	/***Vertex shader compilation***/
@@ -40,14 +41,16 @@ const bool DomainShader::Initialize(ID3D11Device* device, Shader_Setup_Details &
 	return true;
 }
 
-void DomainShader::SetShader(ID3D11DeviceContext* deviceContext) const
+void DomainShader::SetShader() const
 {
+	ID3D11DeviceContext* context = Engine::GetInstance()->GetContext();
 	/*****Setting the vertex shader*****/
-	deviceContext->DSSetShader(domainshader.Get(), nullptr, 0u);
+	context->DSSetShader(domainshader, nullptr, 0u);
 }
 
-void DomainShader::UnSetShader(ID3D11DeviceContext* deviceContext) const
+void DomainShader::UnSetShader() const
 {
+	ID3D11DeviceContext* context = Engine::GetInstance()->GetContext();
 	/*****Setting the vertex shader*****/
-	deviceContext->DSSetShader(nullptr, nullptr, 0u);
+	context->DSSetShader(nullptr, nullptr, 0u);
 }

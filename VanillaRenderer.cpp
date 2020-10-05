@@ -20,19 +20,20 @@ VanillaRenderer::VanillaRenderer()
 }
 
 void VanillaRenderer::Draw(UINT numDrawables, IDrawable** ppDrawables, UINT numTargets, Texture **ppRenderTargets) {
-	ID3D11DeviceContext* context = Engine::GetInstance()->GetContext();
+	Engine* engine = Engine::GetInstance();
 	pixelshader.SetShader();
 	if (ppRenderTargets == nullptr) {
-		context->OMSetRenderTargets(1, /*backbuffer*/, /*depthstencil*/);
+		ID3D11RenderTargetView* backbuffer[] = { engine->GetBackbuffer() };
+		engine->GetContext()->OMSetRenderTargets(1, backbuffer, engine->GetDepthStencil());
 	}
 	else {
 		std::vector<ID3D11RenderTargetView*> targets;
 		for (UINT i = 0; i < numTargets; ++i)
 			targets.push_back(ppRenderTargets[i]->GetRenderTargetView());
-		context->OMSetRenderTargets(numTargets, &targets[0], /*depthstencil*/);
+		engine->GetContext()->OMSetRenderTargets(numTargets, &targets[0], engine->GetDepthStencil());
 	}
 	for (UINT object = 0; object < numDrawables; ++object) {
 		UINT i = 0;
-		context->DrawIndexed(ppDrawables[i]->GetIndexCount(), ppDrawables[i]->GetILocation(), ppDrawables[i]->GetVLocation());
+		engine->GetContext()->DrawIndexed(ppDrawables[i]->GetIndexCount(), ppDrawables[i]->GetStartIndexLocation(), ppDrawables[i]->GetBaseVertexLocation());
 	}
 }
