@@ -11,8 +11,8 @@ private:
 public:
 	HullShader() = default;
 	virtual ~HullShader() = default;
-	virtual const bool Initialize(ID3D11Device* device, Shader_Setup_Details &setup);
+	virtual const bool Initialize(Shader_Setup_Details &setup);
 
-	virtual void SetShader(ID3D11DeviceContext* deviceContext) const;
-	virtual void UnSetShader(ID3D11DeviceContext* deviceContext) const override;
+	virtual void SetShader() const;
+	virtual void UnSetShader() const override;
 };

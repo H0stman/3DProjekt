@@ -21,7 +21,7 @@ const bool ComputeShader::Initialize(Shader_Setup_Details &setup)
 		{
 			OutputDebugStringA((char*)pErrorBlob->GetBufferPointer());			//Will yield additional debug information from Compute shader.
 		}
-		MessageBox(nullptr, L"Error compiling Compute shader.", L"ERROR", MB_OK);
+		OutputDebugString(L"Error compiling Compute shader.\n");
 		return false;
 	}
 
@@ -32,7 +32,7 @@ const bool ComputeShader::Initialize(Shader_Setup_Details &setup)
 								      &computeshader);						//Address of pointer to the Compute VertexShader.
 	if (FAILED(HR))
 	{
-		MessageBox(nullptr, L"Error creating ComputeShader", L"ERROR", MB_OK);
+		OutputDebugString(L"Error creating ComputeShader\n");
 		return false;
 	}
 	return true;
@@ -42,7 +42,7 @@ void ComputeShader::SetShader() const
 {
 	ID3D11DeviceContext* context = Engine::GetInstance()->GetContext();
 	/*****Setting the Compute shader*****/
-	context->CSSetShader(computeshader.Get(), nullptr, 0u);
+	context->CSSetShader(computeshader, nullptr, 0u);
 }
 
 void ComputeShader::UnSetShader() const

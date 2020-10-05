@@ -1,7 +1,8 @@
 #include "VertexShader.hpp"
 
-const bool VertexShader::Initialize(ID3D11Device* device, Shader_Setup_Details &setup)
+const bool VertexShader::Initialize(Shader_Setup_Details &setup)
 {
+	ID3D11Device* device = Engine::GetInstance()->GetDevice();
 	ID3DBlob *errorBlob;
 
 	/***Vertex shader compilation***/
@@ -20,7 +21,7 @@ const bool VertexShader::Initialize(ID3D11Device* device, Shader_Setup_Details &
 		{
 			OutputDebugStringA((char*)errorBlob->GetBufferPointer());		//Will yield additional debug information from Vertex shader.
 		}
-		MessageBox(nullptr, L"Error compiling vertex shader.", L"ERROR", MB_OK);
+		OutputDebugString(L"Error compiling vertex shader.\n");
 		errorBlob->Release();
 		return false;
 	}
@@ -31,7 +32,7 @@ const bool VertexShader::Initialize(ID3D11Device* device, Shader_Setup_Details &
 									   &vertexshader);						//Address of the pointer to the vertex shader interface.
 	if (FAILED(HR))
 	{
-		MessageBox(nullptr, L"Error creating vertex shader.", L"ERROR", MB_OK);
+		OutputDebugString(L"Error creating vertex shader.\n");
 		errorBlob->Release();
 		return false;
 	}
@@ -40,14 +41,16 @@ const bool VertexShader::Initialize(ID3D11Device* device, Shader_Setup_Details &
 	return true;
 }
 
-void VertexShader::SetShader(ID3D11DeviceContext* deviceContext) const
+void VertexShader::SetShader() const
 {
+	ID3D11DeviceContext* context = Engine::GetInstance()->GetContext();
 	/*****Setting the vertex shader*****/
-	deviceContext->VSSetShader(vertexshader.Get(), nullptr, 0u);
+	context->VSSetShader(vertexshader, nullptr, 0u);
 }
 
-void VertexShader::UnSetShader(ID3D11DeviceContext* deviceContext) const
+void VertexShader::UnSetShader() const
 {
+	ID3D11DeviceContext* context = Engine::GetInstance()->GetContext();
 	/*****Setting the vertex shader*****/
-	deviceContext->VSSetShader(nullptr, nullptr, 0u);
+	context->VSSetShader(nullptr, nullptr, 0u);
 }

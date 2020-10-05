@@ -11,8 +11,8 @@ private:
 public:
 	VertexShader() = default;
 	virtual ~VertexShader() = default;
-	virtual const bool Initialize(ID3D11Device* device, Shader_Setup_Details &setup) override;
+	virtual const bool Initialize(Shader_Setup_Details &setup) override;
 
-	virtual void SetShader(ID3D11DeviceContext* deviceContext) const override;
-	virtual void UnSetShader(ID3D11DeviceContext* deviceContext) const override;
+	virtual void SetShader() const override;
+	virtual void UnSetShader() const override;
 };
