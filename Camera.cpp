@@ -25,12 +25,12 @@ XMFLOAT3 Camera::GetPosition()
 	return position;
 }
 
-VOID Camera::OrthographicProjection(INT windowWidth, INT windowHeight)
+VOID Camera::SetOrthographicProjection(INT windowWidth, INT windowHeight)
 {
 	projection = XMMatrixOrthographicLH(windowWidth, windowHeight, 0.1f, 1000.0f);
 }
 
-VOID Camera::PerspectiveProjection(INT windowWidth, INT windowHeight)
+VOID Camera::SetPerspectiveProjection(INT windowWidth, INT windowHeight)
 {
 	projection = XMMatrixPerspectiveFovLH(XMConvertToRadians(85.0f), windowWidth / windowHeight, 0.1f, 1000.0f);
 }

@@ -9,14 +9,14 @@ class Camera
 	XMFLOAT3 position;
 	XMVECTOR updirection;
 	XMMATRIX view, projection;
-	float pitch, yaw;
+	FLOAT pitch, yaw;
 
 public:
 	Camera(INT windowWidth, INT windowHeight);
 	XMMATRIX GetViewMatrix();
 	XMMATRIX GetProjectionMatrix();
 	XMFLOAT3 GetPosition();
-	VOID OrthographicProjection(INT windowWidth, INT windowHeight);
-	VOID PerspectiveProjection(INT windowWidth, INT windowHeight);
+	VOID SetOrthographicProjection(INT windowWidth, INT windowHeight);
+	VOID SetPerspectiveProjection(INT windowWidth, INT windowHeight);
 };
 
