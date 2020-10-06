@@ -7,7 +7,7 @@ INT APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     Engine* engine = Engine::GetInstance();
 
     if (!engine->window.GetHandle())
-        return 0;
+        return 1;
 
     ShowWindow(engine->window.GetHandle(), nShowCmd);
    
@@ -27,8 +27,6 @@ INT APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
        engine->UpdateCameraPosition();
     }
-
-    
 
     delete engine;
     return 0;

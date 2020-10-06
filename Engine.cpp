@@ -2,7 +2,7 @@
 
 Engine* Engine::instance = nullptr;
 
-Engine::Engine() : window(L"3D Engine"), camera(), mouse(), keyboard()
+Engine::Engine() : window(L"3D Engine"), camera()
 {
 	DXGI_SWAP_CHAIN_DESC swap_chain_descr = { 0 };
 	swap_chain_descr.BufferDesc.RefreshRate.Numerator = 0;
@@ -25,8 +25,10 @@ Engine::Engine() : window(L"3D Engine"), camera(), mouse(), keyboard()
 
 	HRESULT hr = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, flags, nullptr, 0, D3D11_SDK_VERSION, &swap_chain_descr, &swapchain, &device, feature_level, &context);
 
+
 	mouse.SetWindow(window.GetHandle());
-	mouse.SetMode(Mouse::MODE_RELATIVE);
+	mouse.Get().SetMode(Mouse::MODE_RELATIVE);
+	
 
 	/***RENDER TARGET VIEW CREATION***/
 	ID3D11Texture2D* pBackBuffer;
@@ -116,6 +118,7 @@ Engine *Engine::GetInstance()
 
 BOOL Engine::Run()
 {
+	//OutputDebugString(std::to_wstring(keyboard.GetState().IsKeyDown(Keyboard::Escape)).c_str());
 	if (keyboard.GetState().IsKeyDown(Keyboard::Escape))
 	{
 		DestroyWindow(window.GetHandle());
@@ -137,14 +140,16 @@ ID3D11DeviceContext* Engine::GetContext()
 
 void Engine::UpdateCameraPosition()
 {
-	//OutputDebugStringW((std::to_wstring(mouse.GetState().x) + L'\n').c_str());
+	OutputDebugStringW(std::to_wstring(mouse.GetState().x).c_str());
 	
 }
-ID3D11RenderTargetView* Engine::GetBackbuffer(){
+ID3D11RenderTargetView* Engine::GetBackbuffer()
+{
 	return backbuffer;
 }
 
-ID3D11DepthStencilView* Engine::GetDepthStencil(){
+ID3D11DepthStencilView* Engine::GetDepthStencil()
+{
 	return depthstencilview;
 }
 

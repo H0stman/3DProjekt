@@ -21,7 +21,7 @@ class Terrain : IDrawable
 
 public:
 	Terrain(PCSTR filename);
-	~Terrain() override;
+	~Terrain();
 
 	VOID PrimePipeline(UINT pipelinesettings) override;
 	UINT GetIndexCount() override;

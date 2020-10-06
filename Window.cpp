@@ -56,7 +56,6 @@ LRESULT Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_DESTROY:
         PostQuitMessage(0);
         return 0;
-
     case WM_PAINT:
     {
         PAINTSTRUCT ps;
@@ -72,24 +71,39 @@ LRESULT Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         else
             return 0;
     }
-    case WM_MOUSEMOVE:
-    {
-        DirectX::Mouse::ProcessMessage(uMsg, wParam, lParam);
-        break;
-    }
     case WM_ACTIVATEAPP:
-    {
-        DirectX::Mouse::ProcessMessage(uMsg, wParam, lParam);
-        DirectX::Keyboard::ProcessMessage(uMsg, wParam, lParam);
-        break;
-    }
+       DirectX::Keyboard::ProcessMessage(uMsg, wParam, lParam);
+       DirectX::Mouse::ProcessMessage(uMsg, wParam, lParam);
+       break;
+    case WM_INPUT:
+    case WM_MOUSEMOVE:
+    case WM_LBUTTONDOWN:
+    case WM_LBUTTONUP:
+    case WM_RBUTTONDOWN:
+    case WM_RBUTTONUP:
+    case WM_MBUTTONDOWN:
+    case WM_MBUTTONUP:
+    case WM_MOUSEWHEEL:
+    case WM_XBUTTONDOWN:
+    case WM_XBUTTONUP:
     case WM_MOUSEHOVER:
-    {
-        DirectX::Mouse::ProcessMessage(uMsg, wParam, lParam);
-        break;
-    }
-    }
+       DirectX::Mouse::ProcessMessage(uMsg, wParam, lParam);
+       break;
 
+    case WM_KEYDOWN:
+    case WM_KEYUP:
+    case WM_SYSKEYUP:
+       DirectX::Keyboard::ProcessMessage(uMsg, wParam, lParam);
+       break;
+
+    case WM_SYSKEYDOWN:
+       DirectX::Keyboard::ProcessMessage(uMsg, wParam, lParam);
+       if (wParam == VK_RETURN && (lParam & 0x60000000) == 0x20000000)
+       {
+          
+       }
+       break;
+    }
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 

@@ -148,6 +148,8 @@
     <ClCompile Include="DomainShader.cpp" />
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="HullShader.cpp" />
+    <ClCompile Include="IDrawable.cpp" />
+    <ClCompile Include="IRenderer.cpp" />
     <ClCompile Include="PixelShader.cpp" />
     <ClCompile Include="IShader.cpp" />
     <ClCompile Include="Terrain.cpp" />
