@@ -26,6 +26,6 @@ public:
 	VOID PrimePipeline(UINT pipelinesettings) override;
 	UINT GetIndexCount() override;
 	UINT GetStartIndexLocation() override;
-	INT GetBaseVertexLoation() override;
+	INT GetBaseVertexLocation() override;
 };
 

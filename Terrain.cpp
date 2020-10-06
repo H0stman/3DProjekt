@@ -89,7 +89,8 @@ Terrain::Terrain(PCSTR filename)
 
 	std::vector<DWORD> indices(facecount * 3);
 
-	INT k, texUIndex, texVIndex = 0;
+	INT texUIndex, texVIndex = 0;
+	k = 0;
 
 	for (DWORD i = 0; i < rows - 1; i++)
 	{
@@ -203,7 +204,7 @@ UINT Terrain::GetStartIndexLocation()
 	return 0u;
 }
 
-INT Terrain::GetBaseVertexLoation()
+INT Terrain::GetBaseVertexLocation()
 {
 	return 0u;
 }
