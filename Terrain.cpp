@@ -124,6 +124,11 @@ Terrain::Terrain(PCSTR filename)
 	}
 }
 
+Terrain::~Terrain()
+{
+	
+}
+
 void Terrain::PrimePipeline(UINT pipelinesettings)
 {
 	stride = sizeof(vertex);

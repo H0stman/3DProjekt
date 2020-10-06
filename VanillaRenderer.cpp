@@ -19,6 +19,10 @@ VanillaRenderer::VanillaRenderer()
 	pixelshader.Initialize(setup);
 }
 
+VanillaRenderer::~VanillaRenderer()
+{
+}
+
 void VanillaRenderer::Draw(UINT numDrawables, IDrawable** ppDrawables, UINT numTargets, Texture **ppRenderTargets) {
 	Engine* engine = Engine::GetInstance();
 	pixelshader.SetShader();
