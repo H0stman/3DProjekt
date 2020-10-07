@@ -169,6 +169,7 @@
     <ClInclude Include="IRenderer.hpp" />
     <ClInclude Include="PixelShader.hpp" />
     <ClInclude Include="IShader.hpp" />
+    <ClInclude Include="RenderMan.hpp" />
     <ClInclude Include="Terrain.hpp" />
     <ClInclude Include="Texture.hpp" />
     <ClInclude Include="VanillaRenderer.hpp" />

@@ -9,8 +9,6 @@
 #include <vector>
 
 #include "Window.hpp"
-#include "Camera.hpp"
-#include "IDrawable.hpp"
 #include "Texture.hpp"
 
 using namespace DirectX;
@@ -37,12 +35,10 @@ public:
 	
 	enum RenderType { VANILLA = 1, DEFERRED = 2, SHADOWMAP = 4, BLUR = 8 };
 
-	Camera camera;
 	Window window;
 
 	static Engine *GetInstance();
 	BOOL Run();
-	VOID UpdateCameraPosition();
 	~Engine();
 
 	ID3D11Device* GetDevice();
