@@ -2,11 +2,12 @@
 
 Terrain::Terrain(PCSTR filename)
 {
-	facecount, vertexcount = 0u;
+	facecount = vertexcount = 0u;
 	UINT stride = sizeof(vertex);
 	UINT offset = 0u;
 	vertices.clear();
 	indices.clear();
+
 	FILE* filePtr;                            // Point to the current position in the file
 	BITMAPFILEHEADER bitmapFileHeader;        // Structure which stores information about file
 	BITMAPINFOHEADER bitmapInfoHeader;        // Structure which stores information about image
@@ -78,8 +79,8 @@ Terrain::Terrain(PCSTR filename)
 	vertexcount = rows * cols;
 	facecount = (rows - 1) * (cols - 1) * 2;
 
-	std::vector<vertex> vertices(vertexcount);
-
+	vertices.resize(vertexcount);
+	indices.resize(facecount * 3);
 	for (DWORD i = 0; i < rows; ++i)
 		for (DWORD j = 0; j < cols; ++j)
 		{
@@ -87,7 +88,6 @@ Terrain::Terrain(PCSTR filename)
 			vertices[i * cols + j].normal = XMFLOAT3(0.0f, 1.0f, 0.0f);
 		}
 
-	std::vector<DWORD> indices(facecount * 3);
 
 	INT texUIndex = 0, texVIndex = 0;
 	k = 0;
@@ -96,6 +96,7 @@ Terrain::Terrain(PCSTR filename)
 	{
 		for (DWORD j = 0; j < cols - 1; j++)
 		{
+
 			indices[k] = i * cols + j;        // Bottom left of quad
 			vertices[i * cols + j].texturecoordinate = XMFLOAT2(texUIndex + 0.0f, texVIndex + 1.0f);
 
@@ -148,7 +149,7 @@ void Terrain::PrimePipeline(UINT pipelinesettings)
 		D3D11_SUBRESOURCE_DATA initData;
 		ZeroMemory(&initData, sizeof(D3D11_SUBRESOURCE_DATA));
 
-		initData.pSysMem = &indices[0];
+		initData.pSysMem = &indices.front();
 
 		HRESULT hr = Engine::GetInstance()->GetDevice()->CreateBuffer(&indexBufferDesc, &initData, &indexbuffer);
 
@@ -165,7 +166,7 @@ void Terrain::PrimePipeline(UINT pipelinesettings)
 		D3D11_SUBRESOURCE_DATA vertexBufferData;
 
 		ZeroMemory(&vertexBufferData, sizeof(vertexBufferData));
-		vertexBufferData.pSysMem = &vertices[0];
+		vertexBufferData.pSysMem = &vertices.front();
 		hr = Engine::GetInstance()->GetDevice()->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &vertexbuffer);
 
 		//Create rasterizer states

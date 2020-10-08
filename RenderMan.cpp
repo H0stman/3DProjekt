@@ -16,7 +16,7 @@ RenderMan::~RenderMan()
 
 VOID RenderMan::Update()
 {
-	geometry[0]->PrimePipeline(VANILLA);
-	renderer[0]->Draw(1u, &geometry[0], 0u, nullptr);
+	geometry.at(0)->PrimePipeline(VANILLA);
+	renderer.at(0)->Draw(1u, &geometry[0], 0u, nullptr);
 	return VOID();
 }

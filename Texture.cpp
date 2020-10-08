@@ -1,4 +1,5 @@
 #include "Texture.hpp"
+#include <comdef.h>
 
 Texture::Texture(INT texWidth, INT texHeight) : rendertargetview(nullptr), shaderresourceview(nullptr), textureResource(nullptr), texture(nullptr), unorderedaccessview(nullptr)
 {
