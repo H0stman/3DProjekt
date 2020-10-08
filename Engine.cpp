@@ -2,7 +2,7 @@
 
 Engine* Engine::instance = nullptr;
 
-Engine::Engine() : window(L"3D Engine"), camera()
+Engine::Engine() : window(L"3D Engine")
 {
 	DXGI_SWAP_CHAIN_DESC swap_chain_descr = { 0 };
 	swap_chain_descr.BufferDesc.RefreshRate.Numerator = 0;
@@ -137,10 +137,6 @@ ID3D11DeviceContext* Engine::GetContext()
 	return context;
 }
 
-void Engine::UpdateCameraPosition()
-{
-	
-}
 ID3D11RenderTargetView* Engine::GetBackbuffer()
 {
 	return backbuffer;

@@ -1,5 +1,7 @@
 #pragma once
+#include "Engine.hpp"
 #include "IDrawable.hpp"
+#include "Texture.hpp"
 
 class IRenderer
 {
