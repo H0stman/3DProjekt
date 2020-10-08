@@ -66,8 +66,10 @@ LRESULT Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
     case WM_CLOSE:
     {
-        if (MessageBox(hwnd, L"Quit?", L"Exit", MB_YESNO) == IDYES)
-            DestroyWindow(hwnd);
+       if (MessageBox(hwnd, L"Quit?", L"Exit", MB_YESNO) == IDYES)
+       {
+          DestroyWindow(hwnd);
+       }
         else
             return 0;
     }

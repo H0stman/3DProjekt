@@ -2,7 +2,8 @@
 #include "IRenderer.hpp"
 #include "PixelShader.hpp"
 
-class VanillaRenderer : IRenderer {
+class VanillaRenderer : IRenderer 
+{
 	PixelShader pixelshader;
 
 public:

@@ -118,7 +118,6 @@ Engine *Engine::GetInstance()
 
 BOOL Engine::Run()
 {
-	//OutputDebugString(std::to_wstring(keyboard.GetState().IsKeyDown(Keyboard::Escape)).c_str());
 	if (keyboard.GetState().IsKeyDown(Keyboard::Escape))
 	{
 		DestroyWindow(window.GetHandle());
@@ -140,7 +139,6 @@ ID3D11DeviceContext* Engine::GetContext()
 
 void Engine::UpdateCameraPosition()
 {
-	OutputDebugStringW(std::to_wstring(mouse.GetState().x).c_str());
 	
 }
 ID3D11RenderTargetView* Engine::GetBackbuffer()
