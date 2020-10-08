@@ -16,7 +16,7 @@ protected:
 	
 
 public:
-	virtual ~IDrawable();
+	~IDrawable();
 	virtual void PrimePipeline(UINT pipelinesettings) = 0;
 	virtual UINT GetIndexCount() = 0;
 	virtual UINT GetStartIndexLocation() = 0;

@@ -4,12 +4,12 @@
 #include <DirectXMath.h>
 #include <DirectXTK\Mouse.h>
 #include <DirectXTK\Keyboard.h>
-#include <comdef.h>
 #include <string>
 #include <vector>
 
 #include "Window.hpp"
 #include "Texture.hpp"
+#include "VanillaRenderer.hpp"
 
 using namespace DirectX;
 
@@ -28,6 +28,7 @@ class Engine
 	Mouse mouse;
 	Keyboard keyboard;
 
+	VanillaRenderer vanilla;
 
 	Engine();
 
