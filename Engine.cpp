@@ -147,3 +147,6 @@ ID3D11DepthStencilView* Engine::GetDepthStencil()
 	return depthstencilview;
 }
 
+VOID Engine::Update() {
+	swapchain->Present(1u, 0u);
+}

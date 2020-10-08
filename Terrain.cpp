@@ -89,7 +89,7 @@ Terrain::Terrain(PCSTR filename)
 
 	std::vector<DWORD> indices(facecount * 3);
 
-	INT texUIndex, texVIndex = 0;
+	INT texUIndex = 0, texVIndex = 0;
 	k = 0;
 
 	for (DWORD i = 0; i < rows - 1; i++)
@@ -133,7 +133,7 @@ void Terrain::PrimePipeline(UINT pipelinesettings)
 {
 	stride = sizeof(vertex);
 	offset = 0;
-	if ((pipelinesettings & Engine::VANILLA) != 0)
+	if ((pipelinesettings & VANILLA) != 0)
 	{
 		//Create index buffer
 

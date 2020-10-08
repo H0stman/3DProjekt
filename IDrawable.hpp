@@ -10,6 +10,8 @@ struct vertex
 	XMFLOAT3 bitangent;
 };
 
+enum RenderType { VANILLA = 1, DEFERRED = 2, SHADOWMAP = 4, BLUR = 8 };
+
 class IDrawable
 {
 protected:

@@ -9,7 +9,6 @@
 
 #include "Window.hpp"
 #include "Texture.hpp"
-#include "VanillaRenderer.hpp"
 
 using namespace DirectX;
 
@@ -28,13 +27,10 @@ class Engine
 	Mouse mouse;
 	Keyboard keyboard;
 
-	VanillaRenderer vanilla;
-
 	Engine();
 
 public:
 	
-	enum RenderType { VANILLA = 1, DEFERRED = 2, SHADOWMAP = 4, BLUR = 8 };
 
 	Window window;
 
@@ -46,4 +42,5 @@ public:
 	ID3D11DeviceContext* GetContext();
 	ID3D11RenderTargetView* GetBackbuffer();
 	ID3D11DepthStencilView* GetDepthStencil();
+	VOID Update();
 };
