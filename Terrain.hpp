@@ -1,7 +1,7 @@
 #pragma once
 #include "IDrawable.hpp"
 
-class Terrain : IDrawable
+class Terrain : public IDrawable
 {
 	struct HeightMapInfo //Heightmap structure
 	{

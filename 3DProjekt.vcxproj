@@ -152,6 +152,7 @@
     <ClCompile Include="IRenderer.cpp" />
     <ClCompile Include="PixelShader.cpp" />
     <ClCompile Include="IShader.cpp" />
+    <ClCompile Include="RenderMan.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="VanillaRenderer.cpp" />
