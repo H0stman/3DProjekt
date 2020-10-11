@@ -54,9 +54,6 @@
     <ClCompile Include="VanillaRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="IDrawable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="RenderMan.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

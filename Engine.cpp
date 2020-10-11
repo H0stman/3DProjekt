@@ -31,7 +31,7 @@ Engine::Engine() : window(L"3D Engine")
 	
 
 	/***RENDER TARGET VIEW CREATION***/
-	ID3D11Texture2D* pBackBuffer;
+	
 	hr = swapchain->GetBuffer(0u, __uuidof(ID3D11Texture2D), (void**)&pBackBuffer);
 	if (FAILED(hr))
 		OutputDebugString(L"Error generating back buffer for Render target view.\n");
@@ -56,7 +56,6 @@ Engine::Engine() : window(L"3D Engine")
 	depthBufferDescriptor.CPUAccessFlags = 0u;							//The CPU will NOT be reading or writing to depth/stencil buffer.
 	depthBufferDescriptor.MiscFlags = 0u;                          //Optional flags not set for depth/stencil buffer.
 
-	ID3D11Texture2D* pDepthStencilBuffer;
 	hr = device->CreateTexture2D(&depthBufferDescriptor, nullptr, &pDepthStencilBuffer);
 	if (FAILED(hr))
 		OutputDebugString(L"Error generating buffer for depth/stencil view.\n");
@@ -107,6 +106,12 @@ Engine::~Engine()
 	device->Release();
 	context->Release();
 	swapchain->Release();
+	backbuffer->Release();
+	depthstencilview->Release();
+	defaultstencilstate->Release();
+	nozstencilstate->Release();
+	pBackBuffer->Release();
+	pDepthStencilBuffer->Release();
 }
 
 Engine *Engine::GetInstance()
@@ -118,9 +123,11 @@ Engine *Engine::GetInstance()
 
 BOOL Engine::Run()
 {
-	if (keyboard.GetState().IsKeyDown(Keyboard::Escape))
+	auto kbstate = keyboard.GetState();
+	if (kbstate.Escape)
 	{
 		DestroyWindow(window.GetHandle());
+		PostQuitMessage(0);
 		return FALSE;
 	}
 	else

@@ -12,7 +12,7 @@ struct Shader_Setup_Details {
 	UINT flags2;
 };
 
-class IShader
+class IShader //Maybe rename class since it's not an interface by definition.
 {
 protected:
 	ID3DBlob *shaderblob;
@@ -21,7 +21,7 @@ private:
 	IShader& operator=(const IShader& origShader) = delete;
 public:
 	IShader() = default;
-	~IShader();
+	virtual ~IShader() {};
 	virtual const bool Initialize(Shader_Setup_Details &setup) = 0;
 
 	virtual void SetShader() const = 0;

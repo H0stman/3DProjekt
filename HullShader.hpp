@@ -10,7 +10,7 @@ private:
 	HullShader& operator=(const HullShader& origShader) = delete;
 public:
 	HullShader() = default;
-	virtual ~HullShader() = default;
+	virtual ~HullShader();
 	virtual const bool Initialize(Shader_Setup_Details &setup);
 
 	virtual void SetShader() const;

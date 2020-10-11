@@ -10,7 +10,7 @@ private:
 	ComputeShader& operator=(const ComputeShader& origShader) = delete;
 public:
 	ComputeShader() = default;
-	virtual ~ComputeShader() = default;
+	virtual ~ComputeShader();
 	virtual const bool Initialize(Shader_Setup_Details &setup) override;
 
 	virtual void SetShader() const override;

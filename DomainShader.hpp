@@ -10,7 +10,7 @@ private:
 	DomainShader& operator=(const DomainShader& origShader) = delete;
 public:
 	DomainShader() = default;
-	virtual ~DomainShader() = default;
+	virtual ~DomainShader();
 	virtual const bool Initialize(Shader_Setup_Details &setup);
 
 	virtual void SetShader() const;

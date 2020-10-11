@@ -6,17 +6,17 @@ using namespace DirectX;
 
 class Camera
 {
-	XMFLOAT3 position;
-	XMVECTOR updirection;
+	XMVECTOR updirection, lookat, position;
 	XMMATRIX view, projection;
-	FLOAT pitch, yaw;
+	FLOAT pitch, yaw, rotation, movement;
 
 public:
 	Camera();
 	XMMATRIX GetViewMatrix();
 	XMMATRIX GetProjectionMatrix();
-	XMFLOAT3 GetPosition();
+	XMVECTOR GetPosition();
 	VOID SetOrthographicProjection();
 	VOID SetPerspectiveProjection();
+	VOID Update();
 };
 

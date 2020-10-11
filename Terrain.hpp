@@ -5,8 +5,8 @@ class Terrain : public IDrawable
 {
 	struct HeightMapInfo //Heightmap structure
 	{
-		INT terrainWidth;				//Width of heightmap
-		INT terrainHeight;			//Height (Length) of heightmap
+		UINT terrainWidth;			//Width of heightmap
+		UINT terrainHeight;			//Height (Length) of heightmap
 		XMFLOAT3* heightMap;			//Array to store terrain's vertex positions
 	};
 
@@ -21,11 +21,11 @@ class Terrain : public IDrawable
 
 public:
 	Terrain(PCSTR filename);
-	~Terrain();
+	virtual ~Terrain();
 
-	VOID PrimePipeline(UINT pipelinesettings) override;
-	UINT GetIndexCount() override;
-	UINT GetStartIndexLocation() override;
-	INT GetBaseVertexLocation() override;
+	virtual VOID PrimePipeline(UINT pipelinesettings);
+	virtual UINT GetIndexCount();
+	virtual UINT GetStartIndexLocation();
+	virtual INT GetBaseVertexLocation();
 };
 

@@ -1,5 +1,10 @@
 #include "DomainShader.hpp"
 
+DomainShader::~DomainShader()
+{
+	domainshader->Release();
+}
+
 const bool DomainShader::Initialize(Shader_Setup_Details &setup)
 {
 	ID3D11Device* device = Engine::GetInstance()->GetDevice();

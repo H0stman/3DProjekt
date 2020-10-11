@@ -1,5 +1,10 @@
 #include "HullShader.hpp"
 
+HullShader::~HullShader()
+{
+	hullshader->Release();
+}
+
 const bool HullShader::Initialize(Shader_Setup_Details &setup)
 {
 	ID3D11Device* device = Engine::GetInstance()->GetDevice();

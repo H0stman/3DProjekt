@@ -1,5 +1,10 @@
 #include "ComputeShader.hpp"
 
+ComputeShader::~ComputeShader()
+{
+	computeshader->Release();
+}
+
 const bool ComputeShader::Initialize(Shader_Setup_Details &setup)
 {
 	ID3D11Device* device = Engine::GetInstance()->GetDevice();

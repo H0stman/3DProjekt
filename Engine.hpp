@@ -15,8 +15,8 @@ using namespace DirectX;
 class Engine
 {
 	static Engine* instance;
-	ID3D11Device *device;
-	ID3D11DeviceContext *context;
+	ID3D11Device* device;
+	ID3D11DeviceContext* context;
 	IDXGISwapChain* swapchain;
 	D3D11_VIEWPORT defaultviewport;
 	ID3D11RenderTargetView* backbuffer;
@@ -24,13 +24,14 @@ class Engine
 	ID3D11DepthStencilState* defaultstencilstate;
 	ID3D11DepthStencilState* nozstencilstate;
 
+	ID3D11Texture2D* pBackBuffer, *pDepthStencilBuffer; //TODO: Change name according to convention.
+
 	Mouse mouse;
 	Keyboard keyboard;
 
 	Engine();
 
 public:
-	
 
 	Window window;
 

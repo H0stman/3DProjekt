@@ -10,7 +10,7 @@ private:
 	VertexShader& operator=(const VertexShader& origShader) = delete;
 public:
 	VertexShader() = default;
-	virtual ~VertexShader() = default;
+	virtual ~VertexShader();
 	virtual const bool Initialize(Shader_Setup_Details &setup) override;
 
 	virtual void SetShader() const override;

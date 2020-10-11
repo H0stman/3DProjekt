@@ -8,7 +8,7 @@ class VanillaRenderer : public IRenderer
 
 public:
 	VanillaRenderer();
-	~VanillaRenderer();
+	virtual ~VanillaRenderer();
 
 	void Draw(UINT numDrawables, IDrawable** ppDrawables, UINT numTargets, Texture **ppRenderTargets);
 };

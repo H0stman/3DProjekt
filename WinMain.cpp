@@ -12,7 +12,6 @@ INT APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         return 1;
 
     ShowWindow(engine->window.GetHandle(), nShowCmd);
-   
     
     MSG msg = { };
 

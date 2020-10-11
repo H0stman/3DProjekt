@@ -1,5 +1,10 @@
 #include "VertexShader.hpp"
 
+VertexShader::~VertexShader()
+{
+	vertexshader->Release();
+}
+
 const bool VertexShader::Initialize(Shader_Setup_Details &setup)
 {
 	ID3D11Device* device = Engine::GetInstance()->GetDevice();
