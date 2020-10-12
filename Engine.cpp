@@ -1,12 +1,12 @@
 #include "Engine.hpp"
 
-Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 1.0f,0.0f,1.0f }
+Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.9f, 0.0f, 0.3f, 1.0f }
 {
-
 	RECT rect;
 	GetClientRect(hndl, &rect);
 	UINT width = rect.right - rect.left;
 	UINT height = rect.bottom - rect.top;
+
 	DXGI_SWAP_CHAIN_DESC swap_chain_descr = { 0 };
 	swap_chain_descr.BufferDesc.RefreshRate.Numerator = 0;
 	swap_chain_descr.BufferDesc.RefreshRate.Denominator = 1;
@@ -108,30 +108,12 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 1.0f,0.0f,1.0
 	pBackBuffer->Release();
 	pDepthStencilBuffer->Release();
 
+	CreateRasterizerStates();
+	CompileShaders();
 
-	Shader_Setup_Details setup =
-	{
-		L"pixelshader_vanilla.hlsl",			//Name of the vertex shader file.
-		nullptr,										//VertexShader macro, ignore.
-		D3D_COMPILE_STANDARD_FILE_INCLUDE,	//Will essentially find the shader file.
-		"ps_main",									//Entry point for shader function.
-		"ps_5_0",									//Vertex shader of 5.0 revision.
-		flags,										//Flags, in our case adding more debug output.
-		0u };											//Additional flags, ignore.
+	context->VSSetShader(vertexshader, nullptr, 0u);
+	context->PSSetShader(pixelshader, nullptr, 0u);
 
-	vanillapixelshader.Initialize(setup);
-
-	Shader_Setup_Details setup =
-	{
-		L"vertexshader_vanilla.hlsl",			//Name of the vertex shader file.
-		nullptr,										//VertexShader macro, ignore.
-		D3D_COMPILE_STANDARD_FILE_INCLUDE,	//Will essentially find the shader file.
-		"vs_main",									//Entry point for shader function.
-		"vs_5_0",									//Vertex shader of 5.0 revision.
-		flags,										//Flags, in our case adding more debug output.
-		0u };											//Additional flags, ignore.
-
-	vanillavertexshader.Initialize(setup);
 
 }
 
@@ -179,8 +161,69 @@ ID3D11DepthStencilView* Engine::GetDepthStencil()
 	return depthstencilview;
 }
 
+VOID Engine::CreateRasterizerStates()
+{
+	//Create rasterizer states
+	D3D11_RASTERIZER_DESC rdesc;
+
+	ZeroMemory(&rdesc, sizeof(D3D11_RASTERIZER_DESC));
+	rdesc.FillMode = D3D11_FILL_SOLID;
+	rdesc.CullMode = D3D11_CULL_BACK;
+	rdesc.FrontCounterClockwise = TRUE;
+	device->CreateRasterizerState(&rdesc, &counterclockwise);
+
+	rdesc.FrontCounterClockwise = FALSE;
+	device->CreateRasterizerState(&rdesc, &cloclwise);
+}
+
+VOID Engine::CompileShaders()
+{
+	UINT flags = D3DCOMPILE_ENABLE_STRICTNESS;
+#if defined( DEBUG ) || defined( _DEBUG )
+	flags |= D3DCOMPILE_DEBUG;											//Add more debug output.
+#endif
+	ID3DBlob* errorBlob;
+
+	/*****Pixelshader compilation*****/
+	HRESULT HR = D3DCompileFromFile(L"pixelshader_vanilla.hlsl",		//Name of the pixel shader.
+		nullptr,																			//PixelShader macro, ignore.
+		D3D_COMPILE_STANDARD_FILE_INCLUDE,										//Will essentially find the file.
+		"ps_main",																		//Entry point for shader function.
+		"ps_5_0",																		//Pixel shader target (version).
+		flags,																			//Flags, in our case adding more debug output.
+		0u,																				//Additional flags.
+		&blobpixelvanilla,															//The pixel shader blob to be filled.
+		&errorBlob);																	//Error blob that will catch additional error messages.
+	if (FAILED(HR))
+	{
+		if (errorBlob != nullptr)
+			OutputDebugStringA((char*)errorBlob->GetBufferPointer());			//Will yield additional debug information from Pixel shader.
+
+		MessageBox(nullptr, L"Error compiling Pixel shader.", L"ERROR", MB_OK);
+		errorBlob->Release();
+	}
+
+	/*****Pixel shader creation*****/
+	HR = device->CreatePixelShader(blobpixelvanilla->GetBufferPointer(),			//Pointer to the compiled Pixel shader buffer.
+		blobpixelvanilla->GetBufferSize(),				//Size of the compiled Pixel shader buffer.
+		nullptr,											//Advanced topic, not used here.
+		&pixelshader);									//Address of pointer to the Pixel VertexShader.
+	if (FAILED(HR))
+	{
+		MessageBox(nullptr, L"Error creating Pixel VertexShader.", L"ERROR", MB_OK);
+		errorBlob->Release();
+	}
+
+	if (errorBlob)
+		errorBlob->Release();
+}
+
 VOID Engine::VanillaRender()
 {
+	//Bind resources
+	/*context->IASetVertexBuffers(0u, 1, &vertexbuffer, &stride, &offset);
+	context->IASetIndexBuffer(indexbuffer, DXGI_FORMAT_R32_UINT, 0);*/
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	/*vanillapixelshader.SetShader();
 	if (ppRenderTargets == nullptr)
 	{

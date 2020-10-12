@@ -1,8 +1,9 @@
 #pragma once
 #include <comdef.h>
-#include "Engine.hpp"
 #include <string>
 #include <DirectXTK/WICTextureLoader.h>
+
+using namespace DirectX;
 
 class Texture
 {
@@ -13,15 +14,15 @@ class Texture
 	ID3D11UnorderedAccessView *unorderedaccessview;
 
 public:
-	Texture(INT texWidth, INT texHeight);
+	Texture(INT texWidth, INT texHeight, ID3D11Device *device);
 	~Texture();
 
 	ID3D11Texture2D* GetTexture();
 	ID3D11RenderTargetView* GetRenderTargetView();
 	ID3D11ShaderResourceView* GetShaderResourceView();
 	ID3D11UnorderedAccessView* GetUnorderedAccessView();
-	BOOL LoadTexture(std::wstring file);
+	BOOL LoadTexture(std::wstring file, ID3D11Device* device);
 
-	VOID Clear(FLOAT red, FLOAT green, FLOAT blue, FLOAT alpha);
+	VOID Clear(FLOAT red, FLOAT green, FLOAT blue, FLOAT alpha, ID3D11DeviceContext* context);
 };
 

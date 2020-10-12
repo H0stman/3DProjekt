@@ -1,6 +1,6 @@
 #include "Terrain.hpp"
 
-Terrain::Terrain(PCSTR filename)
+Terrain::Terrain(PCSTR filename, ID3D11Device* device)
 {
 	facecount = vertexcount = 0u;
 	UINT stride = sizeof(vertex);
@@ -138,7 +138,7 @@ Terrain::Terrain(PCSTR filename)
 	ZeroMemory(&initData, sizeof(D3D11_SUBRESOURCE_DATA));
 
 	initData.pSysMem = &indices.front();
-	HRESULT hr = Engine::GetInstance()->GetDevice()->CreateBuffer(&indexBufferDesc, &initData, &indexbuffer);
+	HRESULT hr = device->CreateBuffer(&indexBufferDesc, &initData, &indexbuffer);
 
 	//Create vertex buffer
 	D3D11_BUFFER_DESC vertexBufferDesc;
@@ -153,16 +153,7 @@ Terrain::Terrain(PCSTR filename)
 
 	ZeroMemory(&vertexBufferData, sizeof(vertexBufferData));
 	vertexBufferData.pSysMem = &vertices.front();
-	hr = Engine::GetInstance()->GetDevice()->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &vertexbuffer);
-
-	//Create rasterizer states
-	D3D11_RASTERIZER_DESC rdesc;
-
-	ZeroMemory(&rdesc, sizeof(D3D11_RASTERIZER_DESC));
-	rdesc.FillMode = D3D11_FILL_SOLID;
-	rdesc.CullMode = D3D11_CULL_BACK;
-	rdesc.FrontCounterClockwise = TRUE;
-	hr = Engine::GetInstance()->GetDevice()->CreateRasterizerState(&rdesc, &ccwcullmode);
+	hr = device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &vertexbuffer);
 
 	stride = sizeof(vertex);
 	offset = 0;
@@ -170,29 +161,8 @@ Terrain::Terrain(PCSTR filename)
 
 Terrain::~Terrain()
 {
-	ccwcullmode->Release();
 	indexbuffer->Release();
 	vertexbuffer->Release();
-}
-
-void Terrain::PrimePipeline(UINT pipelinesettings)
-{
-	auto engine = Engine::GetInstance();
-	
-	if ((pipelinesettings & VANILLA) != 0)
-	{
-		/*** Set pipeline to appropriate state ***/
-
-		//Set primitive topology
-		engine->GetContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-		//Set rasterizer state
-		engine->GetContext()->RSSetState(ccwcullmode);
-
-		//Bind resources
-		engine->GetContext()->IASetVertexBuffers(0u, 1, &vertexbuffer, &stride, &offset);
-		engine->GetContext()->IASetIndexBuffer(indexbuffer, DXGI_FORMAT_R32_UINT, 0);
-	}
 }
 
 UINT Terrain::GetIndexCount()

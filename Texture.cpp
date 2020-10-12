@@ -1,7 +1,7 @@
 #include "Texture.hpp"
 #include <comdef.h>
 
-Texture::Texture(INT texWidth, INT texHeight) : rendertargetview(nullptr), shaderresourceview(nullptr), textureResource(nullptr), texture(nullptr), unorderedaccessview(nullptr)
+Texture::Texture(INT texWidth, INT texHeight, ID3D11Device* device) : rendertargetview(nullptr), shaderresourceview(nullptr), textureResource(nullptr), texture(nullptr), unorderedaccessview(nullptr)
 {
 	D3D11_TEXTURE2D_DESC texDesc;
 	ZeroMemory(&texDesc, sizeof(texDesc));
@@ -16,8 +16,8 @@ Texture::Texture(INT texWidth, INT texHeight) : rendertargetview(nullptr), shade
 	texDesc.CPUAccessFlags = 0;
 	texDesc.MiscFlags = 0;
 
-	Engine* engine = Engine::GetInstance();
-	HRESULT hr = engine->GetDevice()->CreateTexture2D(&texDesc, nullptr, &texture);
+
+	HRESULT hr = device->CreateTexture2D(&texDesc, nullptr, &texture);
 	_com_error err(hr);
 
 	if (FAILED(hr))
@@ -29,7 +29,7 @@ Texture::Texture(INT texWidth, INT texHeight) : rendertargetview(nullptr), shade
 	rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 	rtvDesc.Texture2D.MipSlice = 0;
 
-	hr = engine->GetDevice()->CreateRenderTargetView(texture, &rtvDesc, &rendertargetview);
+	hr = device->CreateRenderTargetView(texture, &rtvDesc, &rendertargetview);
 	if (FAILED(hr))
 	{
 		err = _com_error(hr);
@@ -42,7 +42,7 @@ Texture::Texture(INT texWidth, INT texHeight) : rendertargetview(nullptr), shade
 	srvDesc.Texture2D.MostDetailedMip = 0;
 	srvDesc.Texture2D.MipLevels = 1;
 
-	hr = engine->GetDevice()->CreateShaderResourceView(texture, &srvDesc, &shaderresourceview);
+	hr = device->CreateShaderResourceView(texture, &srvDesc, &shaderresourceview);
 	if (FAILED(hr))
 	{
 		err = _com_error(hr);
@@ -54,7 +54,7 @@ Texture::Texture(INT texWidth, INT texHeight) : rendertargetview(nullptr), shade
 	uavDesc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2D;
 	uavDesc.Texture2D.MipSlice = rtvDesc.Texture2D.MipSlice;
 
-	hr = engine->GetDevice()->CreateUnorderedAccessView(texture, &uavDesc, &unorderedaccessview);
+	hr = device->CreateUnorderedAccessView(texture, &uavDesc, &unorderedaccessview);
 
 	if (FAILED(hr))
 	{
@@ -92,13 +92,11 @@ ID3D11UnorderedAccessView* Texture::GetUnorderedAccessView()
 	return unorderedaccessview;
 }
 
-BOOL Texture::LoadTexture(std::wstring file)
+BOOL Texture::LoadTexture(std::wstring file, ID3D11Device* device)
 {
-	Engine *engine = Engine::GetInstance();
-
 	//Create Texture from file
 
-	HRESULT hr = CreateWICTextureFromFile(engine->GetDevice(), file.c_str(), &textureResource, &shaderresourceview);
+	HRESULT hr = CreateWICTextureFromFile(device, file.c_str(), &textureResource, &shaderresourceview);
 	_com_error err(hr);
 
 	if (FAILED(hr))
@@ -107,14 +105,13 @@ BOOL Texture::LoadTexture(std::wstring file)
 	return TRUE;
 }
 
-VOID Texture::Clear(FLOAT red, FLOAT green, FLOAT blue, FLOAT alpha) 
+VOID Texture::Clear(FLOAT red, FLOAT green, FLOAT blue, FLOAT alpha, ID3D11DeviceContext* context) 
 {
-	Engine *engine = Engine::GetInstance();
 	float color[4];
 	color[0] = red;
 	color[1] = green;
 	color[2] = blue;
 	color[3] = alpha;
-	engine->GetContext()->ClearRenderTargetView(rendertargetview, color);
+	context->ClearRenderTargetView(rendertargetview, color);
 }
 

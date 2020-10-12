@@ -2,14 +2,13 @@
 
 #include "Engine.hpp"
 #include "Window.hpp"
-#include "RenderMan.hpp"
 
 INT APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ INT nShowCmd)
 {
     Window window = Window(L"Demo engine");
     if (!window.GetHandle())
        return 1;
-    Engine *engine = Engine(window.GetHandle());
+    Engine engine(window.GetHandle());
 
     ShowWindow(window.GetHandle(), nShowCmd);
     

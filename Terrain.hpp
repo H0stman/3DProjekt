@@ -1,5 +1,6 @@
 #pragma once
 #include "IDrawable.hpp"
+#include <vector>
 
 class Terrain : public IDrawable
 {
@@ -17,13 +18,12 @@ class Terrain : public IDrawable
 	UINT facecount, vertexcount, stride, offset;
 
 	ID3D11Buffer *indexbuffer, *vertexbuffer;
-	ID3D11RasterizerState* ccwcullmode;
 
 public:
-	Terrain(PCSTR filename);
+	Terrain(PCSTR filename, ID3D11Device* device);
 	virtual ~Terrain();
+	
 
-	virtual VOID PrimePipeline(UINT pipelinesettings);
 	virtual UINT GetIndexCount();
 	virtual UINT GetStartIndexLocation();
 	virtual INT GetBaseVertexLocation();
