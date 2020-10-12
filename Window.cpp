@@ -34,10 +34,6 @@ Window::Window(LPCWSTR wspTitle)
         nullptr        // Additional application data
     );
 
-    RECT rect;
-    GetClientRect(hndl, &rect);
-    width = rect.right - rect.left;
-    height = rect.bottom - rect.top;
 }
 
 LRESULT Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)

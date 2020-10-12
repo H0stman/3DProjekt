@@ -1,9 +1,12 @@
 #include "Engine.hpp"
 
-Engine* Engine::instance = nullptr;
-
-Engine::Engine() : window(L"3D Engine")
+Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 1.0f,0.0f,1.0f }
 {
+
+	RECT rect;
+	GetClientRect(hndl, &rect);
+	UINT width = rect.right - rect.left;
+	UINT height = rect.bottom - rect.top;
 	DXGI_SWAP_CHAIN_DESC swap_chain_descr = { 0 };
 	swap_chain_descr.BufferDesc.RefreshRate.Numerator = 0;
 	swap_chain_descr.BufferDesc.RefreshRate.Denominator = 1;
@@ -13,7 +16,7 @@ Engine::Engine() : window(L"3D Engine")
 	swap_chain_descr.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	swap_chain_descr.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 	swap_chain_descr.BufferCount = 2;
-	swap_chain_descr.OutputWindow = window.GetHandle();
+	swap_chain_descr.OutputWindow = hndl;
 	swap_chain_descr.Windowed = true;
 
 	D3D_FEATURE_LEVEL feature_level[] = { D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0 };
@@ -26,12 +29,14 @@ Engine::Engine() : window(L"3D Engine")
 	HRESULT hr = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, flags, nullptr, 0, D3D11_SDK_VERSION, &swap_chain_descr, &swapchain, &device, feature_level, &context);
 
 
-	mouse.SetWindow(window.GetHandle());
+	mouse.SetWindow(hndl);
 	mouse.Get().SetMode(Mouse::MODE_RELATIVE);
 	
 
 	/***RENDER TARGET VIEW CREATION***/
 	
+	ID3D11Texture2D* pBackBuffer, * pDepthStencilBuffer;
+
 	hr = swapchain->GetBuffer(0u, __uuidof(ID3D11Texture2D), (void**)&pBackBuffer);
 	if (FAILED(hr))
 		OutputDebugString(L"Error generating back buffer for Render target view.\n");
@@ -44,8 +49,8 @@ Engine::Engine() : window(L"3D Engine")
 	D3D11_TEXTURE2D_DESC depthBufferDescriptor;
 	ZeroMemory(&depthBufferDescriptor, sizeof(D3D11_TEXTURE2D_DESC));
 
-	depthBufferDescriptor.Width = window.GetWidth();					//Width of texture in texels.
-	depthBufferDescriptor.Height = window.GetHeight();					//Height of texture in texels.
+	depthBufferDescriptor.Width = width;									//Width of texture in texels.
+	depthBufferDescriptor.Height = height;									//Height of texture in texels.
 	depthBufferDescriptor.MipLevels = 1u;									//Our texture only needs one mip-level.
 	depthBufferDescriptor.ArraySize = 1u;									//We only need one texture for depth/stencil view.
 	depthBufferDescriptor.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;	//Format specifier for depth/stencil buffer.
@@ -95,10 +100,39 @@ Engine::Engine() : window(L"3D Engine")
 
 	defaultviewport.TopLeftX = 0u;												//It starts at 0 relative to the client area rectangle.
 	defaultviewport.TopLeftY = 0u;												//It starts at 0 relative to the client area rectangle.
-	defaultviewport.Width = static_cast<float>(window.GetWidth());		//Width is the same as client window width.
-	defaultviewport.Height = static_cast<float>(window.GetHeight());	//Height is the same as client window height.
+	defaultviewport.Width = static_cast<float>(width);						//Width is the same as client window width.
+	defaultviewport.Height = static_cast<float>(height);					//Height is the same as client window height.
 	defaultviewport.MinDepth = 0.f;												//Min depth is 0.0 in D3D11.
 	defaultviewport.MaxDepth = 1.0f;												//Max depth is 1.0 in D3D11.
+
+	pBackBuffer->Release();
+	pDepthStencilBuffer->Release();
+
+
+	Shader_Setup_Details setup =
+	{
+		L"pixelshader_vanilla.hlsl",			//Name of the vertex shader file.
+		nullptr,										//VertexShader macro, ignore.
+		D3D_COMPILE_STANDARD_FILE_INCLUDE,	//Will essentially find the shader file.
+		"ps_main",									//Entry point for shader function.
+		"ps_5_0",									//Vertex shader of 5.0 revision.
+		flags,										//Flags, in our case adding more debug output.
+		0u };											//Additional flags, ignore.
+
+	vanillapixelshader.Initialize(setup);
+
+	Shader_Setup_Details setup =
+	{
+		L"vertexshader_vanilla.hlsl",			//Name of the vertex shader file.
+		nullptr,										//VertexShader macro, ignore.
+		D3D_COMPILE_STANDARD_FILE_INCLUDE,	//Will essentially find the shader file.
+		"vs_main",									//Entry point for shader function.
+		"vs_5_0",									//Vertex shader of 5.0 revision.
+		flags,										//Flags, in our case adding more debug output.
+		0u };											//Additional flags, ignore.
+
+	vanillavertexshader.Initialize(setup);
+
 }
 
 Engine::~Engine()
@@ -110,15 +144,6 @@ Engine::~Engine()
 	depthstencilview->Release();
 	defaultstencilstate->Release();
 	nozstencilstate->Release();
-	pBackBuffer->Release();
-	pDepthStencilBuffer->Release();
-}
-
-Engine *Engine::GetInstance()
-{
-    if (!instance)
-        instance = new Engine();
-    return instance;
 }
 
 BOOL Engine::Run()
@@ -126,7 +151,7 @@ BOOL Engine::Run()
 	auto kbstate = keyboard.GetState();
 	if (kbstate.Escape)
 	{
-		DestroyWindow(window.GetHandle());
+		DestroyWindow(windowhandle);
 		PostQuitMessage(0);
 		return FALSE;
 	}
@@ -154,7 +179,30 @@ ID3D11DepthStencilView* Engine::GetDepthStencil()
 	return depthstencilview;
 }
 
+VOID Engine::VanillaRender()
+{
+	/*vanillapixelshader.SetShader();
+	if (ppRenderTargets == nullptr)
+	{
+		ID3D11RenderTargetView* backbufferarr[] = { backbuffer };
+		context->OMSetRenderTargets(1, backbufferarr, depthstencilview);
+	}*/
+	/*else
+	{
+		std::vector<ID3D11RenderTargetView*> targets;
+		for (UINT i = 0; i < numTargets; ++i)
+			targets.push_back(ppRenderTargets[i]->GetRenderTargetView());
+		engine->GetContext()->OMSetRenderTargets(numTargets, &targets[0], engine->GetDepthStencil());
+	}*/
+	/*for (UINT object = 0; object < numDrawables; ++object)
+	{
+		UINT i = 0;
+		engine->GetContext()->DrawIndexed(ppDrawables[i]->GetIndexCount(), ppDrawables[i]->GetStartIndexLocation(), ppDrawables[i]->GetBaseVertexLocation());
+	}*/
+}
+
 VOID Engine::Update() 
 {
+	context->ClearRenderTargetView(backbuffer, clearcolour);
 	swapchain->Present(1u, 0u);
 }

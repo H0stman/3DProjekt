@@ -7,41 +7,44 @@
 #include <string>
 #include <vector>
 
-#include "Window.hpp"
 #include "Texture.hpp"
+#include "PixelShader.hpp"
+#include "VertexShader.hpp"
 
 using namespace DirectX;
 
 class Engine
 {
-	static Engine* instance;
 	ID3D11Device* device;
 	ID3D11DeviceContext* context;
 	IDXGISwapChain* swapchain;
 	D3D11_VIEWPORT defaultviewport;
 	ID3D11RenderTargetView* backbuffer;
 	ID3D11DepthStencilView* depthstencilview;
-	ID3D11DepthStencilState* defaultstencilstate;
-	ID3D11DepthStencilState* nozstencilstate;
+	ID3D11DepthStencilState* defaultstencilstate, *nozstencilstate;
 
-	ID3D11Texture2D* pBackBuffer, *pDepthStencilBuffer; //TODO: Change name according to convention.
+	PixelShader vanillapixelshader;
+	VertexShader vanillavertexshader;
+
+	const FLOAT clearcolour[4];
 
 	Mouse mouse;
 	Keyboard keyboard;
 
-	Engine();
+	HWND windowhandle;
 
 public:
 
-	Window window;
-
-	static Engine *GetInstance();
 	BOOL Run();
+	Engine() = default;
+	Engine(const Engine &other) = default;
+	Engine(HWND hndl);
 	~Engine();
 
 	ID3D11Device* GetDevice();
 	ID3D11DeviceContext* GetContext();
 	ID3D11RenderTargetView* GetBackbuffer();
 	ID3D11DepthStencilView* GetDepthStencil();
+	VOID VanillaRender();
 	VOID Update();
 };

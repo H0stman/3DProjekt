@@ -144,34 +144,23 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="ComputeShader.cpp" />
-    <ClCompile Include="DomainShader.cpp" />
     <ClCompile Include="Engine.cpp" />
-    <ClCompile Include="HullShader.cpp" />
     <ClCompile Include="PixelShader.cpp" />
     <ClCompile Include="IShader.cpp" />
-    <ClCompile Include="RenderMan.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="Texture.cpp" />
-    <ClCompile Include="VanillaRenderer.cpp" />
     <ClCompile Include="VertexShader.cpp" />
     <ClCompile Include="Window.cpp" />
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.hpp" />
-    <ClInclude Include="ComputeShader.hpp" />
-    <ClInclude Include="DomainShader.hpp" />
     <ClInclude Include="Engine.hpp" />
-    <ClInclude Include="HullShader.hpp" />
     <ClInclude Include="IDrawable.hpp" />
-    <ClInclude Include="IRenderer.hpp" />
     <ClInclude Include="PixelShader.hpp" />
     <ClInclude Include="IShader.hpp" />
-    <ClInclude Include="RenderMan.hpp" />
     <ClInclude Include="Terrain.hpp" />
     <ClInclude Include="Texture.hpp" />
-    <ClInclude Include="VanillaRenderer.hpp" />
     <ClInclude Include="VertexShader.hpp" />
     <ClInclude Include="Window.hpp" />
   </ItemGroup>
