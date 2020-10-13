@@ -35,7 +35,7 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.9f, 0.0f, 0.3f, 1
 
 	/***RENDER TARGET VIEW CREATION***/
 	
-	ID3D11Texture2D* pBackBuffer, * pDepthStencilBuffer;
+	ID3D11Texture2D* pBackBuffer = nullptr, * pDepthStencilBuffer = nullptr;
 
 	hr = swapchain->GetBuffer(0u, __uuidof(ID3D11Texture2D), (void**)&pBackBuffer);
 	if (FAILED(hr))
@@ -114,7 +114,6 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.9f, 0.0f, 0.3f, 1
 	context->VSSetShader(vertexshader, nullptr, 0u);
 	context->PSSetShader(pixelshader, nullptr, 0u);
 
-
 }
 
 Engine::~Engine()
@@ -126,6 +125,12 @@ Engine::~Engine()
 	depthstencilview->Release();
 	defaultstencilstate->Release();
 	nozstencilstate->Release();
+	cloclwise->Release();
+	counterclockwise->Release();
+	pixelshader->Release();
+	vertexshader->Release();
+	blobpixelvanilla->Release();
+	blobvertexvanilla->Release();
 }
 
 BOOL Engine::Run()
@@ -185,7 +190,7 @@ VOID Engine::CompileShaders()
 	ID3DBlob* errorBlob;
 
 	/*****Pixelshader compilation*****/
-	HRESULT HR = D3DCompileFromFile(L"pixelshader_vanilla.hlsl",		//Name of the pixel shader.
+	HRESULT hr = D3DCompileFromFile(L"pixelshader_vanilla.hlsl",		//Name of the pixel shader.
 		nullptr,																			//PixelShader macro, ignore.
 		D3D_COMPILE_STANDARD_FILE_INCLUDE,										//Will essentially find the file.
 		"ps_main",																		//Entry point for shader function.
@@ -194,7 +199,7 @@ VOID Engine::CompileShaders()
 		0u,																				//Additional flags.
 		&blobpixelvanilla,															//The pixel shader blob to be filled.
 		&errorBlob);																	//Error blob that will catch additional error messages.
-	if (FAILED(HR))
+	if (FAILED(hr))
 	{
 		if (errorBlob != nullptr)
 			OutputDebugStringA((char*)errorBlob->GetBufferPointer());			//Will yield additional debug information from Pixel shader.
@@ -203,19 +208,53 @@ VOID Engine::CompileShaders()
 		errorBlob->Release();
 	}
 
-	/*****Pixel shader creation*****/
-	HR = device->CreatePixelShader(blobpixelvanilla->GetBufferPointer(),			//Pointer to the compiled Pixel shader buffer.
+	/*****Pixelshader creation*****/
+	hr = device->CreatePixelShader(blobpixelvanilla->GetBufferPointer(),			//Pointer to the compiled Pixel shader buffer.
 		blobpixelvanilla->GetBufferSize(),				//Size of the compiled Pixel shader buffer.
-		nullptr,											//Advanced topic, not used here.
-		&pixelshader);									//Address of pointer to the Pixel VertexShader.
-	if (FAILED(HR))
+		nullptr,													//Advanced topic, not used here.
+		&pixelshader);											//Address of pointer to the Pixel VertexShader.
+	if (FAILED(hr))
 	{
 		MessageBox(nullptr, L"Error creating Pixel VertexShader.", L"ERROR", MB_OK);
 		errorBlob->Release();
 	}
 
-	if (errorBlob)
+
+	/*****Vertexshader compilation*****/
+	hr = D3DCompileFromFile(L"vertexshader.hlsl",					//Name of the vertex shader.
+		nullptr,																			//Vertexshader macro, ignore.
+		D3D_COMPILE_STANDARD_FILE_INCLUDE,										//Will essentially find the file.
+		"vs_main",																		//Entry point for shader function.
+		"vs_5_0",																		//Pixel shader target (version).
+		flags,																			//Flags, in our case adding more debug output.
+		0u,																				//Additional flags.
+		&blobvertexvanilla,															//The pixel shader blob to be filled.
+		&errorBlob);																	//Error blob that will catch additional error messages.
+
+	if (FAILED(hr))
+	{
+		if (errorBlob != nullptr)
+			OutputDebugStringA((char*)errorBlob->GetBufferPointer());			//Will yield additional debug information from Pixel shader.
+
+		MessageBox(nullptr, L"Error compiling Pixel shader.", L"ERROR", MB_OK);
 		errorBlob->Release();
+	}
+
+	/*****Vertexshader creation*****/
+	hr = device->CreateVertexShader(blobvertexvanilla->GetBufferPointer(),			//Pointer to the compiled Pixel shader buffer.
+		blobvertexvanilla->GetBufferSize(),					//Size of the compiled Pixel shader buffer.
+		nullptr,														//Advanced topic, not used here.
+		&vertexshader);											//Address of pointer to the Pixel VertexShader.
+
+	if (FAILED(hr))
+	{
+		MessageBox(nullptr, L"Error creating Pixel VertexShader.", L"ERROR", MB_OK);
+		errorBlob->Release();
+	}
+
+	if(errorBlob)
+		errorBlob->Release();
+
 }
 
 VOID Engine::VanillaRender()

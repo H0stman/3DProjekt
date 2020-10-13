@@ -44,7 +44,7 @@ public:
 
 	BOOL Run();
 	Engine() = default;
-	//Engine(const Engine &other) = default;
+	Engine(const Engine &other) = default;
 	Engine(HWND hndl);
 	~Engine();
 
