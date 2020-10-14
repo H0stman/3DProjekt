@@ -8,9 +8,19 @@
 #include <string>
 #include <vector>
 
+#include <DirectXCollision.h>
+#include "Terrain.hpp"
 #include "Texture.hpp"
+#include "Camera.hpp"
 
 using namespace DirectX;
+
+struct TransormationMatrices
+{
+	XMMATRIX worldmatrix;
+	XMMATRIX viewmatrix;
+	XMMATRIX projectionmatrix;
+};
 
 class Engine
 {
@@ -25,9 +35,15 @@ class Engine
 	ID3D11PixelShader *pixelshader;
 	ID3D11VertexShader *vertexshader;
 
-	ID3D11RasterizerState* cloclwise, *counterclockwise;
+	ID3D11RasterizerState* clocklwise, *counterclockwise;
+
+	UINT stride, offset;
 
 	ID3DBlob* blobpixelvanilla, *blobvertexvanilla;
+
+	ID3D11InputLayout* inputlayout;
+
+	TransormationMatrices transfrom;
 
 	const FLOAT clearcolour[4];
 
@@ -35,6 +51,11 @@ class Engine
 	Keyboard keyboard;
 
 	HWND windowhandle;
+
+	std::vector<IDrawable*> models;
+
+	Camera camera;
+	Terrain *terrain;
 
 	VOID VanillaRender();
 	VOID CreateRasterizerStates();

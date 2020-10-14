@@ -1,11 +1,14 @@
 #include "Engine.hpp"
 
-Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.9f, 0.0f, 0.3f, 1.0f }
+Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1.0f }
 {
 	RECT rect;
 	GetClientRect(hndl, &rect);
 	UINT width = rect.right - rect.left;
 	UINT height = rect.bottom - rect.top;
+
+	stride = sizeof(vertex);
+	offset = 0u;
 
 	DXGI_SWAP_CHAIN_DESC swap_chain_descr = { 0 };
 	swap_chain_descr.BufferDesc.RefreshRate.Numerator = 0;
@@ -111,13 +114,40 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.9f, 0.0f, 0.3f, 1
 	CreateRasterizerStates();
 	CompileShaders();
 
+	/*****Vertex Input Layout*****/
+	D3D11_INPUT_ELEMENT_DESC iedesc[] =
+	{
+		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA,0 },
+		{"BITANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0}
+	};
+
+	/*****Input layout creation*****/
+	hr = device->CreateInputLayout(iedesc,			//Pointer to the first element in the descriptor array.
+		ARRAYSIZE(iedesc),								//Number of elements in descriptor array.
+		blobvertexvanilla->GetBufferPointer(),		//Pointer to the compiled pixel shader buffer.
+		blobvertexvanilla->GetBufferSize(),			//Size of the compiled pixel shader buffer.
+		&inputlayout);										//Adress of pointer of yhe input layout. 
+
+	context->IASetInputLayout(inputlayout);
+
+	terrain = new Terrain("heightmap.bmp", device);
+	camera = Camera();
+	
+
 	context->VSSetShader(vertexshader, nullptr, 0u);
 	context->PSSetShader(pixelshader, nullptr, 0u);
+
+	models.push_back(terrain);
 
 }
 
 Engine::~Engine()
 {
+	for (auto obj : models)
+		delete obj;
 	device->Release();
 	context->Release();
 	swapchain->Release();
@@ -125,12 +155,13 @@ Engine::~Engine()
 	depthstencilview->Release();
 	defaultstencilstate->Release();
 	nozstencilstate->Release();
-	cloclwise->Release();
+	clocklwise->Release();
 	counterclockwise->Release();
 	pixelshader->Release();
 	vertexshader->Release();
 	blobpixelvanilla->Release();
 	blobvertexvanilla->Release();
+	inputlayout->Release();
 }
 
 BOOL Engine::Run()
@@ -178,7 +209,7 @@ VOID Engine::CreateRasterizerStates()
 	device->CreateRasterizerState(&rdesc, &counterclockwise);
 
 	rdesc.FrontCounterClockwise = FALSE;
-	device->CreateRasterizerState(&rdesc, &cloclwise);
+	device->CreateRasterizerState(&rdesc, &clocklwise);
 }
 
 VOID Engine::CompileShaders()
@@ -221,7 +252,7 @@ VOID Engine::CompileShaders()
 
 
 	/*****Vertexshader compilation*****/
-	hr = D3DCompileFromFile(L"vertexshader.hlsl",					//Name of the vertex shader.
+	hr = D3DCompileFromFile(L"vertexshader.hlsl",							//Name of the vertex shader.
 		nullptr,																			//Vertexshader macro, ignore.
 		D3D_COMPILE_STANDARD_FILE_INCLUDE,										//Will essentially find the file.
 		"vs_main",																		//Entry point for shader function.
@@ -260,11 +291,16 @@ VOID Engine::CompileShaders()
 VOID Engine::VanillaRender()
 {
 	//Bind resources
-	/*context->IASetVertexBuffers(0u, 1, &vertexbuffer, &stride, &offset);
-	context->IASetIndexBuffer(indexbuffer, DXGI_FORMAT_R32_UINT, 0);*/
-	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	/*vanillapixelshader.SetShader();
-	if (ppRenderTargets == nullptr)
+
+
+
+
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	context->VSSetShader(vertexshader, nullptr, 0u);
+	context->PSSetShader(pixelshader, nullptr, 0u);
+	context->OMSetRenderTargets(1u, &backbuffer, depthstencilview);
+
+	/*if (ppRenderTargets == nullptr)
 	{
 		ID3D11RenderTargetView* backbufferarr[] = { backbuffer };
 		context->OMSetRenderTargets(1, backbufferarr, depthstencilview);
@@ -285,6 +321,28 @@ VOID Engine::VanillaRender()
 
 VOID Engine::Update() 
 {
+	context->ClearDepthStencilView(depthstencilview, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0u);
 	context->ClearRenderTargetView(backbuffer, clearcolour);
+
+	//transfrom.worldmatrix = XMMatrixTranspose(Idraweble worldmatrix) 
+	transfrom.viewmatrix = XMMatrixTranspose(camera.GetViewMatrix());
+	transfrom.projectionmatrix = XMMatrixTranspose(camera.GetProjectionMatrix());
+
+	VanillaRender();
+
+	for (auto model : models) //TODO: Fix the incompatible input output structs in vertex and pixelshader for vanilla rendering.
+	{
+		if (model->IsClockwise())
+			context->RSSetState(clocklwise);
+		else
+			context->RSSetState(counterclockwise);
+
+		context->IASetIndexBuffer(model->GetIndexBuffer(), DXGI_FORMAT_R32_UINT, 0u);
+		context->IASetVertexBuffers(0u, 1u, model->GetVertexBuffer(), &stride, &offset);
+		context->DrawIndexed(model->GetIndexCount(), 0u, 0u);
+	}
+
+
+
 	swapchain->Present(1u, 0u);
 }
