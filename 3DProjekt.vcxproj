@@ -145,6 +145,8 @@
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Engine.cpp" />
+    <ClCompile Include="IDrawable.cpp" />
+    <ClCompile Include="QuadTree.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Window.cpp" />
@@ -154,6 +156,7 @@
     <ClInclude Include="Camera.hpp" />
     <ClInclude Include="Engine.hpp" />
     <ClInclude Include="IDrawable.hpp" />
+    <ClInclude Include="QuadTree.hpp" />
     <ClInclude Include="Terrain.hpp" />
     <ClInclude Include="Texture.hpp" />
     <ClInclude Include="Window.hpp" />
