@@ -1,6 +1,7 @@
 #pragma once
 #include <d3d11.h>
 #include <DirectXMath.h>
+#include <DirectXCollision.h>
 
 using namespace DirectX;
 
@@ -18,6 +19,7 @@ class IDrawable
 protected:
 	BOOL clockwise;
 	XMMATRIX worldmatrix;
+	BoundingBox boundingbox;
 
 public:
 	virtual ~IDrawable() {};
@@ -28,5 +30,6 @@ public:
 	virtual ID3D11Buffer* GetIndexBuffer() = 0;
 	XMMATRIX GetWorldMatrix();
 	BOOL IsClockwise();
+	BoundingBox GetBoundingBox();
 };
 
