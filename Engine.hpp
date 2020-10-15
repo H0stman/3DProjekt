@@ -1,4 +1,5 @@
 #pragma once
+#define NOMINMAX
 #include <d3d11_4.h>
 #include <dxgi1_6.h>
 #include <d3dcompiler.h>
@@ -12,6 +13,7 @@
 #include "Terrain.hpp"
 #include "Texture.hpp"
 #include "Camera.hpp"
+#include "Model.hpp"
 
 using namespace DirectX;
 
@@ -63,6 +65,7 @@ class Engine
 
 	Camera camera;
 	Terrain *terrain;
+	Model* model;
 	Light* light;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 
@@ -71,6 +74,7 @@ class Engine
 	VOID VanillaRender();
 	VOID CreateRasterizerStates();
 	VOID CompileShaders();
+	VOID LoadDrawables();
 
 public:
 

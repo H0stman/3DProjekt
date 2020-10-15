@@ -2,7 +2,7 @@
 
 Camera::Camera() : lookat(XMVectorZero())
 {
-	position = XMVectorSet(0.0f, 70.0f, -70.0f, 1.0f);
+	position = XMVectorSet(1.0f, 2.0f, -10.0f, 1.0f);
 	updirection = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	lookat = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
 	view = XMMatrixLookAtLH(position, lookat, updirection);

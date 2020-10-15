@@ -11,6 +11,11 @@ class Model : public IDrawable
 {
 	Model() = delete;
 public:
-	Model(ID3D11Device* device, std::string file);
-	~Model();
+	Model(std::string file, ID3D11Device* device);
+	//~Model();
+	UINT GetIndexCount();
+	UINT GetStartIndexLocation();
+	INT GetBaseVertexLocation();
+	ID3D11Buffer** GetVertexBuffer();
+	ID3D11Buffer* GetIndexBuffer();
 };
