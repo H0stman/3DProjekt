@@ -25,5 +25,5 @@ float4 ps_main(PS_INPUT input) : SV_TARGET
     // Sample the pixel color from the texture using the sampler at this texture coordinate location.
     float3 hej = normalize(lightpos - input.position.xyz);
     float diffuse = max(dot(input.normal, hej.xyz), 0);
-    return float4(1.0f, 1.0f, 0.0f, 1.0f);
+    return float4(0.0f, 1.0f, 0.0f, 1.0f);
 }

@@ -1,6 +1,6 @@
 #include "Engine.hpp"
 
-Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 1.0f, 0.0f, 0.0f, 1.0f }
+Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1.0f }
 {
 	RECT rect;
 	GetClientRect(hndl, &rect);
