@@ -21,8 +21,10 @@ INT APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
        {
           TranslateMessage(&msg);
           DispatchMessage(&msg);
+          if (msg.message == WM_QUIT)
+             return 0;
        }
-
+       
        // If no messages in message queue, do DirextX stuff...
        engine.Update();
     }

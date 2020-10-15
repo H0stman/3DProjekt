@@ -15,11 +15,18 @@
 
 using namespace DirectX;
 
-struct TransormationMatrices
+struct TransformationMatrices
 {
 	XMMATRIX worldmatrix;
 	XMMATRIX viewmatrix;
 	XMMATRIX projectionmatrix;
+};
+
+struct Light
+{
+	XMFLOAT4 diffuseColour;
+	XMFLOAT3 pos;
+	FLOAT padding;
 };
 
 class Engine
@@ -43,7 +50,7 @@ class Engine
 
 	ID3D11InputLayout* inputlayout;
 
-	TransormationMatrices transfrom;
+	TransformationMatrices *transform;
 
 	const FLOAT clearcolour[4];
 
@@ -56,6 +63,10 @@ class Engine
 
 	Camera camera;
 	Terrain *terrain;
+	Light* light;
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+
+	ID3D11Buffer* lightbuffer, *matrixbuffer;
 
 	VOID VanillaRender();
 	VOID CreateRasterizerStates();

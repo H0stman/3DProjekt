@@ -97,6 +97,9 @@
     <FxCompile Include="pixelshader_vanilla.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
+    <FxCompile Include="vertexshader_vanilla.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\DV1542-3D-Project\heightmap.bmp">

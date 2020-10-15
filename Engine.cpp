@@ -1,6 +1,6 @@
 #include "Engine.hpp"
 
-Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1.0f }
+Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 1.0f, 0.0f, 0.0f, 1.0f }
 {
 	RECT rect;
 	GetClientRect(hndl, &rect);
@@ -33,7 +33,7 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 
 
 	mouse.SetWindow(hndl);
-	mouse.Get().SetMode(Mouse::MODE_RELATIVE);
+	mouse.Get().SetMode(Mouse::MODE_ABSOLUTE);
 	
 
 	/***RENDER TARGET VIEW CREATION***/
@@ -142,6 +142,33 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 
 	models.push_back(terrain);
 
+	D3D11_BUFFER_DESC desc = {};
+	desc.ByteWidth = sizeof(Light);
+	desc.MiscFlags = 0;
+	desc.StructureByteStride = 0;
+	desc.Usage = D3D11_USAGE_DYNAMIC;
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	hr = device->CreateBuffer(&desc, nullptr, &lightbuffer);
+	assert(SUCCEEDED(hr));
+
+	D3D11_MAPPED_SUBRESOURCE lghtresrc;
+
+
+
+	
+	D3D11_BUFFER_DESC matrixBufferDesc = {};
+	matrixBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	matrixBufferDesc.ByteWidth = sizeof(TransformationMatrices);
+	matrixBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	matrixBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	matrixBufferDesc.MiscFlags = 0;
+	matrixBufferDesc.StructureByteStride = 0;
+	hr = device->CreateBuffer(&matrixBufferDesc, nullptr, &matrixbuffer);
+	assert(SUCCEEDED(hr));
+	
+	
+
 }
 
 Engine::~Engine()
@@ -162,6 +189,8 @@ Engine::~Engine()
 	blobpixelvanilla->Release();
 	blobvertexvanilla->Release();
 	inputlayout->Release();
+	lightbuffer->Release();
+	matrixbuffer->Release();
 }
 
 BOOL Engine::Run()
@@ -252,7 +281,7 @@ VOID Engine::CompileShaders()
 
 
 	/*****Vertexshader compilation*****/
-	hr = D3DCompileFromFile(L"vertexshader.hlsl",							//Name of the vertex shader.
+	hr = D3DCompileFromFile(L"vertexshader_vanilla.hlsl",					//Name of the vertex shader.
 		nullptr,																			//Vertexshader macro, ignore.
 		D3D_COMPILE_STANDARD_FILE_INCLUDE,										//Will essentially find the file.
 		"vs_main",																		//Entry point for shader function.
@@ -292,13 +321,14 @@ VOID Engine::VanillaRender()
 {
 	//Bind resources
 
-
-
-
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	context->VSSetShader(vertexshader, nullptr, 0u);
 	context->PSSetShader(pixelshader, nullptr, 0u);
 	context->OMSetRenderTargets(1u, &backbuffer, depthstencilview);
+	context->VSSetConstantBuffers(0u, 1u, &matrixbuffer);
+	context->PSSetConstantBuffers(0u, 1u, &lightbuffer);
+	context->RSSetViewports(1u, &defaultviewport);
+	context->OMSetDepthStencilState(defaultstencilstate, 0u);
 
 	/*if (ppRenderTargets == nullptr)
 	{
@@ -324,9 +354,8 @@ VOID Engine::Update()
 	context->ClearDepthStencilView(depthstencilview, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0u);
 	context->ClearRenderTargetView(backbuffer, clearcolour);
 
-	//transfrom.worldmatrix = XMMatrixTranspose(Idraweble worldmatrix) 
-	transfrom.viewmatrix = XMMatrixTranspose(camera.GetViewMatrix());
-	transfrom.projectionmatrix = XMMatrixTranspose(camera.GetProjectionMatrix());
+	
+	
 
 	VanillaRender();
 
@@ -337,6 +366,12 @@ VOID Engine::Update()
 		else
 			context->RSSetState(counterclockwise);
 
+		context->Map(matrixbuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+		transform = (TransformationMatrices*)mappedResource.pData;
+		transform->worldmatrix = model->GetWorldMatrix();
+		transform->viewmatrix = XMMatrixTranspose(camera.GetViewMatrix());
+		transform->projectionmatrix = XMMatrixTranspose(camera.GetProjectionMatrix());
+		context->Unmap(matrixbuffer, 0);
 		context->IASetIndexBuffer(model->GetIndexBuffer(), DXGI_FORMAT_R32_UINT, 0u);
 		context->IASetVertexBuffers(0u, 1u, model->GetVertexBuffer(), &stride, &offset);
 		context->DrawIndexed(model->GetIndexCount(), 0u, 0u);

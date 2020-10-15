@@ -26,6 +26,7 @@ public:
 	virtual INT GetBaseVertexLocation() = 0;
 	virtual ID3D11Buffer** GetVertexBuffer() = 0;
 	virtual ID3D11Buffer* GetIndexBuffer() = 0;
+	XMMATRIX GetWorldMatrix();
 	BOOL IsClockwise();
 };
 
