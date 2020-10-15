@@ -140,7 +140,7 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	context->VSSetShader(vertexshader, nullptr, 0u);
 	context->PSSetShader(pixelshader, nullptr, 0u);
 
-	models.push_back(terrain);
+	models.push_back(terrain); //TODO: Städa
 
 	D3D11_BUFFER_DESC desc = {};
 	desc.ByteWidth = sizeof(Light);
@@ -356,7 +356,7 @@ VOID Engine::Update()
 
 	
 	
-
+	camera.Update();
 	VanillaRender();
 
 	for (auto model : models) //TODO: Fix the incompatible input output structs in vertex and pixelshader for vanilla rendering.

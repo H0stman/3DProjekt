@@ -1,12 +1,17 @@
 #pragma once
 #include <Windows.h>
+#include <DirectXTK/Mouse.h>
+#include <DirectXTK/Keyboard.h>
+#include <DirectXTK/SimpleMath.h>
+#include <cmath>
 #include <DirectXMath.h>
 
 using namespace DirectX;
+using namespace SimpleMath;
 
 class Camera
 {
-	XMVECTOR updirection, lookat, position;
+	Vector3 updirection, lookat, position;
 	XMMATRIX view, projection;
 	FLOAT pitch, yaw, rotation, movement;
 
