@@ -146,6 +146,7 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="IDrawable.cpp" />
+    <ClCompile Include="Model.cpp" />
     <ClCompile Include="QuadTree.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="Texture.cpp" />
@@ -156,6 +157,7 @@
     <ClInclude Include="Camera.hpp" />
     <ClInclude Include="Engine.hpp" />
     <ClInclude Include="IDrawable.hpp" />
+    <ClInclude Include="Model.hpp" />
     <ClInclude Include="QuadTree.hpp" />
     <ClInclude Include="Terrain.hpp" />
     <ClInclude Include="Texture.hpp" />

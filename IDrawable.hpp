@@ -2,6 +2,7 @@
 #include <d3d11.h>
 #include <DirectXMath.h>
 #include <DirectXCollision.h>
+#include <vector>
 
 using namespace DirectX;
 
@@ -20,6 +21,10 @@ protected:
 	BOOL clockwise;
 	XMMATRIX worldmatrix;
 	BoundingBox boundingbox;
+	std::vector<vertex> vertices;
+	std::vector<DWORD> indices;
+	ID3D11Buffer* vertexbuffer;
+	ID3D11Buffer* indexbuffer;
 
 public:
 	virtual ~IDrawable() {};
