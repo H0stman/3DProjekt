@@ -2,10 +2,11 @@
 
 Camera::Camera() : lookat(XMVectorZero())
 {
-	position = XMVectorSet(0.0f, 7.0f, 5.0f, 1.0f);
+	position = XMVectorSet(0.0f, 70.0f, -70.0f, 1.0f);
 	updirection = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-	view = XMMatrixIdentity();
-	projection = XMMatrixPerspectiveFovRH(XMConvertToRadians(85.0f), 1280.0f / 720.0f, 0.1f, 1000.0f);
+	lookat = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
+	view = XMMatrixLookAtLH(position, lookat, updirection);
+	projection = XMMatrixPerspectiveFovLH(XMConvertToRadians(85.0f), 1280.0f / 720.0f, 0.1f, 1000.0f);
 	pitch = yaw = 0.0f;
 	rotation = 0.004f;
 	movement = 0.07f;

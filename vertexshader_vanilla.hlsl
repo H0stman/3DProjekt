@@ -27,15 +27,18 @@ VS_OUTPUT vs_main(VS_INPUT vsInput)
     VS_OUTPUT vsOutput;
 	
 	//Calculate clip-space position.
- //   vsOutput.outPositionCS = mul(float4(vsInput.inPosition, 1.0f), projection);
+    
+    vsOutput.outPositionCS = mul(float4(vsInput.inPosition, 1.0f), worldview);
+    vsOutput.outPositionCS = mul(float4(vsOutput.outPositionCS), view);
+    vsOutput.outPositionCS = mul(float4(vsOutput.outPositionCS), projection);
 	
-	////Convert position, normal, tangent and bitangent to world space. 
+	//Convert position, normal, tangent and bitangent to world space. 
  //   vsOutput.outPositionWS = mul(float4(vsInput.inPosition, 1.0f), worldview).xyz;
- //   vsOutput.outNormalWS = normalize(mul(float4(vsInput.inNormal, 0.0f), worldview).xyz);
+    vsOutput.outNormalWS = normalize(mul(float4(vsInput.inNormal, 0.0f), worldview).xyz);
 
 	//Forwarding texture coord.
     //vsOutput.outTexCoord = vsInput.inTexCoord;
-    vsOutput.outPositionCS = float4(vsInput.inPosition.xyz, 1.0f);
+    //vsOutput.outPositionCS = float4(vsInput.inPosition.xyz, 1.0f);
 
     return vsOutput;
 }
