@@ -2,6 +2,9 @@
 
 Terrain::Terrain(PCSTR filename, ID3D11Device* device)
 {
+	clockwise = TRUE;
+	worldmatrix = XMMatrixIdentity();
+
 	facecount = vertexcount = 0u;
 	UINT stride = sizeof(vertex);
 	UINT offset = 0u;
@@ -43,7 +46,7 @@ Terrain::Terrain(PCSTR filename, ID3D11Device* device)
 	fclose(filePtr);
 
 	// Initialize the heightMap array (stores the vertices terrain)
-	hminfo.heightMap = new XMFLOAT3[hminfo.terrainWidth * hminfo.terrainHeight];
+	hminfo.heightMap = new XMFLOAT3[(size_t)hminfo.terrainWidth * hminfo.terrainHeight];
 
 	// Using a greyscale image, so all 3 rgb values are the same, but we only need one for the height
 	// So we use this counter to skip the next two components in the image data (we read R, then skip BG)
@@ -73,20 +76,20 @@ Terrain::Terrain(PCSTR filename, ID3D11Device* device)
 
 
 	UINT cols = hminfo.terrainWidth;
-	DWORD rows = hminfo.terrainHeight;
+	UINT rows = hminfo.terrainHeight;
 
 	//Create the grid
 	vertexcount = rows * cols;
 	facecount = (rows - 1) * (cols - 1) * 2;
 
 	vertices.resize(vertexcount);
-	indices.resize(facecount * 3);
+	indices.resize((size_t)facecount * 3);
 
 	for (UINT i = 0; i < rows; ++i)
 		for (UINT j = 0; j < cols; ++j)
 		{
-			vertices[i * cols + j].position = hminfo.heightMap[i * cols + j];
-			vertices[i * cols + j].normal = XMFLOAT3(0.0f, 1.0f, 0.0f);
+			vertices[(size_t)i * cols + j].position = hminfo.heightMap[i * cols + j];
+			vertices[(size_t)i * cols + j].normal = XMFLOAT3(0.0f, 1.0f, 0.0f);
 		}
 
 
@@ -99,23 +102,23 @@ Terrain::Terrain(PCSTR filename, ID3D11Device* device)
 		{
 
 			indices[k] = i * cols + j;        // Bottom left of quad
-			vertices[i * cols + j].texturecoordinate = XMFLOAT2(texUIndex + 0.0f, texVIndex + 1.0f);
+			vertices[(size_t)i * cols + j].texturecoordinate = XMFLOAT2(texUIndex + 0.0f, texVIndex + 1.0f);
 
-			indices[k + 1] = i * cols + j + 1;        // Bottom right of quad
-			vertices[i * cols + j + 1].texturecoordinate = XMFLOAT2(texUIndex + 1.0f, texVIndex + 1.0f);
+			indices[(size_t)k + 1] = i * cols + j + 1;        // Bottom right of quad
+			vertices[(size_t)i * cols + j + 1].texturecoordinate = XMFLOAT2(texUIndex + 1.0f, texVIndex + 1.0f);
 
-			indices[k + 2] = (i + 1) * cols + j;    // Top left of quad
-			vertices[(i + 1) * cols + j].texturecoordinate = XMFLOAT2(texUIndex + 0.0f, texVIndex + 0.0f);
+			indices[(size_t)k + 2] = (i + 1) * cols + j;    // Top left of quad
+			vertices[((size_t)i + 1) * cols + j].texturecoordinate = XMFLOAT2(texUIndex + 0.0f, texVIndex + 0.0f);
 
 
-			indices[k + 3] = (i + 1) * cols + j;    // Top left of quad
-			vertices[(i + 1) * cols + j].texturecoordinate = XMFLOAT2(texUIndex + 0.0f, texVIndex + 0.0f);
+			indices[(size_t)k + 3] = (i + 1) * cols + j;    // Top left of quad
+			vertices[((size_t)i + 1) * cols + j].texturecoordinate = XMFLOAT2(texUIndex + 0.0f, texVIndex + 0.0f);
 
-			indices[k + 4] = i * cols + j + 1;        // Bottom right of quad
-			vertices[i * cols + j + 1].texturecoordinate = XMFLOAT2(texUIndex + 1.0f, texVIndex + 1.0f);
+			indices[(size_t)k + 4] = i * cols + j + 1;        // Bottom right of quad
+			vertices[(size_t)i * cols + j + 1].texturecoordinate = XMFLOAT2(texUIndex + 1.0f, texVIndex + 1.0f);
 
-			indices[k + 5] = (i + 1) * cols + j + 1;    // Top right of quad
-			vertices[(i + 1) * cols + j + 1].texturecoordinate = XMFLOAT2(texUIndex + 1.0f, texVIndex + 0.0f);
+			indices[(size_t)k + 5] = (i + 1) * cols + j + 1;    // Top right of quad
+			vertices[((size_t)i + 1) * cols + j + 1].texturecoordinate = XMFLOAT2(texUIndex + 1.0f, texVIndex + 0.0f);
 
 			k += 6; // next quad
 
@@ -127,7 +130,7 @@ Terrain::Terrain(PCSTR filename, ID3D11Device* device)
 
 	//Create index buffer
 	D3D11_BUFFER_DESC indexBufferDesc;
-	ZeroMemory(&indexBufferDesc, sizeof(indexBufferDesc));
+	ZeroMemory(&indexBufferDesc, sizeof(D3D11_BUFFER_DESC));
 	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	indexBufferDesc.ByteWidth = sizeof(DWORD) * facecount * 3;
 	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
@@ -142,7 +145,7 @@ Terrain::Terrain(PCSTR filename, ID3D11Device* device)
 
 	//Create vertex buffer
 	D3D11_BUFFER_DESC vertexBufferDesc;
-	ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
+	ZeroMemory(&vertexBufferDesc, sizeof(D3D11_BUFFER_DESC));
 	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	vertexBufferDesc.ByteWidth = sizeof(vertex) * vertexcount;
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
@@ -151,7 +154,7 @@ Terrain::Terrain(PCSTR filename, ID3D11Device* device)
 
 	D3D11_SUBRESOURCE_DATA vertexBufferData;
 
-	ZeroMemory(&vertexBufferData, sizeof(vertexBufferData));
+	ZeroMemory(&vertexBufferData, sizeof(D3D11_SUBRESOURCE_DATA));
 	vertexBufferData.pSysMem = &vertices.front();
 	hr = device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &vertexbuffer);
 
@@ -178,5 +181,15 @@ UINT Terrain::GetStartIndexLocation()
 INT Terrain::GetBaseVertexLocation()
 {
 	return 0u;
+}
+
+ID3D11Buffer** Terrain::GetVertexBuffer()
+{
+	return &vertexbuffer;
+}
+
+ID3D11Buffer* Terrain::GetIndexBuffer()
+{
+	return indexbuffer;
 }
 

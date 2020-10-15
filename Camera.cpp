@@ -1,6 +1,6 @@
 #include "Camera.hpp"
 
-Camera::Camera()
+Camera::Camera() : lookat(XMVectorZero())
 {
 	position = XMVectorSet(0.0f, 7.0f, 5.0f, 1.0f);
 	updirection = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
