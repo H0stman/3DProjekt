@@ -20,7 +20,7 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	swap_chain_descr.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 	swap_chain_descr.BufferCount = 2;
 	swap_chain_descr.OutputWindow = hndl;
-	swap_chain_descr.Windowed = true;
+	swap_chain_descr.Windowed = TRUE;
 
 	D3D_FEATURE_LEVEL feature_level[] = { D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0 };
 
@@ -75,10 +75,10 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
 	ZeroMemory(&depthStencilDesc, sizeof(depthStencilDesc));
 
-	depthStencilDesc.DepthEnable = true;
+	depthStencilDesc.DepthEnable = TRUE;
 	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
 	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
-	depthStencilDesc.StencilEnable = true;
+	depthStencilDesc.StencilEnable = TRUE;
 	depthStencilDesc.StencilReadMask = 0xFF;
 	depthStencilDesc.StencilWriteMask = 0xFF;
 	depthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
@@ -103,8 +103,8 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 
 	defaultviewport.TopLeftX = 0u;												//It starts at 0 relative to the client area rectangle.
 	defaultviewport.TopLeftY = 0u;												//It starts at 0 relative to the client area rectangle.
-	defaultviewport.Width = static_cast<float>(width);						//Width is the same as client window width.
-	defaultviewport.Height = static_cast<float>(height);					//Height is the same as client window height.
+	defaultviewport.Width = static_cast<FLOAT>(width);						//Width is the same as client window width.
+	defaultviewport.Height = static_cast<FLOAT>(height);					//Height is the same as client window height.
 	defaultviewport.MinDepth = 0.f;												//Min depth is 0.0 in D3D11.
 	defaultviewport.MaxDepth = 1.0f;												//Max depth is 1.0 in D3D11.
 
@@ -153,8 +153,6 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	assert(SUCCEEDED(hr));
 
 	D3D11_MAPPED_SUBRESOURCE lghtresrc;
-
-
 
 	
 	D3D11_BUFFER_DESC matrixBufferDesc = {};
