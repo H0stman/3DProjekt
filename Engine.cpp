@@ -133,16 +133,12 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 
 	context->IASetInputLayout(inputlayout);
 
-	terrain = new Terrain("heightmap.bmp", device);
 	camera = Camera();
-	model = new Model("cube.obj", device);
 
 	context->VSSetShader(vertexshader, nullptr, 0u);
 	context->PSSetShader(pixelshader, nullptr, 0u);
 
-	models.push_back(model);
-	//models.push_back(terrain);
-	//LoadDrawables();
+	LoadDrawables();
 
 	D3D11_BUFFER_DESC desc = {};
 	desc.ByteWidth = sizeof(Light);
@@ -385,5 +381,6 @@ VOID Engine::Update()
 }
 
 VOID Engine::LoadDrawables() {
-	//models.push_back(new Model(device, "cube.obj"));
+	//terrain = new Terrain("heightmap.bmp", device);
+	models.push_back(new Model("cube.obj", device));
 }

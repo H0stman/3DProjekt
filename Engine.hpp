@@ -64,8 +64,6 @@ class Engine
 	std::vector<IDrawable*> models;
 
 	Camera camera;
-	Terrain *terrain;
-	Model* model;
 	Light* light;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 

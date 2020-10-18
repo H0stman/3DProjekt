@@ -4,7 +4,7 @@ Model::Model(std::string file, ID3D11Device* device)
 {
 	Assimp::Importer importer;
 
-	const aiScene* pScene = importer.ReadFile(("Data\\" + file).c_str(),
+	const aiScene* pScene = importer.ReadFile(file.c_str(),
 		aiProcess_Triangulate
 		| aiProcess_ConvertToLeftHanded
 		| aiProcess_CalcTangentSpace
@@ -18,7 +18,7 @@ Model::Model(std::string file, ID3D11Device* device)
 	{
 		aiMesh* mesh = pScene->mMeshes[0];
 
-		// Saving the xyz max and min to capture the AABB boundig volume
+		// Saving the xyz max and min to determine the BoundingBox boundig volume
 		DirectX::XMFLOAT3 max = { 0.0, 0.0, 0.0 };
 		DirectX::XMFLOAT3 min = { 0.0, 0.0, 0.0 };
 		for (unsigned int i{ 0u }; i < mesh->mNumVertices; i++)
@@ -107,6 +107,9 @@ Model::Model(std::string file, ID3D11Device* device)
 		//	m_HasNormalMap = true;
 		//}
 
+		//if(mesh != nullptr) delete mesh;
+		//if(pScene != nullptr) delete pScene;
+
 		/*****Vertex buffer description *****/
 		D3D11_BUFFER_DESC vertexBufferDescriptor;
 		ZeroMemory(&vertexBufferDescriptor, sizeof(D3D11_BUFFER_DESC));
@@ -156,10 +159,10 @@ Model::Model(std::string file, ID3D11Device* device)
 	}
 }
 
-Model::Model()
+Model::~Model()
 {
-	vertexbuffer->Release();
-	indexbuffer->Release();
+	if(vertexbuffer != nullptr) vertexbuffer->Release();
+	if(indexbuffer != nullptr) indexbuffer->Release();
 }
 
 UINT Model::GetIndexCount()
