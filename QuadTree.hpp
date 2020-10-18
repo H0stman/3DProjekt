@@ -4,7 +4,7 @@
 
 #include "IDrawable.hpp"
 
-#define QT_SIZE 120
+constexpr auto QT_SIZE = 120;
 
 
 class QuadTree {

@@ -33,7 +33,7 @@ VS_OUTPUT vs_main(VS_INPUT vsInput)
     vsOutput.outPositionCS = mul(float4(vsOutput.outPositionCS), projection);
 	
 	//Convert position, normal, tangent and bitangent to world space. 
- //   vsOutput.outPositionWS = mul(float4(vsInput.inPosition, 1.0f), worldview).xyz;
+    //vsOutput.outPositionWS = mul(float4(vsInput.inPosition, 1.0f), worldview).xyz;
     vsOutput.outNormalWS = normalize(mul(float4(vsInput.inNormal, 0.0f), worldview).xyz);
 
 	//Forwarding texture coord.
