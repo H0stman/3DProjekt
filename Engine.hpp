@@ -39,20 +39,20 @@ class Engine
 	IDXGISwapChain* swapchain;
 	D3D11_VIEWPORT defaultviewport;
 	ID3D11RenderTargetView* backbuffer;
-	Texture* rendertexture;
+	Texture* rendertexture, *blurtarget;
 	ID3D11DepthStencilView* depthstencilview;
 	ID3D11DepthStencilState* defaultstencilstate, *nozstencilstate;
 
 	ID3D11Buffer* render2Dquad;
 
 	ID3D11PixelShader *pixelshader;
-	ID3D11VertexShader *vertexshader;
+	ID3D11VertexShader *vertexshader, *vertexshader2D;
 
 	ID3D11RasterizerState* clocklwise, *counterclockwise;
 
 	UINT stride, offset;
 
-	ID3DBlob* blobpixelvanilla, *blobvertexvanilla;
+	ID3DBlob* blobpixelvanilla, *blobvertexvanilla, *blobvertex2D;
 
 	ID3D11InputLayout* inputlayout;
 

@@ -158,8 +158,6 @@ Model::Model(std::string file, ID3D11Device* device)
 
 Model::~Model()
 {
-	if(vertexbuffer != nullptr) vertexbuffer->Release();
-	if(indexbuffer != nullptr) indexbuffer->Release();
 }
 
 UINT Model::GetIndexCount()

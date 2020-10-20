@@ -51,6 +51,8 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	/*****RENDER TEXTURE CREATION*****/
 	rendertexture = new Texture(width, height, device);
 
+	/*****BLUR TARGET TEXTURE CREATION*****/
+	blurtarget = new Texture(width, height, device);
 
 	/*****DEPTH/STENCIL VIEW CREATION*****/
 	D3D11_TEXTURE2D_DESC depthBufferDescriptor;
@@ -224,13 +226,16 @@ Engine::~Engine()
 	counterclockwise->Release();
 	pixelshader->Release();
 	vertexshader->Release();
+	vertexshader2D->Release();
 	blobpixelvanilla->Release();
 	blobvertexvanilla->Release();
+	blobvertex2D->Release();
 	inputlayout->Release();
 	lightbuffer->Release();
 	matrixbuffer->Release();
 	render2Dquad->Release();
 	if(rendertexture != nullptr) delete rendertexture;
+	if(blurtarget != nullptr) delete blurtarget;
 }
 
 BOOL Engine::Run()
@@ -304,7 +309,7 @@ VOID Engine::CompileShaders()
 		if (errorBlob != nullptr)
 			OutputDebugStringA((char*)errorBlob->GetBufferPointer());			//Will yield additional debug information from Pixel shader.
 
-		MessageBox(nullptr, L"Error compiling Pixel shader.", L"ERROR", MB_OK);
+		OutputDebugString(L"Error compiling Pixel shader.");
 		errorBlob->Release();
 	}
 
@@ -315,7 +320,7 @@ VOID Engine::CompileShaders()
 		&pixelshader);											//Address of pointer to the Pixel VertexShader.
 	if (FAILED(hr))
 	{
-		MessageBox(nullptr, L"Error creating Pixel VertexShader.", L"ERROR", MB_OK);
+		OutputDebugString(L"Error creating Pixel VertexShader.");
 		errorBlob->Release();
 	}
 
@@ -336,7 +341,7 @@ VOID Engine::CompileShaders()
 		if (errorBlob != nullptr)
 			OutputDebugStringA((char*)errorBlob->GetBufferPointer());			//Will yield additional debug information from Pixel shader.
 
-		MessageBox(nullptr, L"Error compiling Pixel shader.", L"ERROR", MB_OK);
+		OutputDebugString(L"Error compiling Pixel shader.");
 		errorBlob->Release();
 	}
 
@@ -348,7 +353,42 @@ VOID Engine::CompileShaders()
 
 	if (FAILED(hr))
 	{
-		MessageBox(nullptr, L"Error creating Pixel VertexShader.", L"ERROR", MB_OK);
+		OutputDebugString(L"Error creating Pixel VertexShader.");
+		errorBlob->Release();
+	}
+
+	if(errorBlob)
+		errorBlob->Release();
+
+	/*****Vertexshader compilation*****/
+	hr = D3DCompileFromFile(L"vertexshader2D.hlsl",					//Name of the vertex shader.
+		nullptr,																			//Vertexshader macro, ignore.
+		D3D_COMPILE_STANDARD_FILE_INCLUDE,										//Will essentially find the file.
+		"vs_2D_main",																		//Entry point for shader function.
+		"vs_5_0",																		//Pixel shader target (version).
+		flags,																			//Flags, in our case adding more debug output.
+		0u,																				//Additional flags.
+		&blobvertex2D,															//The pixel shader blob to be filled.
+		&errorBlob);																	//Error blob that will catch additional error messages.
+
+	if (FAILED(hr))
+	{
+		if (errorBlob != nullptr)
+			OutputDebugStringA((char*)errorBlob->GetBufferPointer());			//Will yield additional debug information from Pixel shader.
+
+		OutputDebugString(L"Error compiling Pixel shader.");
+		errorBlob->Release();
+	}
+
+	/*****Vertexshader creation*****/
+	hr = device->CreateVertexShader(blobvertexvanilla->GetBufferPointer(),			//Pointer to the compiled Pixel shader buffer.
+		blobvertexvanilla->GetBufferSize(),					//Size of the compiled Pixel shader buffer.
+		nullptr,														//Advanced topic, not used here.
+		&vertexshader2D);											//Address of pointer to the Pixel VertexShader.
+
+	if (FAILED(hr))
+	{
+		OutputDebugString(L"Error creating Pixel VertexShader.");
 		errorBlob->Release();
 	}
 
@@ -390,12 +430,37 @@ VOID Engine::VanillaRender()
 
 VOID Engine::Render2D()
 {
+	//Update tranformation matrices.
+	context->Map(matrixbuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &transformresource);
+	transform = (TransformationMatrices*)transformresource.pData;
+	transform->worldmatrix = XMMatrixIdentity();
+	transform->viewmatrix = XMMatrixTranspose(camera.GetViewMatrix());
+	transform->projectionmatrix = XMMatrixTranspose(camera.GetProjectionMatrix());
+	context->Unmap(matrixbuffer, 0);
 
+	/*****Set Vertex Buffers*****/
+	context->IASetVertexBuffers(0u,							//The startslot of the vertex buffer being used. 
+		1u,													//Total number of vertex buffers.
+		&render2Dquad,										//Address of pointer to Vertex buffer.
+		&stride,											//The byte-stride of entities in the Vertex buffer, here vertices.
+		&offset);											//Point of start of the first vertex to be used. Here all vertices are bound to buffer.
+	/*****Set Primitive topology*****/
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	ID3D11ShaderResourceView* srv[] = { rendertexture->GetShaderResourceView() };
+	context->PSSetShaderResources(0u, 1u, srv);
+	context->Draw(4u, 0u);
 }
 
 VOID Engine::Blur()
 {
-	
+	// Bind resources to pipeline
+	ID3D11ShaderResourceView* srv[1] = { rendertexture->GetShaderResourceView() };
+	context->CSSetShaderResources(1u, 1u, srv);
+	ID3D11UnorderedAccessView* uav[1] = { blurtarget->GetUnorderedAccessView() };
+	context->CSSetUnorderedAccessViews(0u, 1u, uav, nullptr);
+
+	// Run the blur shader
+	context->Dispatch(32u, 32u, 1u);
 }
 
 VOID Engine::SetRenderTargets()

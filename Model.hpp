@@ -10,7 +10,6 @@
 
 class Model : public IDrawable
 {
-	
 	Model() = delete;
 public:
 	Model(std::string file, ID3D11Device* device);

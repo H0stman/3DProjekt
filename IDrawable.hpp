@@ -32,7 +32,7 @@ protected:
 	Texture *texture[3];
 
 public:
-	virtual ~IDrawable() {};
+	~IDrawable();;
 	virtual UINT GetIndexCount() = 0;
 	virtual UINT GetStartIndexLocation() = 0;
 	virtual INT GetBaseVertexLocation() = 0;
