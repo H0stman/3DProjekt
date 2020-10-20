@@ -7,12 +7,9 @@
 
 
 #include "IDrawable.hpp"
-#include "Texture.hpp"
 
 class Model : public IDrawable
 {
-	enum textype {diffuse, displacement, normalmap};
-	Texture *texture[3];
 	
 	Model() = delete;
 public:
