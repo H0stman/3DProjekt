@@ -25,8 +25,7 @@ protected:
 	BoundingBox boundingbox;
 	std::vector<vertex> vertices;
 	std::vector<DWORD> indices;
-	ID3D11Buffer* vertexbuffer;
-	ID3D11Buffer* indexbuffer;
+	ID3D11Buffer* vertexbuffer, *indexbuffer;
 
 	enum textype {diffuse, displacement, normalmap};
 	Texture *texture[3];
@@ -38,6 +37,7 @@ public:
 	virtual INT GetBaseVertexLocation() = 0;
 	virtual ID3D11Buffer** GetVertexBuffer() = 0;
 	virtual ID3D11Buffer* GetIndexBuffer() = 0;
+	Texture* GetTextures();
 	XMMATRIX GetWorldMatrix();
 	BOOL IsClockwise();
 	BoundingBox GetBoundingBox();

@@ -114,7 +114,10 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\DV1542-3D-Project\heightmap.bmp">
+    <Image Include="heightmap.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="grass.png">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

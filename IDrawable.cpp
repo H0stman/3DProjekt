@@ -1,5 +1,10 @@
 #include "IDrawable.hpp"
 
+Texture* IDrawable::GetTextures()
+{
+   return texture[0];
+}
+
 IDrawable::~IDrawable() {
 	if(vertexbuffer != nullptr) vertexbuffer->Release();
 	if(indexbuffer != nullptr) indexbuffer->Release();

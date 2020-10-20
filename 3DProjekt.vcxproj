@@ -439,7 +439,8 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\DV1542-3D-Project\heightmap.bmp" />
+    <Image Include="grass.png" />
+    <Image Include="heightmap.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

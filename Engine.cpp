@@ -2,6 +2,7 @@
 
 Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1.0f }
 {
+	CoInitialize(nullptr); //Memory leaks when calling this function. Maybe something to do with com error object in texture.cpp?
 	RECT rect;
 	GetClientRect(hndl, &rect);
 	UINT width = rect.right - rect.left;
@@ -144,6 +145,21 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	context->VSSetShader(vertexshader, nullptr, 0u);
 	context->PSSetShader(pixelshader, nullptr, 0u);
 
+	//Creating texturesampler
+	D3D11_SAMPLER_DESC samplerDescriptor;
+	ZeroMemory(&samplerDescriptor, sizeof(D3D11_SAMPLER_DESC));
+
+	samplerDescriptor.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	samplerDescriptor.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDescriptor.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDescriptor.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDescriptor.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	samplerDescriptor.MinLOD = 0;
+	samplerDescriptor.MaxLOD = D3D11_FLOAT32_MAX;
+
+	hr = device->CreateSamplerState(&samplerDescriptor, &texturesampler);
+
+
 	LoadDrawables();
 
 	D3D11_BUFFER_DESC lightdesc = {};
@@ -173,8 +189,8 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	float left = -right;
 	float quad[] = {
 		left, top, 0.0,			// Vertex
-		0.0, 0.0,				// Texture coordinate
-		0.0, 0.0, 1.0,			// Normal (not used but necessary to comply with current input layout)
+		0.0, 0.0,					// Texture coordinate
+		0.0, 0.0, 1.0,				// Normal (not used but necessary to comply with current input layout)
 		right, top, 0.0,
 		1.0, 0.0,
 		0.0, 0.0, 1.0,
@@ -205,9 +221,7 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 
 	HRESULT HR = device->CreateBuffer(&quadDesc, &quadData, &render2Dquad);
 	if (FAILED(HR))
-	{
 		OutputDebugString(L"Error creating Quad-buffer.");
-	}
 
 }
 
@@ -234,6 +248,7 @@ Engine::~Engine()
 	lightbuffer->Release();
 	matrixbuffer->Release();
 	render2Dquad->Release();
+	texturesampler->Release();
 	if(rendertexture != nullptr) delete rendertexture;
 	if(blurtarget != nullptr) delete blurtarget;
 }
@@ -315,9 +330,9 @@ VOID Engine::CompileShaders()
 
 	/*****Pixelshader creation*****/
 	hr = device->CreatePixelShader(blobpixelvanilla->GetBufferPointer(),			//Pointer to the compiled Pixel shader buffer.
-		blobpixelvanilla->GetBufferSize(),				//Size of the compiled Pixel shader buffer.
-		nullptr,													//Advanced topic, not used here.
-		&pixelshader);											//Address of pointer to the Pixel VertexShader.
+		blobpixelvanilla->GetBufferSize(),													//Size of the compiled Pixel shader buffer.
+		nullptr,																						//Advanced topic, not used here.
+		&pixelshader);																				//Address of pointer to the Pixel VertexShader.
 	if (FAILED(hr))
 	{
 		OutputDebugString(L"Error creating Pixel VertexShader.");
@@ -404,6 +419,7 @@ VOID Engine::VanillaRender()
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	context->VSSetShader(vertexshader, nullptr, 0u);
 	context->PSSetShader(pixelshader, nullptr, 0u);
+	context->PSSetSamplers(0u, 1u, &texturesampler);
 	SetRenderTargets();
 	context->VSSetConstantBuffers(0u, 1u, &matrixbuffer);
 	context->PSSetConstantBuffers(0u, 1u, &lightbuffer);
@@ -493,13 +509,18 @@ VOID Engine::Update()
 		transform->projectionmatrix = XMMatrixTranspose(camera.GetProjectionMatrix());
 		context->Unmap(matrixbuffer, 0);
 
+
 		//Update light.
 		context->Map(lightbuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &lightresouce);
 		light = (Light*)lightresouce.pData;
 		light->diffuseColour = XMFLOAT4(0.1f, 1.0f, 1.0f, 1.0f);
-		light->pos = XMFLOAT3(0.0f, -200.0f, 0.0f);
+		light->pos = XMFLOAT3(0.0f, 100.0f, 0.0f);
 		light->padding = 0.0f;
 		context->Unmap(lightbuffer, 0);
+
+		//Set texture.
+		ID3D11ShaderResourceView* texture = model->GetTextures()->GetShaderResourceView();
+		context->PSSetShaderResources(0u, 1u, &texture);
 
 		context->IASetIndexBuffer(model->GetIndexBuffer(), DXGI_FORMAT_R32_UINT, 0u);
 		context->IASetVertexBuffers(0u, 1u, model->GetVertexBuffer(), &stride, &offset);
