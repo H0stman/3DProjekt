@@ -108,17 +108,17 @@ Terrain::Terrain(PCSTR filename, ID3D11Device* device)
 			vertices[(size_t)i * cols + j + 1].texturecoordinate = XMFLOAT2(texUIndex + 1.0f, texVIndex + 1.0f);
 
 			indices[(size_t)k + 2] = (i + 1) * cols + j;    // Top left of quad
-			vertices[(size_t)(i + 1) * cols + j].texturecoordinate = XMFLOAT2(texUIndex + 0.0f, texVIndex + 0.0f);
+			vertices[((size_t)i + 1) * cols + j].texturecoordinate = XMFLOAT2(texUIndex + 0.0f, texVIndex + 0.0f);
 
 
 			indices[(size_t)k + 3] = (i + 1) * cols + j;    // Top left of quad
-			vertices[(size_t)(i + 1) * cols + j].texturecoordinate = XMFLOAT2(texUIndex + 0.0f, texVIndex + 0.0f);
+			vertices[((size_t)i + 1) * cols + j].texturecoordinate = XMFLOAT2(texUIndex + 0.0f, texVIndex + 0.0f);
 
 			indices[(size_t)k + 4] = i * cols + j + 1;        // Bottom right of quad
 			vertices[(size_t)i * cols + j + 1].texturecoordinate = XMFLOAT2(texUIndex + 1.0f, texVIndex + 1.0f);
 
 			indices[(size_t)k + 5] = (i + 1) * cols + j + 1;    // Top right of quad
-			vertices[(size_t)(i + 1) * cols + j + 1].texturecoordinate = XMFLOAT2(texUIndex + 1.0f, texVIndex + 0.0f);
+			vertices[((size_t)i + 1) * cols + j + 1].texturecoordinate = XMFLOAT2(texUIndex + 1.0f, texVIndex + 0.0f);
 
 			k += 6; // next quad
 
@@ -160,6 +160,8 @@ Terrain::Terrain(PCSTR filename, ID3D11Device* device)
 
 	stride = sizeof(vertex);
 	offset = 0;
+
+	texture[0] = new Texture("grass.png", device);
 }
 
 Terrain::~Terrain()

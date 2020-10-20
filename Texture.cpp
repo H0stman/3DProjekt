@@ -61,6 +61,7 @@ Texture::Texture(INT texWidth, INT texHeight, ID3D11Device* device) : rendertarg
 		err = _com_error(hr);
 		OutputDebugStringW(err.ErrorMessage());
 	}
+	err.~_com_error();
 }
 
 Texture::Texture(std::string file, ID3D11Device* device) : rendertargetview(nullptr), shaderresourceview(nullptr), textureResource(nullptr), texture(nullptr), unorderedaccessview(nullptr)

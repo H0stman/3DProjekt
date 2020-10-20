@@ -43,8 +43,6 @@ class Engine
 	ID3D11DepthStencilView* depthstencilview;
 	ID3D11DepthStencilState* defaultstencilstate, *nozstencilstate;
 
-	ID3D11Buffer* render2Dquad;
-
 	ID3D11PixelShader *pixelshader;
 	ID3D11VertexShader *vertexshader;
 
@@ -71,7 +69,9 @@ class Engine
 	Light* light;
 	D3D11_MAPPED_SUBRESOURCE lightresouce, transformresource;
 
-	ID3D11Buffer* lightbuffer, *matrixbuffer;
+	ID3D11SamplerState* texturesampler;
+
+	ID3D11Buffer* lightbuffer, *matrixbuffer, *render2Dquad;
 
 	VOID VanillaRender();
 	VOID Render2D();
