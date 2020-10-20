@@ -2,7 +2,6 @@
 #include <Windows.h>
 #include <DirectXTK/Mouse.h>
 #include <DirectXTK/Keyboard.h>
-#include <cmath>
 #include <DirectXMath.h>
 
 using namespace DirectX;
