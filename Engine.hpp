@@ -42,6 +42,8 @@ class Engine
 	ID3D11DepthStencilView* depthstencilview;
 	ID3D11DepthStencilState* defaultstencilstate, *nozstencilstate;
 
+	ID3D11Buffer* render2Dquad;
+
 	ID3D11PixelShader *pixelshader;
 	ID3D11VertexShader *vertexshader;
 
