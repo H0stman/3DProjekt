@@ -397,7 +397,8 @@ VOID Engine::Update()
 	swapchain->Present(1u, 0u);
 }
 
-VOID Engine::LoadDrawables() {
+VOID Engine::LoadDrawables() 
+{
 	models.push_back(new Terrain("heightmap.bmp", device));
 	models.push_back(new Model("cube.obj", device));
 }

@@ -29,12 +29,12 @@ XMVECTOR Camera::GetPosition()
 
 VOID Camera::SetOrthographicProjection()
 {
-	projection = XMMatrixOrthographicRH(1280, 720, 0.1f, 1000.0f);
+	projection = XMMatrixOrthographicLH(1280, 720, 0.1f, 1000.0f);
 }
 
 VOID Camera::SetPerspectiveProjection()
 {
-	projection = XMMatrixPerspectiveFovRH(XMConvertToRadians(85.0f), 1280.0f / 720.0f, 0.1f, 1000.0f);
+	projection = XMMatrixPerspectiveFovLH(XMConvertToRadians(85.0f), 1280.0f / 720.0f, 0.1f, 1000.0f);
 }
 
 VOID Camera::Update()
@@ -52,13 +52,13 @@ VOID Camera::Update()
 		// limit pitch to straight up or straight down
 		// with a little fudge-factor to avoid gimbal lock
 		FLOAT limit = XM_PI / 2.0f - 0.01f;
-		pitch = fmaxf(-limit, pitch);
-		pitch = fminf(+limit, pitch);
+		pitch = max(-limit, pitch);
+		pitch = min(+limit, pitch);
 		
 		// keep longitude in sane range by wrapping
-		if (yaw > XM_PI)
+		if (yaw < XM_PI)
 			yaw -= XM_PI * 2.0f;
-		else if (yaw < -XM_PI)
+		else if (yaw > -XM_PI)
 			yaw += XM_PI * 2.0f;
 
 		forward = XMVector4Normalize(XMVector4Transform(forward, XMMatrixRotationRollPitchYaw(pitch, yaw, 0.0f)));

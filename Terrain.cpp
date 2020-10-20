@@ -83,13 +83,13 @@ Terrain::Terrain(PCSTR filename, ID3D11Device* device)
 	facecount = (rows - 1) * (cols - 1) * 2;
 
 	vertices.resize(vertexcount);
-	indices.resize((size_t)facecount * 3);
+	indices.resize(facecount * 3);
 
 	for (UINT i = 0; i < rows; ++i)
 		for (UINT j = 0; j < cols; ++j)
 		{
-			vertices[(size_t)i * cols + j].position = hminfo.heightMap[i * cols + j];
-			vertices[(size_t)i * cols + j].normal = XMFLOAT3(0.0f, 1.0f, 0.0f);
+			vertices[i * cols + j].position = hminfo.heightMap[i * cols + j];
+			vertices[i * cols + j].normal = XMFLOAT3(0.0f, 1.0f, 0.0f);
 		}
 
 
@@ -102,23 +102,23 @@ Terrain::Terrain(PCSTR filename, ID3D11Device* device)
 		{
 
 			indices[k] = i * cols + j;        // Bottom left of quad
-			vertices[(size_t)i * cols + j].texturecoordinate = XMFLOAT2(texUIndex + 0.0f, texVIndex + 1.0f);
+			vertices[i * cols + j].texturecoordinate = XMFLOAT2(texUIndex + 0.0f, texVIndex + 1.0f);
 
-			indices[(size_t)k + 1] = i * cols + j + 1;        // Bottom right of quad
-			vertices[(size_t)i * cols + j + 1].texturecoordinate = XMFLOAT2(texUIndex + 1.0f, texVIndex + 1.0f);
+			indices[k + 1] = i * cols + j + 1;        // Bottom right of quad
+			vertices[i * cols + j + 1].texturecoordinate = XMFLOAT2(texUIndex + 1.0f, texVIndex + 1.0f);
 
-			indices[(size_t)k + 2] = (i + 1) * cols + j;    // Top left of quad
-			vertices[((size_t)i + 1) * cols + j].texturecoordinate = XMFLOAT2(texUIndex + 0.0f, texVIndex + 0.0f);
+			indices[k + 2] = (i + 1) * cols + j;    // Top left of quad
+			vertices[(i + 1) * cols + j].texturecoordinate = XMFLOAT2(texUIndex + 0.0f, texVIndex + 0.0f);
 
 
-			indices[(size_t)k + 3] = (i + 1) * cols + j;    // Top left of quad
-			vertices[((size_t)i + 1) * cols + j].texturecoordinate = XMFLOAT2(texUIndex + 0.0f, texVIndex + 0.0f);
+			indices[k + 3] = (i + 1) * cols + j;    // Top left of quad
+			vertices[(i + 1) * cols + j].texturecoordinate = XMFLOAT2(texUIndex + 0.0f, texVIndex + 0.0f);
 
-			indices[(size_t)k + 4] = i * cols + j + 1;        // Bottom right of quad
-			vertices[(size_t)i * cols + j + 1].texturecoordinate = XMFLOAT2(texUIndex + 1.0f, texVIndex + 1.0f);
+			indices[k + 4] = i * cols + j + 1;        // Bottom right of quad
+			vertices[i * cols + j + 1].texturecoordinate = XMFLOAT2(texUIndex + 1.0f, texVIndex + 1.0f);
 
-			indices[(size_t)k + 5] = (i + 1) * cols + j + 1;    // Top right of quad
-			vertices[((size_t)i + 1) * cols + j + 1].texturecoordinate = XMFLOAT2(texUIndex + 1.0f, texVIndex + 0.0f);
+			indices[k + 5] = (i + 1) * cols + j + 1;    // Top right of quad
+			vertices[(i + 1) * cols + j + 1].texturecoordinate = XMFLOAT2(texUIndex + 1.0f, texVIndex + 0.0f);
 
 			k += 6; // next quad
 
@@ -170,7 +170,7 @@ Terrain::~Terrain()
 
 UINT Terrain::GetIndexCount()
 {
-	return indices.size();
+	return UINT(facecount * 3);
 }
 
 UINT Terrain::GetStartIndexLocation()
