@@ -38,6 +38,7 @@ class Engine
 	IDXGISwapChain* swapchain;
 	D3D11_VIEWPORT defaultviewport;
 	ID3D11RenderTargetView* backbuffer;
+	Texture* rendertexture;
 	ID3D11DepthStencilView* depthstencilview;
 	ID3D11DepthStencilState* defaultstencilstate, *nozstencilstate;
 
@@ -70,9 +71,12 @@ class Engine
 	ID3D11Buffer* lightbuffer, *matrixbuffer;
 
 	VOID VanillaRender();
+	VOID Render2D();
 	VOID CreateRasterizerStates();
 	VOID CompileShaders();
 	VOID LoadDrawables();
+	VOID SetRenderTargets();
+	VOID Blur();
 
 public:
 
