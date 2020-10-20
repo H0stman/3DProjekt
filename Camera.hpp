@@ -17,8 +17,6 @@ public:
 	XMMATRIX GetViewMatrix();
 	XMMATRIX GetProjectionMatrix();
 	XMVECTOR GetPosition();
-	VOID SetOrthographicProjection();
-	VOID SetPerspectiveProjection();
 	VOID Update();
 };
 

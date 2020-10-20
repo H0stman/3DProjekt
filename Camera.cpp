@@ -27,16 +27,6 @@ XMVECTOR Camera::GetPosition()
 	return position;
 }
 
-VOID Camera::SetOrthographicProjection()
-{
-	projection = XMMatrixOrthographicLH(1280, 720, 0.1f, 1000.0f);
-}
-
-VOID Camera::SetPerspectiveProjection()
-{
-	projection = XMMatrixPerspectiveFovLH(XMConvertToRadians(85.0f), 1280.0f / 720.0f, 0.1f, 1000.0f);
-}
-
 VOID Camera::Update()
 {
 	auto m = Mouse::Get().GetState();
@@ -56,9 +46,9 @@ VOID Camera::Update()
 		pitch = min(+limit, pitch);
 		
 		// keep longitude in sane range by wrapping
-		if (yaw < XM_PI)
+		if (yaw > XM_PI)
 			yaw -= XM_PI * 2.0f;
-		else if (yaw > -XM_PI)
+		else if (yaw < -XM_PI)
 			yaw += XM_PI * 2.0f;
 
 		forward = XMVector4Normalize(XMVector4Transform(forward, XMMatrixRotationRollPitchYaw(pitch, yaw, 0.0f)));
@@ -74,29 +64,29 @@ VOID Camera::Update()
 
 	XMVECTOR move = XMVectorZero();
 
-	if (kb.Up || kb.W)
+	if (kb.W)
 		position += forward;
 
-	if (kb.Down || kb.S)
+	if (kb.S)
 		position -= forward;
 
-	if (kb.Left || kb.A)
+	if (kb.A)
 		position += XMVector3Normalize(XMVector3Cross(forward, updirection));
 
-	if (kb.Right || kb.D)
+	if (kb.D)
 		position -= XMVector3Normalize(XMVector3Cross(forward, updirection));
 
-	if (kb.PageUp || kb.Space)
+	if (kb.Space)
 		position += updirection;
 
-	if (kb.LeftShift || kb.X)
+	if (kb.LeftShift)
 		position -= updirection;
 
 	if (kb.O)
-		SetOrthographicProjection();
+		projection = XMMatrixOrthographicLH(1280, 720, 0.1f, 1000.0f);
 
 	if (kb.P)
-		SetPerspectiveProjection();
+		projection = XMMatrixPerspectiveFovLH(XMConvertToRadians(90.0f), 1280.0f / 720.0f, 0.1f, 1000.0f);
 
 	view = XMMatrixLookToLH(position, forward, updirection);
 

@@ -140,19 +140,16 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 
 	LoadDrawables();
 
-	D3D11_BUFFER_DESC desc = {};
-	desc.ByteWidth = sizeof(Light);
-	desc.MiscFlags = 0;
-	desc.StructureByteStride = 0;
-	desc.Usage = D3D11_USAGE_DYNAMIC;
-	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	hr = device->CreateBuffer(&desc, nullptr, &lightbuffer);
+	D3D11_BUFFER_DESC lightdesc = {};
+	lightdesc.ByteWidth = sizeof(Light);
+	lightdesc.MiscFlags = 0;
+	lightdesc.StructureByteStride = 0;
+	lightdesc.Usage = D3D11_USAGE_DYNAMIC;
+	lightdesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	lightdesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	hr = device->CreateBuffer(&lightdesc, nullptr, &lightbuffer);
 	assert(SUCCEEDED(hr));
 
-	D3D11_MAPPED_SUBRESOURCE lghtresrc;
-
-	
 	D3D11_BUFFER_DESC matrixBufferDesc = {};
 	matrixBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 	matrixBufferDesc.ByteWidth = sizeof(TransformationMatrices);
@@ -162,8 +159,6 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	matrixBufferDesc.StructureByteStride = 0;
 	hr = device->CreateBuffer(&matrixBufferDesc, nullptr, &matrixbuffer);
 	assert(SUCCEEDED(hr));
-	
-	
 
 }
 
@@ -349,8 +344,6 @@ VOID Engine::Update()
 {
 	context->ClearDepthStencilView(depthstencilview, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0u);
 	context->ClearRenderTargetView(backbuffer, clearcolour);
-
-	
 	
 	camera.Update();
 	VanillaRender();
@@ -362,12 +355,23 @@ VOID Engine::Update()
 		else
 			context->RSSetState(counterclockwise);
 
-		context->Map(matrixbuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-		transform = (TransformationMatrices*)mappedResource.pData;
+
+		//Update tranformation matrices.
+		context->Map(matrixbuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &transformresource);
+		transform = (TransformationMatrices*)transformresource.pData;
 		transform->worldmatrix = model->GetWorldMatrix();
 		transform->viewmatrix = XMMatrixTranspose(camera.GetViewMatrix());
 		transform->projectionmatrix = XMMatrixTranspose(camera.GetProjectionMatrix());
 		context->Unmap(matrixbuffer, 0);
+
+		//Update light.
+		context->Map(lightbuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &lightresouce);
+		light = (Light*)lightresouce.pData;
+		light->diffuseColour = XMFLOAT4(0.1f, 1.0f, 1.0f, 1.0f);
+		light->pos = XMFLOAT3(0.0f, -200.0f, 0.0f);
+		light->padding = 0.0f;
+		context->Unmap(lightbuffer, 0);
+
 		context->IASetIndexBuffer(model->GetIndexBuffer(), DXGI_FORMAT_R32_UINT, 0u);
 		context->IASetVertexBuffers(0u, 1u, model->GetVertexBuffer(), &stride, &offset);
 		context->DrawIndexed(model->GetIndexCount(), 0u, 0u);

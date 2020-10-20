@@ -1,5 +1,6 @@
 #pragma once
 #define NOMINMAX
+
 #include <d3d11_4.h>
 #include <dxgi1_6.h>
 #include <d3dcompiler.h>
@@ -65,7 +66,7 @@ class Engine
 
 	Camera camera;
 	Light* light;
-	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	D3D11_MAPPED_SUBRESOURCE lightresouce, transformresource;
 
 	ID3D11Buffer* lightbuffer, *matrixbuffer;
 
