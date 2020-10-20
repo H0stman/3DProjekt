@@ -163,6 +163,49 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	matrixBufferDesc.StructureByteStride = 0;
 	hr = device->CreateBuffer(&matrixBufferDesc, nullptr, &matrixbuffer);
 	assert(SUCCEEDED(hr));
+	
+	/** Setting up dynamic quad for rendering 2D images/textures **/
+	float top = static_cast<float>(height) / 2.0f;
+	float right = static_cast<float>(width) / 2.0f;
+	float bottom = -top;
+	float left = -right;
+	float quad[] = {
+		left, top, 0.0,			// Vertex
+		0.0, 0.0,				// Texture coordinate
+		0.0, 0.0, 1.0,			// Normal (not used but necessary to comply with current input layout)
+		right, top, 0.0,
+		1.0, 0.0,
+		0.0, 0.0, 1.0,
+		left, bottom, 0.0,
+		0.0, 1.0,
+		0.0, 0.0, 1.0,
+		right, bottom, 0.0,
+		1.0, 1.0,
+		0.0, 0.0, 1.0,
+	};
+	UINT vertexStride = 8 * sizeof(float);
+	UINT vertexOffset = 0;
+	UINT vertexCount = 4;
+
+	D3D11_BUFFER_DESC quadDesc;
+	ZeroMemory(&quadDesc, sizeof(D3D11_BUFFER_DESC));
+	quadDesc.Usage = D3D11_USAGE_DYNAMIC;
+	quadDesc.ByteWidth = vertexStride * vertexCount;
+	quadDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	quadDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	quadDesc.MiscFlags = 0;
+	quadDesc.StructureByteStride = 0;
+
+	D3D11_SUBRESOURCE_DATA quadData;
+	quadData.pSysMem = quad;
+	quadData.SysMemPitch = 0;
+	quadData.SysMemSlicePitch = 0;
+
+	HRESULT HR = device->CreateBuffer(&quadDesc, &quadData, &render2Dquad);
+	if (FAILED(HR))
+	{
+		OutputDebugString(L"Error creating Quad-buffer.");
+	}
 
 }
 
@@ -186,6 +229,8 @@ Engine::~Engine()
 	inputlayout->Release();
 	lightbuffer->Release();
 	matrixbuffer->Release();
+	render2Dquad->Release();
+	if(rendertexture != nullptr) delete rendertexture;
 }
 
 BOOL Engine::Run()

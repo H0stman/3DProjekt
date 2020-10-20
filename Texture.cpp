@@ -70,11 +70,11 @@ Texture::Texture(std::string file, ID3D11Device* device) : rendertargetview(null
 
 Texture::~Texture()
 {
-	texture->Release();
-	textureResource->Release();
-	rendertargetview->Release();
-	shaderresourceview->Release();
-	unorderedaccessview->Release();
+	if(texture != nullptr) texture->Release();
+	if(textureResource != nullptr) textureResource->Release();
+	if(rendertargetview != nullptr) rendertargetview->Release();
+	if(shaderresourceview != nullptr) shaderresourceview->Release();
+	if(unorderedaccessview != nullptr) unorderedaccessview->Release();
 }
 
 ID3D11Texture2D* Texture::GetTexture()
