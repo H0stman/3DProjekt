@@ -63,6 +63,11 @@ Texture::Texture(INT texWidth, INT texHeight, ID3D11Device* device) : rendertarg
 	}
 }
 
+Texture::Texture(std::string file, ID3D11Device* device) : rendertargetview(nullptr), shaderresourceview(nullptr), textureResource(nullptr), texture(nullptr), unorderedaccessview(nullptr)
+{
+	LoadTexture(file, device);
+}
+
 Texture::~Texture()
 {
 	texture->Release();
@@ -92,11 +97,11 @@ ID3D11UnorderedAccessView* Texture::GetUnorderedAccessView()
 	return unorderedaccessview;
 }
 
-BOOL Texture::LoadTexture(std::wstring file, ID3D11Device* device)
+BOOL Texture::LoadTexture(std::string file, ID3D11Device* device)
 {
 	//Create Texture from file
 
-	HRESULT hr = CreateWICTextureFromFile(device, file.c_str(), &textureResource, &shaderresourceview);
+	HRESULT hr = CreateWICTextureFromFile(device, CA2W(file.c_str()), &textureResource, &shaderresourceview);
 	_com_error err(hr);
 
 	if (FAILED(hr))

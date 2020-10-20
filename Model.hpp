@@ -5,10 +5,12 @@
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 
+
 #include "IDrawable.hpp"
 
 class Model : public IDrawable
 {
+	
 	Model() = delete;
 public:
 	Model(std::string file, ID3D11Device* device);

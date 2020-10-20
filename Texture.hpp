@@ -2,6 +2,7 @@
 #include <comdef.h>
 #include <string>
 #include <DirectXTK/WICTextureLoader.h>
+#include <atlbase.h>
 
 using namespace DirectX;
 
@@ -15,13 +16,14 @@ class Texture
 
 public:
 	Texture(INT texWidth, INT texHeight, ID3D11Device *device);
+	Texture(std::string file, ID3D11Device *device);
 	~Texture();
 
 	ID3D11Texture2D* GetTexture();
 	ID3D11RenderTargetView* GetRenderTargetView();
 	ID3D11ShaderResourceView* GetShaderResourceView();
 	ID3D11UnorderedAccessView* GetUnorderedAccessView();
-	BOOL LoadTexture(std::wstring file, ID3D11Device* device);
+	BOOL LoadTexture(std::string file, ID3D11Device* device);
 
 	VOID Clear(FLOAT red, FLOAT green, FLOAT blue, FLOAT alpha, ID3D11DeviceContext* context);
 };

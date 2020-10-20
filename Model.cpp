@@ -65,48 +65,45 @@ Model::Model(std::string file, ID3D11Device* device)
 				indices.push_back(face.mIndices[j]);
 			}
 		}
-		//m_NrOfIndices = static_cast<unsigned int>(indices.size());
 
-		//aiString texPath;
-		//if (pScene->mMaterials[mesh->mMaterialIndex]->GetTextureCount(aiTextureType_DIFFUSE) == 0)
-		//{
-		//	texPath.Append("cubeTex.png");	// Setting a default texture where model has none (does not seem to produce result, probably due to 0 tex-coords)
-		//}
-		//else
-		//{
-		//	pScene->mMaterials[mesh->mMaterialIndex]->GetTexture(aiTextureType_DIFFUSE, 0, &texPath);
-		//}
-		//std::string tex = "Data\\" + std::string(texPath.C_Str(), texPath.length);	// Combining texture file name with path to data folder
-		//m_TexDiffuse.LoadTexture(device, tex);
 
-		//texPath.Clear();
-		//if (pScene->mMaterials[mesh->mMaterialIndex]->GetTextureCount(aiTextureType_DISPLACEMENT) == 0)
-		//{
-		//	m_HasDisplacementMap = false;
-		//}
-		//else
-		//{
-		//	pScene->mMaterials[mesh->mMaterialIndex]->GetTexture(aiTextureType_DISPLACEMENT, 0, &texPath);
-		//	tex.clear();
-		//	tex = "Data\\" + std::string(texPath.C_Str(), texPath.length);	// Combining texture file name with path to data folder
-		//	m_TexDisplacement.LoadTexture(device, tex);
-		//	m_HasDisplacementMap = true;
-		//}
+		aiString texPath;
+		if (pScene->mMaterials[mesh->mMaterialIndex]->GetTextureCount(aiTextureType_DIFFUSE) == 0)
+		{
+			texture[diffuse] = nullptr;
+		}
+		else
+		{
+			pScene->mMaterials[mesh->mMaterialIndex]->GetTexture(aiTextureType_DIFFUSE, 0, &texPath);
+			std::string tex = std::string(texPath.C_Str(), texPath.length);
+			texture[diffuse] = new Texture(tex, device);
+		}
 
-		//texPath.Clear();
-		//if (pScene->mMaterials[mesh->mMaterialIndex]->GetTextureCount(aiTextureType_NORMALS) == 0)
-		//{
-		//	m_HasNormalMap = false;
-		//}
-		//else
-		//{
-		//	pScene->mMaterials[mesh->mMaterialIndex]->GetTexture(aiTextureType_NORMALS, 0, &texPath);
-		//	tex.clear();
-		//	tex = "Data\\" + std::string(texPath.C_Str(), texPath.length);	// Combining texture file name with path to data folder
-		//	m_TexNormalMap.LoadTexture(device, tex);
-		//	m_HasNormalMap = true;
-		//}
+		texPath.Clear();
+		if (pScene->mMaterials[mesh->mMaterialIndex]->GetTextureCount(aiTextureType_DISPLACEMENT) == 0)
+		{
+			texture[displacement] = nullptr;
+		}
+		else
+		{
+			pScene->mMaterials[mesh->mMaterialIndex]->GetTexture(aiTextureType_DISPLACEMENT, 0, &texPath);
+			std::string tex = std::string(texPath.C_Str(), texPath.length);
+			texture[displacement] = new Texture(tex, device);
+		}
 
+		texPath.Clear();
+		if (pScene->mMaterials[mesh->mMaterialIndex]->GetTextureCount(aiTextureType_NORMALS) == 0)
+		{
+			texture[normalmap] = nullptr;
+		}
+		else
+		{
+			pScene->mMaterials[mesh->mMaterialIndex]->GetTexture(aiTextureType_NORMALS, 0, &texPath);
+			std::string tex = std::string(texPath.C_Str(), texPath.length);
+			texture[normalmap] = new Texture(tex, device);
+		}
+
+		// These lines seem to throw a delete scalar error
 		//if(mesh != nullptr) delete mesh;
 		//if(pScene != nullptr) delete pScene;
 

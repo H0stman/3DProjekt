@@ -48,6 +48,10 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	if (FAILED(hr))
 		OutputDebugString(L"Error generating back buffer for Render target view.\n");
 
+	/*****RENDER TEXTURE CREATION*****/
+	rendertexture = new Texture(width, height, device);
+
+
 	/*****DEPTH/STENCIL VIEW CREATION*****/
 	D3D11_TEXTURE2D_DESC depthBufferDescriptor;
 	ZeroMemory(&depthBufferDescriptor, sizeof(D3D11_TEXTURE2D_DESC));
@@ -315,11 +319,10 @@ VOID Engine::VanillaRender()
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	context->VSSetShader(vertexshader, nullptr, 0u);
 	context->PSSetShader(pixelshader, nullptr, 0u);
-	context->OMSetRenderTargets(1u, &backbuffer, depthstencilview);
+	SetRenderTargets();
 	context->VSSetConstantBuffers(0u, 1u, &matrixbuffer);
 	context->PSSetConstantBuffers(0u, 1u, &lightbuffer);
 	context->RSSetViewports(1u, &defaultviewport);
-	context->OMSetDepthStencilState(defaultstencilstate, 0u);
 
 	/*if (ppRenderTargets == nullptr)
 	{
@@ -338,6 +341,22 @@ VOID Engine::VanillaRender()
 		UINT i = 0;
 		engine->GetContext()->DrawIndexed(ppDrawables[i]->GetIndexCount(), ppDrawables[i]->GetStartIndexLocation(), ppDrawables[i]->GetBaseVertexLocation());
 	}*/
+}
+
+VOID Engine::Render2D()
+{
+
+}
+
+VOID Engine::Blur()
+{
+	
+}
+
+VOID Engine::SetRenderTargets()
+{
+	context->OMSetRenderTargets(1u, &backbuffer, depthstencilview);
+	context->OMSetDepthStencilState(defaultstencilstate, 0u);
 }
 
 VOID Engine::Update() 

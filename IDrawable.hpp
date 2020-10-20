@@ -4,6 +4,8 @@
 #include <DirectXCollision.h>
 #include <vector>
 
+#include "Texture.hpp"
+
 using namespace DirectX;
 
 struct vertex
@@ -25,6 +27,9 @@ protected:
 	std::vector<DWORD> indices;
 	ID3D11Buffer* vertexbuffer;
 	ID3D11Buffer* indexbuffer;
+
+	enum textype {diffuse, displacement, normalmap};
+	Texture *texture[3];
 
 public:
 	virtual ~IDrawable() {};
