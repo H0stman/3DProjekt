@@ -592,7 +592,7 @@ VOID Engine::Update()
 	context->ClearRenderTargetView(rendertexture->GetRenderTargetView(), clearcolour);
 	
 	camera.Update();
-	SetRenderTargets(1u);
+	SetRenderTargets(0u);	// 0 = backbuffer, 1 = render to rendertexture, 2 = backbuffer and no depth buffer
 	VanillaRender();
 
 	for (auto model : models) //TODO: Fix the incompatible input output structs in vertex and pixelshader for vanilla rendering.
@@ -630,8 +630,8 @@ VOID Engine::Update()
 	}
 
 	//Blur(rendertexture, blurtarget);
-	SetRenderTargets(2u);
-	Render2D();
+	//SetRenderTargets(2u);
+	//Render2D();
 
 	swapchain->Present(1u, 0u);
 }
