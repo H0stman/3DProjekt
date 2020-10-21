@@ -74,6 +74,7 @@ class Engine
 	ID3D11Buffer* lightbuffer, *matrixbuffer, *render2Dquad;
 
 	VOID VanillaRender();
+	VOID DeferredRenderer();
 	VOID Render2D();
 	VOID CreateRasterizerStates();
 	VOID CompileShaders();

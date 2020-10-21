@@ -443,6 +443,11 @@ VOID Engine::VanillaRender()
 	}*/
 }
 
+VOID Engine::DeferredRenderer()
+{
+	return VOID();
+}
+
 VOID Engine::Render2D()
 {
 	//Update tranformation matrices.
