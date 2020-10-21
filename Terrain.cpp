@@ -54,7 +54,7 @@ Terrain::Terrain(PCSTR filename, ID3D11Device* device)
 
 	// We divide the height by this number to "water down" the terrains height, otherwise the terrain will
 	// appear to be "spikey" and not so smooth.
-	FLOAT heightFactor = 10.0f;
+	FLOAT heightFactor = 12.0f;
 
 	// Read the image data into our heightMap array
 	for (UINT j = 0; j < hminfo.terrainHeight; j++)

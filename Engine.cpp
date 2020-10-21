@@ -2,7 +2,6 @@
 
 Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1.0f }
 {
-	CoInitialize(nullptr); //Memory leaks when calling this function. Maybe something to do with com error object in texture.cpp?
 	RECT rect;
 	GetClientRect(hndl, &rect);
 	UINT width = rect.right - rect.left;
@@ -32,7 +31,7 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 
 	HRESULT hr = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, flags, nullptr, 0, D3D11_SDK_VERSION, &swap_chain_descr, &swapchain, &device, feature_level, &context);
 
-
+	
 	mouse.SetWindow(hndl);
 	mouse.Get().SetMode(Mouse::MODE_ABSOLUTE);
 	
@@ -222,7 +221,6 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	HRESULT HR = device->CreateBuffer(&quadDesc, &quadData, &render2Dquad);
 	if (FAILED(HR))
 		OutputDebugString(L"Error creating Quad-buffer.");
-
 }
 
 Engine::~Engine()
@@ -423,6 +421,7 @@ VOID Engine::VanillaRender()
 	SetRenderTargets();
 	context->VSSetConstantBuffers(0u, 1u, &matrixbuffer);
 	context->PSSetConstantBuffers(0u, 1u, &lightbuffer);
+	context->PSSetConstantBuffers(1u, 1u, &matrixbuffer);
 	context->RSSetViewports(1u, &defaultviewport);
 
 	/*if (ppRenderTargets == nullptr)
@@ -455,11 +454,11 @@ VOID Engine::Render2D()
 	context->Unmap(matrixbuffer, 0);
 
 	/*****Set Vertex Buffers*****/
-	context->IASetVertexBuffers(0u,							//The startslot of the vertex buffer being used. 
-		1u,													//Total number of vertex buffers.
-		&render2Dquad,										//Address of pointer to Vertex buffer.
-		&stride,											//The byte-stride of entities in the Vertex buffer, here vertices.
-		&offset);											//Point of start of the first vertex to be used. Here all vertices are bound to buffer.
+	context->IASetVertexBuffers(0u,			//The startslot of the vertex buffer being used. 
+		1u,											//Total number of vertex buffers.
+		&render2Dquad,								//Address of pointer to Vertex buffer.
+		&stride,										//The byte-stride of entities in the Vertex buffer, here vertices.
+		&offset);									//Point of start of the first vertex to be used. Here all vertices are bound to buffer.
 	/*****Set Primitive topology*****/
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	ID3D11ShaderResourceView* srv[] = { rendertexture->GetShaderResourceView() };
@@ -514,7 +513,7 @@ VOID Engine::Update()
 		context->Map(lightbuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &lightresouce);
 		light = (Light*)lightresouce.pData;
 		light->diffuseColour = XMFLOAT4(0.1f, 1.0f, 1.0f, 1.0f);
-		light->pos = XMFLOAT3(0.0f, 100.0f, 0.0f);
+		light->pos = XMFLOAT3(10.0f, 10.0f, 0.0f);
 		light->padding = 0.0f;
 		context->Unmap(lightbuffer, 0);
 

@@ -8,21 +8,29 @@ cbuffer light : register(b0)
     float pad;
 }
 
+cbuffer tranform : register(b1)
+{
+    float4x4 world;
+    float4x4 view;
+    float4x4 projection;
+};
+
 struct PS_INPUT
 {
 	float4 position : SV_POSITION;
 	float2 texcoord : TEXCOORD;
 	float3 normal : NORMAL;
+    float3 positionws : POSITION;
 };
 
 float4 ps_main(PS_INPUT input) : SV_TARGET
 {
-    float4 color;
-
+    float4 lightposWS = mul(float4(lightpos.xyz, 0), world);
+    
     // Sample the pixel color from the texture using the sampler at this texture coordinate location.
     float4 textureColor = tex.Sample(samp, input.texcoord);
-    float3 lightdir = normalize(lightpos + input.position.xyz);
+    float3 lightdir = normalize(lightposWS.xyz - input.positionws.xyz);
     float diffuse = max(dot(input.normal, lightdir.xyz), 0);
-    return color = mul(diffuse, textureColor);
+    return mul(diffuse, textureColor);
 
 }
