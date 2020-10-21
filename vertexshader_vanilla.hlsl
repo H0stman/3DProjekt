@@ -19,6 +19,7 @@ struct VS_OUTPUT
     float4 outPosition : SV_POSITION;
     float2 outTexCoord : TEXCOORD;
     float3 outNormalWS : NORMAL;
+    float3 outPositionWS : POSITION;
 };
 
 VS_OUTPUT vs_main(VS_INPUT vsInput)
@@ -27,6 +28,7 @@ VS_OUTPUT vs_main(VS_INPUT vsInput)
     
     vsOutput.outPosition = mul(float4(vsInput.inPosition, 1.0f), world);
     vsOutput.outPosition = mul(float4(vsOutput.outPosition), view);
+    vsOutput.outPositionWS = vsOutput.outPosition;
     vsOutput.outPosition = mul(float4(vsOutput.outPosition), projection);
 
     vsOutput.outNormalWS = normalize(mul(float4(vsInput.inNormal, 0.0f), world).xyz);

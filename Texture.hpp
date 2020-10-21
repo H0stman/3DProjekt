@@ -1,5 +1,4 @@
 #pragma once
-#include <comdef.h>
 #include <string>
 #include <DirectXTK/WICTextureLoader.h>
 #include <atlbase.h>

@@ -16,13 +16,7 @@ Texture::Texture(INT texWidth, INT texHeight, ID3D11Device* device) : rendertarg
 	texDesc.CPUAccessFlags = 0;
 	texDesc.MiscFlags = 0;
 
-
 	HRESULT hr = device->CreateTexture2D(&texDesc, nullptr, &texture);
-	_com_error err(hr);
-
-	if (FAILED(hr))
-		OutputDebugStringW(err.ErrorMessage());
-		
 
 	D3D11_RENDER_TARGET_VIEW_DESC rtvDesc;
 	rtvDesc.Format = texDesc.Format;
@@ -30,11 +24,6 @@ Texture::Texture(INT texWidth, INT texHeight, ID3D11Device* device) : rendertarg
 	rtvDesc.Texture2D.MipSlice = 0;
 
 	hr = device->CreateRenderTargetView(texture, &rtvDesc, &rendertargetview);
-	if (FAILED(hr))
-	{
-		err = _com_error(hr);
-		OutputDebugStringW(err.ErrorMessage());
-	}
 
 	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
 	srvDesc.Format = texDesc.Format;
@@ -43,11 +32,6 @@ Texture::Texture(INT texWidth, INT texHeight, ID3D11Device* device) : rendertarg
 	srvDesc.Texture2D.MipLevels = 1;
 
 	hr = device->CreateShaderResourceView(texture, &srvDesc, &shaderresourceview);
-	if (FAILED(hr))
-	{
-		err = _com_error(hr);
-		OutputDebugStringW(err.ErrorMessage());
-	}
 
 	D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
 	uavDesc.Format = texDesc.Format;
@@ -55,18 +39,11 @@ Texture::Texture(INT texWidth, INT texHeight, ID3D11Device* device) : rendertarg
 	uavDesc.Texture2D.MipSlice = rtvDesc.Texture2D.MipSlice;
 
 	hr = device->CreateUnorderedAccessView(texture, &uavDesc, &unorderedaccessview);
-
-	if (FAILED(hr))
-	{
-		err = _com_error(hr);
-		OutputDebugStringW(err.ErrorMessage());
-	}
-	err.~_com_error();
 }
 
 Texture::Texture(std::string file, ID3D11Device* device) : rendertargetview(nullptr), shaderresourceview(nullptr), textureResource(nullptr), texture(nullptr), unorderedaccessview(nullptr)
 {
-	LoadTexture(file, device);
+	LoadTexture(file, device);	
 }
 
 Texture::~Texture()
@@ -101,12 +78,7 @@ ID3D11UnorderedAccessView* Texture::GetUnorderedAccessView()
 BOOL Texture::LoadTexture(std::string file, ID3D11Device* device)
 {
 	//Create Texture from file
-
 	HRESULT hr = CreateWICTextureFromFile(device, CA2W(file.c_str()), &textureResource, &shaderresourceview);
-	_com_error err(hr);
-
-	if (FAILED(hr))
-		OutputDebugStringW(err.ErrorMessage());
 
 	return TRUE;
 }
