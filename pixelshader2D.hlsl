@@ -12,7 +12,8 @@ float4 ps_2D_main(in PS_INPUT psInput) : SV_TARGET
 	/*****TEXTURE*****/
 
 	/*Texture color sampled from texture*/
-	float4 textureColor = textureObject.Sample(samplerState, psInput.inTexCoord);
+	//float4 textureColor = textureObject.Sample(samplerState, psInput.inTexCoord);
+	float4 textureColor = float4(1.0, 0.2, 0.1, 1.0);
 	
 	return textureColor;
 }

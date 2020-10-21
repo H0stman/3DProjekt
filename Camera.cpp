@@ -22,6 +22,11 @@ XMMATRIX Camera::GetProjectionMatrix()
 	return projection;
 }
 
+XMMATRIX Camera::GetOrthoMatrix()
+{
+	return XMMatrixOrthographicLH(1280, 720, 0.1f, 1000.0f);
+}
+
 XMVECTOR Camera::GetPosition()
 {
 	return position;
