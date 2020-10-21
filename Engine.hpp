@@ -43,14 +43,15 @@ class Engine
 	ID3D11DepthStencilView* depthstencilview;
 	ID3D11DepthStencilState* defaultstencilstate, *nozstencilstate;
 
-	ID3D11PixelShader *pixelshader;
+	ID3D11PixelShader *pixelshader, *pixelshader2D;
 	ID3D11VertexShader *vertexshader, *vertexshader2D;
+	ID3D11ComputeShader* csblurshader;
 
 	ID3D11RasterizerState* clocklwise, *counterclockwise;
 
 	UINT stride, offset;
 
-	ID3DBlob* blobpixelvanilla, *blobvertexvanilla, *blobvertex2D;
+	ID3DBlob* blobpixelvanilla, *blobpixel2D, *blobvertexvanilla, *blobvertex2D, *blobcsblur;
 
 	ID3D11InputLayout* inputlayout;
 
@@ -79,8 +80,8 @@ class Engine
 	VOID CreateRasterizerStates();
 	VOID CompileShaders();
 	VOID LoadDrawables();
-	VOID SetRenderTargets();
-	VOID Blur();
+	VOID SetRenderTargets(UINT target);
+	VOID Blur(Texture* source, Texture* target);
 
 public:
 

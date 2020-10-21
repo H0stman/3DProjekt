@@ -9,13 +9,14 @@ using namespace DirectX;
 class Camera
 {
 	XMVECTOR updirection, lookat, position, forward;
-	XMMATRIX view, projection;
+	XMMATRIX view, projection, orthographic;
 	FLOAT pitch, yaw, rotation, movement;
 
 public:
 	Camera();
 	XMMATRIX GetViewMatrix();
 	XMMATRIX GetProjectionMatrix();
+	XMMATRIX GetOrthoMatrix();
 	XMVECTOR GetPosition();
 	VOID Update();
 };

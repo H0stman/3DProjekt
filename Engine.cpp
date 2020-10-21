@@ -101,8 +101,6 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	device->CreateDepthStencilState(&depthStencilDesc, &nozstencilstate);
 	context->OMSetDepthStencilState(defaultstencilstate, 0u);
 
-	//rendertexture.Initialize(device, window.GetWidth(), window.GetHeight());
-	//blurtexture.Initialize(device, window.GetWidth(), window.GetHeight());
 
 	/*****SETTING THE VIEWPORT*****/
 	ZeroMemory(&defaultviewport, sizeof(D3D11_VIEWPORT));
@@ -187,20 +185,28 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	float bottom = -top;
 	float left = -right;
 	float quad[] = {
-		left, top, 0.0,			// Vertex
+		left, top, 0.0,				// Vertex
 		0.0, 0.0,					// Texture coordinate
 		0.0, 0.0, 1.0,				// Normal (not used but necessary to comply with current input layout)
+		0.0, 0.0, 1.0,				// Tangent (not used but necessary to comply with current input layout)
+		0.0, 0.0, 1.0,				// Bitangent (not used but necessary to comply with current input layout)
 		right, top, 0.0,
 		1.0, 0.0,
-		0.0, 0.0, 1.0,
+		0.0, 0.0, 1.0,				// Normal (not used but necessary to comply with current input layout)
+		0.0, 0.0, 1.0,				// Tangent (not used but necessary to comply with current input layout)
+		0.0, 0.0, 1.0,				// Bitangent (not used but necessary to comply with current input layout)
 		left, bottom, 0.0,
 		0.0, 1.0,
-		0.0, 0.0, 1.0,
+		0.0, 0.0, 1.0,				// Normal (not used but necessary to comply with current input layout)
+		0.0, 0.0, 1.0,				// Tangent (not used but necessary to comply with current input layout)
+		0.0, 0.0, 1.0,				// Bitangent (not used but necessary to comply with current input layout)
 		right, bottom, 0.0,
 		1.0, 1.0,
-		0.0, 0.0, 1.0,
+		0.0, 0.0, 1.0,				// Normal (not used but necessary to comply with current input layout)
+		0.0, 0.0, 1.0,				// Tangent (not used but necessary to comply with current input layout)
+		0.0, 0.0, 1.0,				// Bitangent (not used but necessary to comply with current input layout)
 	};
-	UINT vertexStride = 8 * sizeof(float);
+	UINT vertexStride = 14 * sizeof(float);
 	UINT vertexOffset = 0;
 	UINT vertexCount = 4;
 
@@ -220,7 +226,8 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 
 	HRESULT HR = device->CreateBuffer(&quadDesc, &quadData, &render2Dquad);
 	if (FAILED(HR))
-		OutputDebugString(L"Error creating Quad-buffer.");
+		OutputDebugString(L"Error creating Quad-buffer");
+
 }
 
 Engine::~Engine()
@@ -237,11 +244,15 @@ Engine::~Engine()
 	clocklwise->Release();
 	counterclockwise->Release();
 	pixelshader->Release();
+	pixelshader2D->Release();
 	vertexshader->Release();
 	vertexshader2D->Release();
+	csblurshader->Release();
 	blobpixelvanilla->Release();
+	blobpixel2D->Release();
 	blobvertexvanilla->Release();
 	blobvertex2D->Release();
+	blobcsblur->Release();
 	inputlayout->Release();
 	lightbuffer->Release();
 	matrixbuffer->Release();
@@ -322,7 +333,7 @@ VOID Engine::CompileShaders()
 		if (errorBlob != nullptr)
 			OutputDebugStringA((char*)errorBlob->GetBufferPointer());			//Will yield additional debug information from Pixel shader.
 
-		OutputDebugString(L"Error compiling Pixel shader.");
+		OutputDebugString(L"Error compiling PixelShader Vanilla");
 		errorBlob->Release();
 	}
 
@@ -333,7 +344,38 @@ VOID Engine::CompileShaders()
 		&pixelshader);																				//Address of pointer to the Pixel VertexShader.
 	if (FAILED(hr))
 	{
-		OutputDebugString(L"Error creating Pixel VertexShader.");
+		OutputDebugString(L"Error creating PixelShader Vanilla");
+		errorBlob->Release();
+	}
+
+
+	/*****Pixelshader for 2D compilation*****/
+	hr = D3DCompileFromFile(L"pixelshader2D.hlsl",		//Name of the pixel shader.
+		nullptr,																			//PixelShader macro, ignore.
+		D3D_COMPILE_STANDARD_FILE_INCLUDE,										//Will essentially find the file.
+		"ps_2D_main",																		//Entry point for shader function.
+		"ps_5_0",																		//Pixel shader target (version).
+		flags,																			//Flags, in our case adding more debug output.
+		0u,																				//Additional flags.
+		&blobpixel2D,															//The pixel shader blob to be filled.
+		&errorBlob);																	//Error blob that will catch additional error messages.
+	if (FAILED(hr))
+	{
+		if (errorBlob != nullptr)
+			OutputDebugStringA((char*)errorBlob->GetBufferPointer());			//Will yield additional debug information from Pixel shader.
+
+		OutputDebugString(L"Error compiling PixelShader 2D");
+		errorBlob->Release();
+	}
+
+	/*****Pixelshader creation*****/
+	hr = device->CreatePixelShader(blobpixel2D->GetBufferPointer(),			//Pointer to the compiled Pixel shader buffer.
+		blobpixel2D->GetBufferSize(),													//Size of the compiled Pixel shader buffer.
+		nullptr,																						//Advanced topic, not used here.
+		&pixelshader2D);																				//Address of pointer to the Pixel VertexShader.
+	if (FAILED(hr))
+	{
+		OutputDebugString(L"Error creating PixelShader 2D");
 		errorBlob->Release();
 	}
 
@@ -354,7 +396,7 @@ VOID Engine::CompileShaders()
 		if (errorBlob != nullptr)
 			OutputDebugStringA((char*)errorBlob->GetBufferPointer());			//Will yield additional debug information from Pixel shader.
 
-		OutputDebugString(L"Error compiling Pixel shader.");
+		OutputDebugString(L"Error compiling VertexShader Vanilla");
 		errorBlob->Release();
 	}
 
@@ -366,14 +408,14 @@ VOID Engine::CompileShaders()
 
 	if (FAILED(hr))
 	{
-		OutputDebugString(L"Error creating Pixel VertexShader.");
+		OutputDebugString(L"Error creating VertexShader Vanilla");
 		errorBlob->Release();
 	}
 
 	if(errorBlob)
 		errorBlob->Release();
 
-	/*****Vertexshader compilation*****/
+	/*****Vertexshader 2D compilation*****/
 	hr = D3DCompileFromFile(L"vertexshader2D.hlsl",					//Name of the vertex shader.
 		nullptr,																			//Vertexshader macro, ignore.
 		D3D_COMPILE_STANDARD_FILE_INCLUDE,										//Will essentially find the file.
@@ -389,11 +431,11 @@ VOID Engine::CompileShaders()
 		if (errorBlob != nullptr)
 			OutputDebugStringA((char*)errorBlob->GetBufferPointer());			//Will yield additional debug information from Pixel shader.
 
-		OutputDebugString(L"Error compiling Pixel shader.");
+		OutputDebugString(L"Error compiling VertexShader 2D");
 		errorBlob->Release();
 	}
 
-	/*****Vertexshader creation*****/
+	/*****Vertexshader 2D creation*****/
 	hr = device->CreateVertexShader(blobvertexvanilla->GetBufferPointer(),			//Pointer to the compiled Pixel shader buffer.
 		blobvertexvanilla->GetBufferSize(),					//Size of the compiled Pixel shader buffer.
 		nullptr,														//Advanced topic, not used here.
@@ -401,13 +443,41 @@ VOID Engine::CompileShaders()
 
 	if (FAILED(hr))
 	{
-		OutputDebugString(L"Error creating Pixel VertexShader.");
+		OutputDebugString(L"Error creating VertexShader 2D");
 		errorBlob->Release();
 	}
 
 	if(errorBlob)
 		errorBlob->Release();
 
+	/*****Computeshader compilation*****/
+	HRESULT HR = D3DCompileFromFile(L"gaussianblurshader.hlsl",		//Name of the pixel shader.
+		nullptr,										//ComputeShader macro, ignore.
+		D3D_COMPILE_STANDARD_FILE_INCLUDE,				//Will essentially find the file.
+		"cs_main",									//Entry point for shader function.
+		"cs_5_0",										//Compute shader target (version).
+		flags,											//Flags, in our case adding more debug output.
+		0u,												//Additional flags.
+		&blobcsblur,									//The compute shader blob to be filled.
+		&errorBlob);									//Error blob that will catch additional error messages.
+	if (FAILED(HR))
+	{
+		if (errorBlob != nullptr)
+		{
+			OutputDebugStringA((char*)errorBlob->GetBufferPointer());			//Will yield additional debug information from Compute shader.
+		}
+		OutputDebugStringA("Error compiling ComputeShader");
+	}
+
+	/*****Compute shader creation*****/
+	HR = device->CreateComputeShader(blobcsblur->GetBufferPointer(),			//Pointer to the compiled Compute shader buffer.
+		blobcsblur->GetBufferSize(),			//Size of the compiled Compute shader buffer.
+		nullptr,									//Advanced topic, not used here.
+		&csblurshader);						//Address of pointer to the Compute VertexShader.
+	if (FAILED(HR))
+	{
+		OutputDebugString(L"Error creating ComputeShader");
+	}
 }
 
 VOID Engine::VanillaRender()
@@ -418,7 +488,6 @@ VOID Engine::VanillaRender()
 	context->VSSetShader(vertexshader, nullptr, 0u);
 	context->PSSetShader(pixelshader, nullptr, 0u);
 	context->PSSetSamplers(0u, 1u, &texturesampler);
-	SetRenderTargets();
 	context->VSSetConstantBuffers(0u, 1u, &matrixbuffer);
 	context->PSSetConstantBuffers(0u, 1u, &lightbuffer);
 	context->PSSetConstantBuffers(1u, 1u, &matrixbuffer);
@@ -450,13 +519,24 @@ VOID Engine::DeferredRenderer()
 
 VOID Engine::Render2D()
 {
+	// Set Shaders for 2D rendering
+	context->VSSetShader(vertexshader2D, nullptr, 0u);
+	context->PSSetShader(pixelshader2D, nullptr, 0u);
+	
 	//Update tranformation matrices.
 	context->Map(matrixbuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &transformresource);
 	transform = (TransformationMatrices*)transformresource.pData;
 	transform->worldmatrix = XMMatrixIdentity();
-	transform->viewmatrix = XMMatrixTranspose(camera.GetViewMatrix());
-	transform->projectionmatrix = XMMatrixTranspose(camera.GetProjectionMatrix());
+	transform->viewmatrix = XMMatrixIdentity(); // XMMatrixTranspose(camera.GetViewMatrix());
+	transform->projectionmatrix = XMMatrixTranspose(camera.GetOrthoMatrix());
 	context->Unmap(matrixbuffer, 0);
+
+	context->VSSetConstantBuffers(0u, 1u, &matrixbuffer);
+	context->PSSetConstantBuffers(0u, 1u, &lightbuffer);
+	context->RSSetViewports(1u, &defaultviewport);
+
+	/*****Set Stencil State to no depth*****/
+	context->OMSetDepthStencilState(nozstencilstate, 1u);
 
 	/*****Set Vertex Buffers*****/
 	context->IASetVertexBuffers(0u,			//The startslot of the vertex buffer being used. 
@@ -471,30 +551,53 @@ VOID Engine::Render2D()
 	context->Draw(4u, 0u);
 }
 
-VOID Engine::Blur()
+VOID Engine::Blur(Texture* source, Texture* target)
 {
+	context->CSSetShader(csblurshader, nullptr, 0u);
+	ID3D11RenderTargetView* unset[] = { nullptr };
+	context->OMSetRenderTargets(0u, unset, nullptr);
 	// Bind resources to pipeline
-	ID3D11ShaderResourceView* srv[1] = { rendertexture->GetShaderResourceView() };
+	ID3D11ShaderResourceView* srv[] = { source->GetShaderResourceView() };
 	context->CSSetShaderResources(1u, 1u, srv);
-	ID3D11UnorderedAccessView* uav[1] = { blurtarget->GetUnorderedAccessView() };
+	ID3D11UnorderedAccessView* uav[] = { target->GetUnorderedAccessView() };
 	context->CSSetUnorderedAccessViews(0u, 1u, uav, nullptr);
 
 	// Run the blur shader
 	context->Dispatch(32u, 32u, 1u);
+
+	// Unbind resources to pipeline
+	srv[0] = nullptr;
+	context->CSSetShaderResources(1u, 1u, srv);
+	uav[0] = nullptr;
+	context->CSSetUnorderedAccessViews(0u, 1u, uav, nullptr);
 }
 
-VOID Engine::SetRenderTargets()
+VOID Engine::SetRenderTargets(UINT target)
 {
-	context->OMSetRenderTargets(1u, &backbuffer, depthstencilview);
-	context->OMSetDepthStencilState(defaultstencilstate, 0u);
+	if (target == 0) {
+		context->OMSetRenderTargets(1u, &backbuffer, depthstencilview);
+		context->OMSetDepthStencilState(defaultstencilstate, 0u);
+	}
+	if (target == 1) {
+		ID3D11RenderTargetView* tgt[] = { rendertexture->GetRenderTargetView() };
+		context->OMSetRenderTargets(1u, tgt, depthstencilview);
+		context->OMSetDepthStencilState(defaultstencilstate, 0u);
+	}
+	if (target == 2) {
+		context->OMSetRenderTargets(1u, &backbuffer, depthstencilview);
+		context->OMSetDepthStencilState(nozstencilstate, 0u);
+	}
 }
 
 VOID Engine::Update() 
 {
 	context->ClearDepthStencilView(depthstencilview, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0u);
 	context->ClearRenderTargetView(backbuffer, clearcolour);
+
+	context->ClearRenderTargetView(rendertexture->GetRenderTargetView(), clearcolour);
 	
 	camera.Update();
+	SetRenderTargets(0u);	// 0 = backbuffer, 1 = render to rendertexture, 2 = backbuffer and no depth buffer
 	VanillaRender();
 
 	for (auto model : models) //TODO: Fix the incompatible input output structs in vertex and pixelshader for vanilla rendering.
@@ -531,7 +634,9 @@ VOID Engine::Update()
 		context->DrawIndexed(model->GetIndexCount(), 0u, 0u);
 	}
 
-
+	//Blur(rendertexture, blurtarget);
+	//SetRenderTargets(2u);
+	//Render2D();
 
 	swapchain->Present(1u, 0u);
 }
