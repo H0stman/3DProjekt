@@ -28,7 +28,7 @@ protected:
 	ID3D11Buffer* vertexbuffer, *indexbuffer;
 
 	enum textype {diffuse, displacement, normalmap};
-	Texture *texture[3];
+	std::vector<Texture*> texture;
 
 public:
 	~IDrawable();;
@@ -37,7 +37,7 @@ public:
 	virtual INT GetBaseVertexLocation() = 0;
 	virtual ID3D11Buffer** GetVertexBuffer() = 0;
 	virtual ID3D11Buffer* GetIndexBuffer() = 0;
-	Texture* GetTextures();
+	std::vector<Texture*> GetTextures();
 	XMMATRIX GetWorldMatrix();
 	BOOL IsClockwise();
 	BoundingBox GetBoundingBox();

@@ -1,8 +1,8 @@
 #include "IDrawable.hpp"
 
-Texture* IDrawable::GetTextures()
+std::vector<Texture*> IDrawable::GetTextures()
 {
-   return texture[0];
+   return texture;
 }
 
 IDrawable::~IDrawable() {

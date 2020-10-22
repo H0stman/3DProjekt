@@ -66,13 +66,11 @@ Model::Model(std::string file, ID3D11Device* device)
 			}
 		}
 
+		for (size_t i = 0; i < 3; ++i)
+			texture.push_back(nullptr);
 
 		aiString texPath;
-		if (pScene->mMaterials[mesh->mMaterialIndex]->GetTextureCount(aiTextureType_DIFFUSE) == 0)
-		{
-			texture[diffuse] = nullptr;
-		}
-		else
+		if (pScene->mMaterials[mesh->mMaterialIndex]->GetTextureCount(aiTextureType_DIFFUSE) != 0)
 		{
 			pScene->mMaterials[mesh->mMaterialIndex]->GetTexture(aiTextureType_DIFFUSE, 0, &texPath);
 			std::string tex = std::string(texPath.C_Str(), texPath.length);
@@ -80,11 +78,7 @@ Model::Model(std::string file, ID3D11Device* device)
 		}
 
 		texPath.Clear();
-		if (pScene->mMaterials[mesh->mMaterialIndex]->GetTextureCount(aiTextureType_DISPLACEMENT) == 0)
-		{
-			texture[displacement] = nullptr;
-		}
-		else
+		if (pScene->mMaterials[mesh->mMaterialIndex]->GetTextureCount(aiTextureType_DISPLACEMENT) != 0)
 		{
 			pScene->mMaterials[mesh->mMaterialIndex]->GetTexture(aiTextureType_DISPLACEMENT, 0, &texPath);
 			std::string tex = std::string(texPath.C_Str(), texPath.length);
@@ -92,11 +86,7 @@ Model::Model(std::string file, ID3D11Device* device)
 		}
 
 		texPath.Clear();
-		if (pScene->mMaterials[mesh->mMaterialIndex]->GetTextureCount(aiTextureType_NORMALS) == 0)
-		{
-			texture[normalmap] = nullptr;
-		}
-		else
+		if (pScene->mMaterials[mesh->mMaterialIndex]->GetTextureCount(aiTextureType_NORMALS) != 0)
 		{
 			pScene->mMaterials[mesh->mMaterialIndex]->GetTexture(aiTextureType_NORMALS, 0, &texPath);
 			std::string tex = std::string(texPath.C_Str(), texPath.length);
@@ -151,7 +141,8 @@ Model::Model(std::string file, ID3D11Device* device)
 			OutputDebugString(L"Error creating Index Buffer for model.");
 		}
 
-		worldmatrix = XMMatrixIdentity();
+		worldmatrix = XMMatrixTranslation(32.0, 15.0, 50.0);
+		//worldmatrix = XMMatrixIdentity();
 		clockwise = false;
 	}
 }

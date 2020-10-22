@@ -1,8 +1,9 @@
 cbuffer constantBuffer : register(b0)
 {
-	float4x4 worldMatrix;
-    float4x4 worldViewProjectionMatrix; 
-    float4x4 worldViewProjectionMatrixLight;
+    float4x4 world;
+    float4x4 view;
+    float4x4 projection;
+    float3 camerapos;
 };
 
 struct VS_INPUT
@@ -28,11 +29,15 @@ VS_OUTPUT vs_tess_main(VS_INPUT vsInput)
 	VS_OUTPUT vsOutput;
 	
 	//Convert position, normal, tangent and bitangent to world space. 
-    vsOutput.outPositionWS = mul(float4(vsInput.inPosition, 1.0f), worldMatrix).xyz;
-    vsOutput.outNormalWS = normalize(mul(float4(vsInput.inNormal, 0.0f), worldMatrix).xyz);
-    vsOutput.outTangentWS = normalize(mul(float4(vsInput.inTangent, 0.0f), worldMatrix).xyz);
-    vsOutput.outBiTangentWS = normalize(mul(float4(vsInput.inBiTangent, 0.0f), worldMatrix).xyz);
+    //vsOutput.outPositionWS = mul(float4(vsInput.inPosition, 1.0f), world).xyz;
+    //vsOutput.outNormalWS = normalize(mul(float4(vsInput.inNormal, 0.0f), world).xyz);
+    //vsOutput.outTangentWS = normalize(mul(float4(vsInput.inTangent, 0.0f), world).xyz);
+    //vsOutput.outBiTangentWS = normalize(mul(float4(vsInput.inBiTangent, 0.0f), world).xyz);
 	
+    vsOutput.outPositionWS = vsInput.inPosition;
+    vsOutput.outNormalWS = vsInput.inNormal;
+    vsOutput.outTangentWS = vsInput.inTangent;
+    vsOutput.outBiTangentWS = vsInput.inBiTangent;
 	//Forwarding texture coord.
 	vsOutput.outTexCoord = vsInput.inTexCoord;
 

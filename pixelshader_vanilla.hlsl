@@ -13,6 +13,7 @@ cbuffer tranform : register(b1)
     float4x4 world;
     float4x4 view;
     float4x4 projection;
+    float3 camerapos;
 };
 
 struct PS_INPUT
