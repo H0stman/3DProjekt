@@ -63,7 +63,7 @@ class Engine
 
 	UINT stride, offset;
 
-	ID3DBlob* blobpixelvanilla, *blobpixel2D, *blobvertexvanilla, *blobvertextess, *blobvertex2D, *blobcsblur, *blobhullshader, *blobdomainshader, *blobgeometryparticle;
+	ID3DBlob* blobpixelvanilla, *blobpixel2D, *blobvertexvanilla, *blobvertextess, *blobvertex2D, *blobcsblur, *blobhullshader, *blobdomainshader, *blobgeometryparticle, *blobvertexparticle;
 
 	ID3D11InputLayout* inputlayout;
 
@@ -82,6 +82,7 @@ class Engine
 
 	Camera camera;
 	Light* light;
+	Water* water;
 	D3D11_MAPPED_SUBRESOURCE lightresouce, transformresource;
 
 	ID3D11SamplerState* texturesampler;

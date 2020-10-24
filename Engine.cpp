@@ -30,14 +30,14 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 #endif
 
 	HRESULT hr = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, flags, nullptr, 0, D3D11_SDK_VERSION, &swap_chain_descr, &swapchain, &device, feature_level, &context);
-	
-	
+
+
 	mouse.SetWindow(hndl);
 	mouse.Get().SetMode(Mouse::MODE_ABSOLUTE);
-	
+
 
 	/***RENDER TARGET VIEW CREATION***/
-	
+
 	ID3D11Texture2D* pBackBuffer = nullptr, * pDepthStencilBuffer = nullptr;
 
 	hr = swapchain->GetBuffer(0u, __uuidof(ID3D11Texture2D), (void**)&pBackBuffer);
@@ -53,7 +53,7 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	blurtarget = new Texture(width, height, device);
 	gbufcolor = new Texture(width, height, device);
 	gbufnormals = new Texture(width, height, device);
-	
+
 	/*****DEPTH/STENCIL VIEW CREATION*****/
 	D3D11_TEXTURE2D_DESC depthBufferDescriptor;
 	ZeroMemory(&depthBufferDescriptor, sizeof(D3D11_TEXTURE2D_DESC));
@@ -134,7 +134,7 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 		blobvertexvanilla->GetBufferPointer(),		//Pointer to the compiled pixel shader buffer.
 		blobvertexvanilla->GetBufferSize(),			//Size of the compiled pixel shader buffer.
 		&inputlayout);										//Adress of pointer of yhe input layout. 
- context->IASetInputLayout(inputlayout);
+	context->IASetInputLayout(inputlayout);
 
 	camera = Camera();
 
@@ -176,7 +176,7 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	matrixBufferDesc.StructureByteStride = 0;
 	hr = device->CreateBuffer(&matrixBufferDesc, nullptr, &matrixbuffer);
 	assert(SUCCEEDED(hr));
-	
+
 	/** Setting up dynamic quad for rendering 2D images/textures **/
 	//OutputDebugString(std::to_wstring(height).c_str());
 	//OutputDebugString(std::to_wstring(width).c_str());
@@ -271,10 +271,10 @@ Engine::~Engine()
 	blobgeometryparticle->Release();
 	blobvertexparticle->Release();
 	particlebuffer->Release();
-	if(rendertexture != nullptr) delete rendertexture;
-	if(blurtarget != nullptr) delete blurtarget;
-	if(gbufcolor != nullptr) delete gbufcolor;
-	if(gbufnormals != nullptr) delete gbufnormals;
+	if (rendertexture != nullptr) delete rendertexture;
+	if (blurtarget != nullptr) delete blurtarget;
+	if (gbufcolor != nullptr) delete gbufcolor;
+	if (gbufnormals != nullptr) delete gbufnormals;
 }
 
 BOOL Engine::Run()
@@ -485,7 +485,7 @@ VOID Engine::CompileShaders()
 		errorBlob->Release();
 	}
 
-	if(errorBlob)
+	if (errorBlob)
 		errorBlob->Release();
 
 	/*****Vertexshader 2D compilation*****/
@@ -520,7 +520,7 @@ VOID Engine::CompileShaders()
 		errorBlob->Release();
 	}
 
-	if(errorBlob)
+	if (errorBlob)
 		errorBlob->Release();
 
 	/*****Particle vertexshader compilation*****/
@@ -619,7 +619,7 @@ VOID Engine::CompileShaders()
 		errorBlob->Release();
 	}
 
-	if(errorBlob)
+	if (errorBlob)
 		errorBlob->Release();
 
 	/*****Computeshader compilation*****/
@@ -753,7 +753,7 @@ VOID Engine::Render2D(Texture* tex)
 	// Set Shaders for 2D rendering
 	context->VSSetShader(vertexshader2D, nullptr, 0u);
 	context->PSSetShader(pixelshader2D, nullptr, 0u);
-	
+
 	//Update tranformation matrices.
 	context->Map(matrixbuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &transformresource);
 	transform = (TransformationMatrices*)transformresource.pData;
@@ -786,7 +786,7 @@ VOID Engine::Blur(Texture* source, Texture* target)
 	context->CSSetShader(csblurshader, nullptr, 0u);
 	ID3D11RenderTargetView* unset[] = { nullptr };
 	context->OMSetRenderTargets(0u, unset, nullptr);
-	
+
 	// Bind resources to pipeline
 	ID3D11ShaderResourceView* srv[] = { source->GetShaderResourceView() };
 	context->CSSetShaderResources(1u, 1u, srv);
@@ -805,27 +805,31 @@ VOID Engine::Blur(Texture* source, Texture* target)
 
 VOID Engine::SetRenderTargets(UINT target)
 {
-	if (target == 0) { // Default backbuffer rendering
+	if (target == 0) // Default backbuffer rendering
+	{ 
 		context->OMSetRenderTargets(1u, &backbuffer, depthstencilview);
 		context->OMSetDepthStencilState(defaultstencilstate, 0u);
 	}
-	if (target == 1) { // Set one texture as render target (used for blur)
+	if (target == 1) // Set one texture as render target (used for blur)
+	{ 
 		ID3D11RenderTargetView* tgt[] = { rendertexture->GetRenderTargetView() };
 		context->OMSetRenderTargets(1u, tgt, depthstencilview);
 		context->OMSetDepthStencilState(defaultstencilstate, 0u);
 	}
-	if (target == 2) { // Prepare rendering of texture on 2D quad
+	if (target == 2) // Prepare rendering of texture on 2D quad
+	{ 
 		context->OMSetRenderTargets(1u, &backbuffer, depthstencilview);
 		context->OMSetDepthStencilState(nozstencilstate, 0u);
 	}
-	if (target == 3) { // Set render targets for deferred rendering
+	if (target == 3) // Set render targets for deferred rendering
+	{ 
 		ID3D11RenderTargetView* gbuffers[] = { gbufcolor->GetRenderTargetView(), gbufnormals->GetRenderTargetView() };
 		context->OMSetRenderTargets(2u, gbuffers, depthstencilview);
 		context->OMSetDepthStencilState(defaultstencilstate, 0u);
 	}
 }
 
-VOID Engine::Update() 
+VOID Engine::Update()
 {
 	auto kb = keyboard.GetState();
 	context->ClearDepthStencilView(depthstencilview, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0u);
@@ -833,9 +837,9 @@ VOID Engine::Update()
 
 	context->ClearRenderTargetView(rendertexture->GetRenderTargetView(), clearcolour);
 	context->ClearRenderTargetView(blurtarget->GetRenderTargetView(), clearcolour);
-	
+
 	camera.Update();
-	if (kb.B) 
+	if (kb.B)
 		SetRenderTargets(1u);	// 0 = backbuffer, 1 = render to rendertexture, 2 = backbuffer and no depth buffer
 	else
 		SetRenderTargets(0u);	// 0 = backbuffer, 1 = render to rendertexture, 2 = backbuffer and no depth buffer
@@ -870,14 +874,16 @@ VOID Engine::Update()
 		ID3D11ShaderResourceView* diffuse = textures[0]->GetShaderResourceView();
 
 		// Switch to tessellation if there is a displacement texture
-		if (textures[1] == nullptr) {
+		if (textures[1] == nullptr)
+		{
 			// Disable tessellation
 			context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 			context->VSSetShader(vertexshader, nullptr, 0u);
 			context->HSSetShader(nullptr, nullptr, 0u);
 			context->DSSetShader(nullptr, nullptr, 0u);
 		}
-		else {
+		else
+		{
 			// Enable tessellation
 			context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);
 			ID3D11ShaderResourceView* displacement = textures[1]->GetShaderResourceView();
@@ -893,17 +899,18 @@ VOID Engine::Update()
 		context->IASetVertexBuffers(0u, 1u, model->GetVertexBuffer(), &stride, &offset);
 		context->DrawIndexed(model->GetIndexCount(), 0u, 0u);
 
-		if (textures[1] != nullptr) {
+		if (textures[1] != nullptr)
+		{
 			context->HSSetShader(nullptr, nullptr, 0u);
 			context->DSSetShader(nullptr, nullptr, 0u);
 		}
 	}
 	DrawParticles();
 
-	Water* water = (Water*)models[2];
 	water->UpdateWater(context);
 
-	if (kb.B) {
+	if (kb.B)
+	{
 		Blur(rendertexture, blurtarget);
 		SetRenderTargets(2u);	// 0 = backbuffer, 1 = render to rendertexture, 2 = backbuffer and no depth buffer
 		Render2D(blurtarget);
@@ -912,16 +919,23 @@ VOID Engine::Update()
 	swapchain->Present(1u, 0u);
 }
 
-VOID Engine::LoadDrawables() 
+VOID Engine::LoadDrawables()
 {
-	//models.push_back(new Terrain("heightmap.bmp", device));
+	water = new Water(device);
+	models.push_back(new Terrain("heightmap.bmp", device));
+	models.push_back(water);
 	models.push_back(new Model("cube.obj", device));
-	models.push_back(new Water(device));
+	models.push_back(new Model("FalloutGirl.obj", device));
+	//models.push_back(new Model("suzanne.obj", device));
+	models.push_back(new Model("texTree.obj", device));
+	for (size_t i = 2; i < models.size(); ++i)
+		models[i]->Transform(XMMatrixTranslation(-20.0 + (float)i * 5.0, 0.0, -15.0));
+	quadtree.Add(models);
 }
 
 VOID Engine::DrawParticles()
 {
-	context->RSSetState(clocklwise);
+	context->RSSetState(clockwise);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 	context->VSSetShader(vertexshaderparticle, nullptr, 0u);
 	context->GSSetShader(geometryshaderparticle, nullptr, 0u);
@@ -930,11 +944,4 @@ VOID Engine::DrawParticles()
 	context->DrawInstancedIndirect(indirectargs, 0u);
 	context->GSSetShader(nullptr, nullptr, 0u);
 	context->VSSetShader(nullptr, nullptr, 0u);
-	models.push_back(new Model("FalloutGirl.obj", device));
-	models.push_back(new Model("suzanne.obj", device));
-	models.push_back(new Model("texTree.obj", device));
-	for (size_t i = 0; i < models.size(); ++i) {
-		models[i]->Transform(XMMatrixTranslation(-20.0 + (float)i * 5.0, 0.0, -15.0));
-	}
-	quadtree.Add(models);
 }
