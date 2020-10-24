@@ -1,8 +1,8 @@
 cbuffer tranform : register(b0)
 {
-    float4x4 world;
-    float4x4 view;
-    float4x4 projection;
+    matrix world;
+    matrix view;
+    matrix projection;
 };
 
 struct VS_INPUT

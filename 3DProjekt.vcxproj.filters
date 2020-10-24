@@ -79,25 +79,10 @@
     <None Include=".gitignore" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="vertexshader4tesselation.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="DomainShader.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="gaussianblurshader.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="HullShader.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
     <FxCompile Include="pixelshader_GBuffer.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
     <FxCompile Include="pixelshader_light.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="pixelshader2D.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
     <FxCompile Include="vertexshader.hlsl">
@@ -109,13 +94,28 @@
     <FxCompile Include="vertexshader_shadow.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
-    <FxCompile Include="vertexshader2D.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
     <FxCompile Include="pixelshader_vanilla.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
     <FxCompile Include="vertexshader_vanilla.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="vertexshader_2D.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="pixelshader_2D.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="domainshader.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="hullshader.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="computeshader_blur.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="vertexshader_tessellation.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
     <FxCompile Include="vertexshader_particle.hlsl">

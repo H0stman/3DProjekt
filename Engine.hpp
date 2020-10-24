@@ -11,10 +11,12 @@
 #include <string>
 #include <vector>
 
+#include <DirectXCollision.h>
 #include "Terrain.hpp"
 #include "Texture.hpp"
 #include "Camera.hpp"
 #include "Model.hpp"
+#include "QuadTree.hpp"
 #include "Water.hpp"
 
 using namespace DirectX;
@@ -24,6 +26,7 @@ struct TransformationMatrices
 	XMMATRIX worldmatrix;
 	XMMATRIX viewmatrix;
 	XMMATRIX projectionmatrix;
+	XMFLOAT3 camerapos;
 };
 
 struct Light
@@ -45,20 +48,22 @@ class Engine
 	IDXGISwapChain* swapchain;
 	D3D11_VIEWPORT defaultviewport;
 	ID3D11RenderTargetView* backbuffer;
-	Texture* rendertexture, *blurtarget;
+	Texture* rendertexture, *blurtarget, *gbufcolor, *gbufnormals;
 	ID3D11DepthStencilView* depthstencilview;
 	ID3D11DepthStencilState* defaultstencilstate, *nozstencilstate;
 
 	ID3D11PixelShader *pixelshader, *pixelshader2D;
-	ID3D11VertexShader *vertexshader, *vertexshader2D, *vertexshaderparticle;
+	ID3D11VertexShader *vertexshader, *vertexshader2D, *vertexshadertess, *vertexshaderparticle;
 	ID3D11GeometryShader* geometryshaderparticle;
 	ID3D11ComputeShader* csblurshader;
+	ID3D11HullShader* hullshader;
+	ID3D11DomainShader* domainshader;
 
-	ID3D11RasterizerState* clocklwise, *counterclockwise;
+	ID3D11RasterizerState* clockwise, *counterclockwise;
 
 	UINT stride, offset;
 
-	ID3DBlob* blobpixelvanilla, *blobpixel2D, *blobvertexvanilla, *blobvertex2D, *blobcsblur, *blobvertexparticle, *blobgeometryparticle;
+	ID3DBlob* blobpixelvanilla, *blobpixel2D, *blobvertexvanilla, *blobvertextess, *blobvertex2D, *blobcsblur, *blobhullshader, *blobdomainshader, *blobgeometryparticle;
 
 	ID3D11InputLayout* inputlayout;
 
@@ -72,6 +77,7 @@ class Engine
 	HWND windowhandle;
 
 	std::vector<IDrawable*> models;
+	QuadTree quadtree;
 	std::vector<Particle> particlepositions;
 
 	Camera camera;
@@ -85,8 +91,11 @@ class Engine
 	ID3D11Buffer* lightbuffer, *matrixbuffer, *render2Dquad, *particlebuffer, *indirectargs;
 
 	VOID VanillaRender();
-	VOID DeferredRenderer();
-	VOID Render2D();
+	VOID Deferred();
+	VOID DeferredLightPass();
+	VOID ShadowPass();
+	VOID Tessellation();
+	VOID Render2D(Texture* tex);
 	VOID CreateRasterizerStates();
 	VOID CreateParticles();
 	VOID CompileShaders();

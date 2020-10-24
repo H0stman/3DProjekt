@@ -2,6 +2,7 @@
 
 Model::Model(std::string file, ID3D11Device* device)
 {
+	name = file;
 	Assimp::Importer importer;
 
 	const aiScene* pScene = importer.ReadFile(file.c_str(),
@@ -64,6 +65,8 @@ Model::Model(std::string file, ID3D11Device* device)
 				indices.push_back(face.mIndices[j]);
 		}
 
+		for (size_t i = 0; i < 3; ++i)
+			texture.push_back(nullptr);
 
 		aiString texPath;
 		if (pScene->mMaterials[mesh->mMaterialIndex]->GetTextureCount(aiTextureType_DIFFUSE) == 0)

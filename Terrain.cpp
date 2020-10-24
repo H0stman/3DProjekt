@@ -161,7 +161,9 @@ Terrain::Terrain(PCSTR filename, ID3D11Device* device)
 	stride = sizeof(vertex);
 	offset = 0;
 
-	texture[0] = new Texture("grass.png", device);
+	texture.push_back(new Texture("grass.png", device));
+	texture.push_back(nullptr);
+	texture.push_back(nullptr);
 }
 
 Terrain::~Terrain()

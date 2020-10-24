@@ -2,19 +2,21 @@
 
 QuadTree::QuadTree() : root(nullptr)
 {
+	root = new QuadTreeNode();
 }
 
 QuadTree::~QuadTree()
 {
 	DestroyQuadTree(root);
 	for(Instance* i : drawables) {
-		delete i->pdrawable;
+		i->pdrawable == nullptr;		// the object is safeguarded in the models vector in Engine
 		delete i;
 	}
 }
 
 QuadTree::Instance::Instance(IDrawable* d) {
 	pdrawable = d;
+	pickedForRendering = false;
 }
 
 QuadTree::QuadTreeNode::QuadTreeNode() : subQuad() { }
@@ -23,6 +25,13 @@ void QuadTree::Add(IDrawable* drawable) {
 	Instance* i = new Instance(drawable);
 	drawables.push_back(i);
 	QuadTreeInsert(root, QT_SIZE, { 0.0, 0.0, 0.0 }, i);
+}
+
+void QuadTree::Add(std::vector<IDrawable*> drawables)
+{
+	for (IDrawable* d : drawables) {
+		Add(d);
+	}
 }
 
 void QuadTree::DestroyQuadTree(QuadTreeNode* node) {
@@ -66,8 +75,9 @@ void QuadTree::QuadTreeInsert(QuadTreeNode* node, float size, DirectX::XMFLOAT3 
 
 std::vector<IDrawable*> QuadTree::GetRenderQueue(BoundingFrustum frustum) {
 	std::vector<IDrawable*> renderqueue;
-
 	ViewFrustumCulling(root, QT_SIZE, { 0.0, 0.0, 0.0 }, frustum, renderqueue);
+	for(Instance* i : drawables)
+		i->pickedForRendering = false;
 	return renderqueue;
 }
 
@@ -95,6 +105,7 @@ void QuadTree::ViewFrustumCulling(QuadTreeNode* node, float size, DirectX::XMFLO
 		}
 
 		if (iTestXYplane <= INTERSECTING && iTestYZplane >= INTERSECTING) {
+			
 			if (node->subQuad[1] == nullptr) node->subQuad[1] = new	QuadTreeNode();
 			ViewFrustumCulling(node->subQuad[1], halfSize, { center.x + halfSize, center.y, center.z - halfSize },frustum, renderQueue);
 		}
@@ -113,8 +124,11 @@ void QuadTree::ViewFrustumCulling(QuadTreeNode* node, float size, DirectX::XMFLO
 		for (Instance* i : node->pinstance) {
 			if (!i->pickedForRendering) {
 				i->pickedForRendering = true;
+				OutputDebugString(L"Leaf\n");
 				if (frustum.Contains(i->pdrawable->GetBoundingBox()) > DISJOINT) {
 					renderQueue.push_back(i->pdrawable);
+					OutputDebugStringA(i->pdrawable->GetName().c_str());
+					OutputDebugStringA("\n");
 				}
 			}
 		}

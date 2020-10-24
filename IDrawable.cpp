@@ -1,8 +1,8 @@
 #include "IDrawable.hpp"
 
-Texture* IDrawable::GetTextures()
+std::vector<Texture*> IDrawable::GetTextures()
 {
-   return texture[0];
+   return texture;
 }
 
 IDrawable::~IDrawable() {
@@ -26,4 +26,15 @@ BOOL IDrawable::IsClockwise()
 BoundingBox IDrawable::GetBoundingBox()
 {
 	return boundingbox;
+}
+
+VOID IDrawable::Transform(FXMMATRIX trans)
+{
+	worldmatrix *= trans;
+	boundingbox.Transform(boundingbox, trans);
+}
+
+std::string IDrawable::GetName()
+{
+	return name;
 }
