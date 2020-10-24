@@ -9,6 +9,12 @@
 *.user
 *.userosscache
 *.sln.docstates
+!cube.obj
+!FalloutGirl.obj
+!sphere.obj
+!suzanne.obj
+!texTree.obj
+!water.obj
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

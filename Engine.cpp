@@ -742,7 +742,7 @@ VOID Engine::Update()
 		ID3D11ShaderResourceView* diffuse = textures[0]->GetShaderResourceView();
 
 		// Switch to tessellation if there is a displacement texture
-		if (textures[1] == nullptr) {
+		if (textures[2] == nullptr) {
 			// Disable tessellation
 			context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 			context->VSSetShader(vertexshader, nullptr, 0u);
@@ -765,7 +765,7 @@ VOID Engine::Update()
 		context->IASetVertexBuffers(0u, 1u, model->GetVertexBuffer(), &stride, &offset);
 		context->DrawIndexed(model->GetIndexCount(), 0u, 0u);
 
-		if (textures[1] != nullptr) {
+		if (textures[2] != nullptr) {
 			context->HSSetShader(nullptr, nullptr, 0u);
 			context->DSSetShader(nullptr, nullptr, 0u);
 		}
@@ -787,6 +787,7 @@ VOID Engine::LoadDrawables()
 	models.push_back(new Model("FalloutGirl.obj", device));
 	models.push_back(new Model("suzanne.obj", device));
 	models.push_back(new Model("texTree.obj", device));
+	models.push_back(new Model("sphere.obj", device));
 	for (size_t i = 0; i < models.size(); ++i) {
 		models[i]->Transform(XMMatrixTranslation(-20.0 + (float)i * 5.0, 0.0, -15.0));
 	}
