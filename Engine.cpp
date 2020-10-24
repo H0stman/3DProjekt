@@ -928,7 +928,7 @@ VOID Engine::DeferredRenderer()
 
 VOID Engine::DeferredGeometryPass()
 {
-	for (auto model : models) //TODO: Fix the incompatible input output structs in vertex and pixelshader for vanilla rendering.
+	for (auto model : quadtree.GetRenderQueue(camera.GetFrustum())) //TODO: Fix the incompatible input output structs in vertex and pixelshader for vanilla rendering.
 	{
 		if (model->IsClockwise())
 			context->RSSetState(clockwise);
@@ -1111,16 +1111,16 @@ VOID Engine::Update()
 	DeferredRenderer();
 
 		
-	DrawParticles();
+	//DrawParticles();
 
 	water->UpdateWater(context);
 
-	if (kb.B)
-	{
-		Blur(rendertexture, blurtarget);
-		SetRenderTargets(2u);	// 0 = backbuffer, 1 = render to rendertexture, 2 = backbuffer and no depth buffer
-		Render2D(blurtarget);
-	}
+	//if (kb.B)
+	//{
+	//	Blur(rendertexture, blurtarget);
+	//	SetRenderTargets(2u);	// 0 = backbuffer, 1 = render to rendertexture, 2 = backbuffer and no depth buffer
+	//	Render2D(blurtarget);
+	//}
 
 	HRESULT HR = swapchain->Present(1u, 0u);
 	assert(SUCCEEDED(HR));
