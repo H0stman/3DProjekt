@@ -48,11 +48,10 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	if (FAILED(hr))
 		OutputDebugString(L"Error generating back buffer for Render target view.\n");
 
+
 	/*****TEXTURE CREATION*****/
 	rendertexture = new Texture(width, height, device);
 	blurtarget = new Texture(width, height, device);
-	gbufcolor = new Texture(width, height, device);
-	gbufnormals = new Texture(width, height, device);
 	
 	/*****DEPTH/STENCIL VIEW CREATION*****/
 	D3D11_TEXTURE2D_DESC depthBufferDescriptor;
@@ -129,11 +128,11 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	};
 
 	/*****Input layout creation*****/
-	hr = device->CreateInputLayout(iedesc,			//Pointer to the first element in the descriptor array.
-		ARRAYSIZE(iedesc),								//Number of elements in descriptor array.
-		blobvertexvanilla->GetBufferPointer(),		//Pointer to the compiled pixel shader buffer.
-		blobvertexvanilla->GetBufferSize(),			//Size of the compiled pixel shader buffer.
-		&inputlayout);										//Adress of pointer of yhe input layout. 
+	hr = device->CreateInputLayout(iedesc,									//Pointer to the first element in the descriptor array.
+								   ARRAYSIZE(iedesc),						//Number of elements in descriptor array.
+								   blobvertexvanilla->GetBufferPointer(),	//Pointer to the compiled pixel shader buffer.
+								   blobvertexvanilla->GetBufferSize(),		//Size of the compiled pixel shader buffer.
+								   &inputlayout);										//Adress of pointer of yhe input layout. 
  context->IASetInputLayout(inputlayout);
 
 	camera = Camera();
@@ -159,7 +158,7 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	LoadDrawables();
 
 	D3D11_BUFFER_DESC lightdesc = {};
-	lightdesc.ByteWidth = sizeof(Light);
+	lightdesc.ByteWidth = sizeof(PhongLight_ConstantBuffer_PS);
 	lightdesc.MiscFlags = 0;
 	lightdesc.StructureByteStride = 0;
 	lightdesc.Usage = D3D11_USAGE_DYNAMIC;
@@ -229,6 +228,8 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	if (FAILED(HR))
 		OutputDebugString(L"Error creating Quad-buffer");
 
+	InitializeDeferredRendererResources(width, height);
+	shadowMap.Initialize(device, 1024, 1024);
 }
 
 Engine::~Engine()
@@ -246,15 +247,21 @@ Engine::~Engine()
 	counterclockwise->Release();
 	pixelshader->Release();
 	pixelshader2D->Release();
+	pixelshadergbuf->Release();
+	pixelshaderlight->Release();
 	vertexshader->Release();
 	vertexshader2D->Release();
+	vertexshaderdeferred->Release();
 	csblurshader->Release();
 	hullshader->Release();
 	domainshader->Release();
 	blobpixelvanilla->Release();
 	blobpixel2D->Release();
+	blobpixelgbuf->Release();
+	blobpixellight->Release();
 	blobvertexvanilla->Release();
 	blobvertex2D->Release();
+	blobvertexDeferred->Release();
 	blobcsblur->Release();
 	blobhullshader->Release();
 	blobdomainshader->Release();
@@ -265,8 +272,10 @@ Engine::~Engine()
 	texturesampler->Release();
 	if(rendertexture != nullptr) delete rendertexture;
 	if(blurtarget != nullptr) delete blurtarget;
-	if(gbufcolor != nullptr) delete gbufcolor;
-	if(gbufnormals != nullptr) delete gbufnormals;
+	if(gbufNormal != nullptr) delete gbufNormal;
+	if(gbufDiffuse != nullptr) delete gbufDiffuse;
+	if(gbufPosition != nullptr) delete gbufPosition;
+	//if(gbufLightCS != nullptr) delete gbufLightCS;
 }
 
 BOOL Engine::Run()
@@ -327,18 +336,18 @@ VOID Engine::CompileShaders()
 
 	/*****Pixelshader compilation*****/
 	HRESULT hr = D3DCompileFromFile(L"pixelshader_vanilla.hlsl",		//Name of the pixel shader.
-		nullptr,																			//PixelShader macro, ignore.
-		D3D_COMPILE_STANDARD_FILE_INCLUDE,										//Will essentially find the file.
-		"ps_main",																		//Entry point for shader function.
-		"ps_5_0",																		//Pixel shader target (version).
-		flags,																			//Flags, in our case adding more debug output.
-		0u,																				//Additional flags.
-		&blobpixelvanilla,															//The pixel shader blob to be filled.
-		&errorBlob);																	//Error blob that will catch additional error messages.
+									nullptr,							//PixelShader macro, ignore.
+									D3D_COMPILE_STANDARD_FILE_INCLUDE,	//Will essentially find the file.
+									"ps_main",							//Entry point for shader function.
+									"ps_5_0",							//Pixel shader target (version).
+									flags,							    //Flags, in our case adding more debug output.
+									0u,									//Additional flags.
+									&blobpixelvanilla,					//The pixel shader blob to be filled.
+									&errorBlob);						//Error blob that will catch additional error messages.
 	if (FAILED(hr))
 	{
 		if (errorBlob != nullptr)
-			OutputDebugStringA((char*)errorBlob->GetBufferPointer());			//Will yield additional debug information from Pixel shader.
+			OutputDebugStringA((char*)errorBlob->GetBufferPointer());	//Will yield additional debug information from Pixel shader.
 
 		OutputDebugString(L"Error compiling PixelShader Vanilla");
 		errorBlob->Release();
@@ -346,9 +355,9 @@ VOID Engine::CompileShaders()
 
 	/*****Pixelshader creation*****/
 	hr = device->CreatePixelShader(blobpixelvanilla->GetBufferPointer(),			//Pointer to the compiled Pixel shader buffer.
-		blobpixelvanilla->GetBufferSize(),													//Size of the compiled Pixel shader buffer.
-		nullptr,																						//Advanced topic, not used here.
-		&pixelshader);																				//Address of pointer to the Pixel VertexShader.
+								   blobpixelvanilla->GetBufferSize(),				//Size of the compiled Pixel shader buffer.
+								   nullptr,											//Advanced topic, not used here.
+								   &pixelshader);									//Address of pointer to the Pixel VertexShader.
 	if (FAILED(hr))
 	{
 		OutputDebugString(L"Error creating PixelShader Vanilla");
@@ -357,15 +366,15 @@ VOID Engine::CompileShaders()
 
 
 	/*****Pixelshader for 2D compilation*****/
-	hr = D3DCompileFromFile(L"pixelshader_2D.hlsl",		//Name of the pixel shader.
-		nullptr,																			//PixelShader macro, ignore.
-		D3D_COMPILE_STANDARD_FILE_INCLUDE,										//Will essentially find the file.
-		"ps_2D_main",																		//Entry point for shader function.
-		"ps_5_0",																		//Pixel shader target (version).
-		flags,																			//Flags, in our case adding more debug output.
-		0u,																				//Additional flags.
-		&blobpixel2D,															//The pixel shader blob to be filled.
-		&errorBlob);																	//Error blob that will catch additional error messages.
+	hr = D3DCompileFromFile(L"pixelshader_2D.hlsl",				//Name of the pixel shader.
+							nullptr,							//PixelShader macro, ignore.
+							D3D_COMPILE_STANDARD_FILE_INCLUDE,	//Will essentially find the file.
+							"ps_2D_main",						//Entry point for shader function.
+							"ps_5_0",							//Pixel shader target (version).
+							flags,								//Flags, in our case adding more debug output.
+							0u,									//Additional flags.
+							&blobpixel2D,						//The pixel shader blob to be filled.
+							&errorBlob);						//Error blob that will catch additional error messages.
 	if (FAILED(hr))
 	{
 		if (errorBlob != nullptr)
@@ -377,27 +386,85 @@ VOID Engine::CompileShaders()
 
 	/*****Pixelshader creation*****/
 	hr = device->CreatePixelShader(blobpixel2D->GetBufferPointer(),			//Pointer to the compiled Pixel shader buffer.
-		blobpixel2D->GetBufferSize(),													//Size of the compiled Pixel shader buffer.
-		nullptr,																						//Advanced topic, not used here.
-		&pixelshader2D);																				//Address of pointer to the Pixel VertexShader.
+								   blobpixel2D->GetBufferSize(),		    //Size of the compiled Pixel shader buffer.
+								   nullptr,								    //Advanced topic, not used here.
+								   &pixelshader2D);						    //Address of pointer to the Pixel VertexShader.
 	if (FAILED(hr))
 	{
 		OutputDebugString(L"Error creating PixelShader 2D");
 		errorBlob->Release();
 	}
 
+	/*****Pixelshader for Gbuffer compilation*****/
+	hr = D3DCompileFromFile(L"pixelshader_Gbuffer.hlsl",		//Name of the pixel shader.
+							nullptr,							//PixelShader macro, ignore.
+							D3D_COMPILE_STANDARD_FILE_INCLUDE,	//Will essentially find the file.
+							"ps_gbuffer",						//Entry point for shader function.
+							"ps_5_0",							//Pixel shader target (version).
+							flags,								//Flags, in our case adding more debug output.
+							0u,									//Additional flags.
+							&blobpixelgbuf,						//The pixel shader blob to be filled.
+							&errorBlob);						//Error blob that will catch additional error messages.
+	if (FAILED(hr))
+	{
+		if (errorBlob != nullptr)
+			OutputDebugStringA((char*)errorBlob->GetBufferPointer());			//Will yield additional debug information from Pixel shader.
+
+		OutputDebugString(L"Error compiling PixelShader G-Buffer");
+		errorBlob->Release();
+	}
+
+	/*****Pixelshader G-buffer creation*****/
+	hr = device->CreatePixelShader(blobpixelgbuf->GetBufferPointer(),		//Pointer to the compiled Pixel shader buffer.
+								   blobpixelgbuf->GetBufferSize(),		    //Size of the compiled Pixel shader buffer.
+								   nullptr,								    //Advanced topic, not used here.
+								   &pixelshadergbuf);						    //Address of pointer to the Pixel VertexShader.
+	if (FAILED(hr))
+	{
+		OutputDebugString(L"Error creating PixelShader G-buffer");
+		errorBlob->Release();
+	}
+
+	/*****Pixelshader for Light compilation*****/
+	hr = D3DCompileFromFile(L"pixelshader_light.hlsl",			//Name of the pixel shader.
+							nullptr,							//PixelShader macro, ignore.
+							D3D_COMPILE_STANDARD_FILE_INCLUDE,	//Will essentially find the file.
+							"ps_light",							//Entry point for shader function.
+							"ps_5_0",							//Pixel shader target (version).
+							flags,								//Flags, in our case adding more debug output.
+							0u,									//Additional flags.
+							&blobpixellight,					//The pixel shader blob to be filled.
+							&errorBlob);						//Error blob that will catch additional error messages.
+	if (FAILED(hr))
+	{
+		if (errorBlob != nullptr)
+			OutputDebugStringA((char*)errorBlob->GetBufferPointer());			//Will yield additional debug information from Pixel shader.
+
+		OutputDebugString(L"Error compiling PixelShader G-Buffer");
+		errorBlob->Release();
+	}
+
+	/*****Pixelshader Light creation*****/
+	hr = device->CreatePixelShader(blobpixellight->GetBufferPointer(),		//Pointer to the compiled Pixel shader buffer.
+								   blobpixellight->GetBufferSize(),		    //Size of the compiled Pixel shader buffer.
+								   nullptr,								    //Advanced topic, not used here.
+								   &pixelshaderlight);						//Address of pointer to the Pixel VertexShader.
+	if (FAILED(hr))
+	{
+		OutputDebugString(L"Error creating PixelShader Light");
+		errorBlob->Release();
+	}
 
 	/*****Vertexshader compilation*****/
 	hr = D3DCompileFromFile(L"vertexshader_vanilla.hlsl",					//Name of the vertex shader.
-		nullptr,																			//Vertexshader macro, ignore.
-		D3D_COMPILE_STANDARD_FILE_INCLUDE,										//Will essentially find the file.
-		"vs_main",																		//Entry point for shader function.
-		"vs_5_0",																		//Pixel shader target (version).
-		flags,																			//Flags, in our case adding more debug output.
-		0u,																				//Additional flags.
-		&blobvertexvanilla,															//The pixel shader blob to be filled.
-		&errorBlob);																	//Error blob that will catch additional error messages.
-
+							nullptr,									    //Vertexshader macro, ignore.
+							D3D_COMPILE_STANDARD_FILE_INCLUDE,				//Will essentially find the file.
+							"vs_main",										//Entry point for shader function.
+							"vs_5_0",										//Pixel shader target (version).
+							flags,											//Flags, in our case adding more debug output.
+							0u,												//Additional flags.
+							&blobvertexvanilla,								//The pixel shader blob to be filled.
+							&errorBlob);									//Error blob that will catch additional error messages.
 	if (FAILED(hr))
 	{
 		if (errorBlob != nullptr)
@@ -409,30 +476,27 @@ VOID Engine::CompileShaders()
 
 	/*****Vertexshader creation*****/
 	hr = device->CreateVertexShader(blobvertexvanilla->GetBufferPointer(),			//Pointer to the compiled Pixel shader buffer.
-		blobvertexvanilla->GetBufferSize(),					//Size of the compiled Pixel shader buffer.
-		nullptr,														//Advanced topic, not used here.
-		&vertexshader);											//Address of pointer to the Pixel VertexShader.
-
+									blobvertexvanilla->GetBufferSize(),				//Size of the compiled Pixel shader buffer.
+									nullptr,										//Advanced topic, not used here.
+									&vertexshader);									//Address of pointer to the Pixel VertexShader.
 	if (FAILED(hr))
 	{
 		OutputDebugString(L"Error creating VertexShader Vanilla");
 		errorBlob->Release();
 	}
-
 	if(errorBlob)
 		errorBlob->Release();
 
 	/*****Vertexshader 2D compilation*****/
 	hr = D3DCompileFromFile(L"vertexshader_2D.hlsl",					//Name of the vertex shader.
-		nullptr,																			//Vertexshader macro, ignore.
-		D3D_COMPILE_STANDARD_FILE_INCLUDE,										//Will essentially find the file.
-		"vs_2D_main",																		//Entry point for shader function.
-		"vs_5_0",																		//Pixel shader target (version).
-		flags,																			//Flags, in our case adding more debug output.
-		0u,																				//Additional flags.
-		&blobvertex2D,															//The pixel shader blob to be filled.
-		&errorBlob);																	//Error blob that will catch additional error messages.
-
+							nullptr,									//Vertexshader macro, ignore.
+							D3D_COMPILE_STANDARD_FILE_INCLUDE,			//Will essentially find the file.
+							"vs_2D_main",								//Entry point for shader function.
+							"vs_5_0",									//Pixel shader target (version).
+							flags,										//Flags, in our case adding more debug output.
+							0u,											//Additional flags.
+							&blobvertex2D,								//The pixel shader blob to be filled.
+							&errorBlob);								//Error blob that will catch additional error messages.
 	if (FAILED(hr))
 	{
 		if (errorBlob != nullptr)
@@ -444,30 +508,27 @@ VOID Engine::CompileShaders()
 
 	/*****Vertexshader 2D creation*****/
 	hr = device->CreateVertexShader(blobvertexvanilla->GetBufferPointer(),			//Pointer to the compiled Pixel shader buffer.
-		blobvertexvanilla->GetBufferSize(),					//Size of the compiled Pixel shader buffer.
-		nullptr,														//Advanced topic, not used here.
-		&vertexshader2D);											//Address of pointer to the Pixel VertexShader.
-
+									blobvertexvanilla->GetBufferSize(),				//Size of the compiled Pixel shader buffer.
+									nullptr,										//Advanced topic, not used here.
+									&vertexshader2D);								//Address of pointer to the Pixel VertexShader.
 	if (FAILED(hr))
 	{
 		OutputDebugString(L"Error creating VertexShader 2D");
 		errorBlob->Release();
 	}
-
 	if(errorBlob)
 		errorBlob->Release();
 
-	/*****Vertexshader 2D compilation*****/
+	/*****Vertexshader Tesselation compilation*****/
 	hr = D3DCompileFromFile(L"vertexshader_tessellation.hlsl",					//Name of the vertex shader.
-		nullptr,																			//Vertexshader macro, ignore.
-		D3D_COMPILE_STANDARD_FILE_INCLUDE,										//Will essentially find the file.
-		"vs_tess_main",																		//Entry point for shader function.
-		"vs_5_0",																		//Pixel shader target (version).
-		flags,																			//Flags, in our case adding more debug output.
-		0u,																				//Additional flags.
-		&blobvertextess,															//The pixel shader blob to be filled.
-		&errorBlob);																	//Error blob that will catch additional error messages.
-
+							nullptr,											//Vertexshader macro, ignore.
+							D3D_COMPILE_STANDARD_FILE_INCLUDE,					//Will essentially find the file.
+							"vs_tess_main",										//Entry point for shader function.
+							"vs_5_0",											//Pixel shader target (version).
+							flags,												//Flags, in our case adding more debug output.
+							0u,													//Additional flags.
+							&blobvertextess,									//The pixel shader blob to be filled.
+							&errorBlob);										//Error blob that will catch additional error messages.
 	if (FAILED(hr))
 	{
 		if (errorBlob != nullptr)
@@ -477,31 +538,93 @@ VOID Engine::CompileShaders()
 		errorBlob->Release();
 	}
 
-	/*****Vertexshader 2D creation*****/
+	/*****Vertexshader Tesselation creation*****/
 	hr = device->CreateVertexShader(blobvertextess->GetBufferPointer(),			//Pointer to the compiled Pixel shader buffer.
-		blobvertextess->GetBufferSize(),					//Size of the compiled Pixel shader buffer.
-		nullptr,														//Advanced topic, not used here.
-		&vertexshadertess);											//Address of pointer to the Pixel VertexShader.
-
+									blobvertextess->GetBufferSize(),			//Size of the compiled Pixel shader buffer.
+									nullptr,									//Advanced topic, not used here.
+									&vertexshadertess);							//Address of pointer to the Pixel VertexShader.
 	if (FAILED(hr))
 	{
 		OutputDebugString(L"Error creating VertexShader Tessellation");
 		errorBlob->Release();
 	}
-
 	if(errorBlob)
 		errorBlob->Release();
 
+	/*****Vertexshader Deferred compilation*****/
+	hr = D3DCompileFromFile(L"vertexshader_deferred.hlsl",		//Name of the vertex shader.
+							nullptr,							//Vertexshader macro, ignore.
+							D3D_COMPILE_STANDARD_FILE_INCLUDE,	//Will essentially find the file.
+							"vs_deferred",						//Entry point for shader function.
+							"vs_5_0",							//Pixel shader target (version).
+							flags,								//Flags, in our case adding more debug output.
+							0u,									//Additional flags.
+							&blobvertexDeferred,				//The pixel shader blob to be filled.
+							&errorBlob);						//Error blob that will catch additional error messages.
+	if (FAILED(hr))
+	{
+		if (errorBlob != nullptr)
+			OutputDebugStringA((char*)errorBlob->GetBufferPointer());			//Will yield additional debug information from Pixel shader.
+
+		OutputDebugString(L"Error compiling VertexShader Deferred");
+		errorBlob->Release();
+	}
+
+	/*****Vertexshader Deferred creation*****/
+	hr = device->CreateVertexShader(blobvertexDeferred->GetBufferPointer(),		//Pointer to the compiled Pixel shader buffer.
+									blobvertexDeferred->GetBufferSize(),		//Size of the compiled Pixel shader buffer.
+									nullptr,									//Advanced topic, not used here.
+									&vertexshaderdeferred);						//Address of pointer to the Pixel VertexShader.
+	if (FAILED(hr))
+	{
+		OutputDebugString(L"Error creating VertexShader Deferred");
+		errorBlob->Release();
+	}
+	if (errorBlob)
+		errorBlob->Release();
+
+	/*****Vertexshader shadow compilation*****/
+	hr = D3DCompileFromFile(L"vertexshader_shadow.hlsl",		//Name of the vertex shader.
+							nullptr,							//Vertexshader macro, ignore.
+							D3D_COMPILE_STANDARD_FILE_INCLUDE,	//Will essentially find the file.
+							"vs_shadow",						//Entry point for shader function.
+							"vs_5_0",							//Pixel shader target (version).
+							flags,								//Flags, in our case adding more debug output.
+							0u,									//Additional flags.
+							&blobvertexshadow,					//The pixel shader blob to be filled.
+							&errorBlob);						//Error blob that will catch additional error messages.
+	if (FAILED(hr))
+	{
+		if (errorBlob != nullptr)
+			OutputDebugStringA((char*)errorBlob->GetBufferPointer());			//Will yield additional debug information from Pixel shader.
+
+		OutputDebugString(L"Error compiling VertexShader Deferred");
+		errorBlob->Release();
+	}
+
+	/*****Vertexshader shadow creation*****/
+	hr = device->CreateVertexShader(blobvertexshadow->GetBufferPointer(),		//Pointer to the compiled Pixel shader buffer.
+									blobvertexshadow->GetBufferSize(),			//Size of the compiled Pixel shader buffer.
+									nullptr,									//Advanced topic, not used here.
+									&vertexshadershadow);						//Address of pointer to the Pixel VertexShader.
+	if (FAILED(hr))
+	{
+		OutputDebugString(L"Error creating VertexShader Deferred");
+		errorBlob->Release();
+	}
+	if (errorBlob)
+		errorBlob->Release();
+
 	/*****Computeshader compilation*****/
-	hr = D3DCompileFromFile(L"computeshader_blur.hlsl",		//Name of the pixel shader.
-		nullptr,										//ComputeShader macro, ignore.
-		D3D_COMPILE_STANDARD_FILE_INCLUDE,				//Will essentially find the file.
-		"cs_main",									//Entry point for shader function.
-		"cs_5_0",										//Compute shader target (version).
-		flags,											//Flags, in our case adding more debug output.
-		0u,												//Additional flags.
-		&blobcsblur,									//The compute shader blob to be filled.
-		&errorBlob);									//Error blob that will catch additional error messages.
+	hr = D3DCompileFromFile(L"computeshader_blur.hlsl",			//Name of the pixel shader.
+							nullptr,							//ComputeShader macro, ignore.
+							D3D_COMPILE_STANDARD_FILE_INCLUDE,	//Will essentially find the file.
+							"cs_main",							//Entry point for shader function.
+							"cs_5_0",							//Compute shader target (version).
+							flags,								//Flags, in our case adding more debug output.
+							0u,									//Additional flags.
+							&blobcsblur,						//The compute shader blob to be filled.
+							&errorBlob);						//Error blob that will catch additional error messages.
 	if (FAILED(hr))
 	{
 		if (errorBlob != nullptr)
@@ -512,25 +635,25 @@ VOID Engine::CompileShaders()
 	}
 
 	/*****Compute shader creation*****/
-	hr = device->CreateComputeShader(blobcsblur->GetBufferPointer(),			//Pointer to the compiled Compute shader buffer.
-		blobcsblur->GetBufferSize(),			//Size of the compiled Compute shader buffer.
-		nullptr,									//Advanced topic, not used here.
-		&csblurshader);						//Address of pointer to the Compute VertexShader.
+	hr = device->CreateComputeShader(blobcsblur->GetBufferPointer(),		//Pointer to the compiled Compute shader buffer.
+									 blobcsblur->GetBufferSize(),			//Size of the compiled Compute shader buffer.
+									 nullptr,								//Advanced topic, not used here.
+									 &csblurshader);						//Address of pointer to the Compute VertexShader.
 	if (FAILED(hr))
 	{
 		OutputDebugString(L"Error creating ComputeShader");
 	}
 
 	/*****HullShader compilation*****/
-	hr = D3DCompileFromFile(L"hullshader.hlsl",		//Name of the pixel shader.
-		nullptr,										//ComputeShader macro, ignore.
-		D3D_COMPILE_STANDARD_FILE_INCLUDE,				//Will essentially find the file.
-		"hs_main",									//Entry point for shader function.
-		"hs_5_0",										//Compute shader target (version).
-		flags,											//Flags, in our case adding more debug output.
-		0u,												//Additional flags.
-		&blobhullshader,									//The compute shader blob to be filled.
-		&errorBlob);									//Error blob that will catch additional error messages.
+	hr = D3DCompileFromFile(L"hullshader.hlsl",					//Name of the pixel shader.
+							nullptr,							//ComputeShader macro, ignore.
+							D3D_COMPILE_STANDARD_FILE_INCLUDE,	//Will essentially find the file.
+							"hs_main",						    //Entry point for shader function.
+							"hs_5_0",							//Compute shader target (version).
+							flags,								//Flags, in our case adding more debug output.
+							0u,									//Additional flags.
+							&blobhullshader,					//The compute shader blob to be filled.
+							&errorBlob);						//Error blob that will catch additional error messages.
 	if (FAILED(hr))
 	{
 		if (errorBlob != nullptr)
@@ -541,25 +664,25 @@ VOID Engine::CompileShaders()
 	}
 
 	/*****HullShader creation*****/
-	hr = device->CreateHullShader(blobhullshader->GetBufferPointer(),			//Pointer to the compiled Compute shader buffer.
-		blobhullshader->GetBufferSize(),			//Size of the compiled Compute shader buffer.
-		nullptr,									//Advanced topic, not used here.
-		&hullshader);						//Address of pointer to the Compute VertexShader.
+	hr = device->CreateHullShader(blobhullshader->GetBufferPointer(),	    //Pointer to the compiled Compute shader buffer.
+								  blobhullshader->GetBufferSize(),			//Size of the compiled Compute shader buffer.
+								  nullptr,									//Advanced topic, not used here.
+								  &hullshader);								//Address of pointer to the Compute VertexShader.
 	if (FAILED(hr))
 	{
 		OutputDebugString(L"Error creating HullShader");
 	}
 
 	/*****DomainShader compilation*****/
-	hr = D3DCompileFromFile(L"domainshader.hlsl",		//Name of the pixel shader.
-		nullptr,										//ComputeShader macro, ignore.
-		D3D_COMPILE_STANDARD_FILE_INCLUDE,				//Will essentially find the file.
-		"ds_main",									//Entry point for shader function.
-		"ds_5_0",										//Compute shader target (version).
-		flags,											//Flags, in our case adding more debug output.
-		0u,												//Additional flags.
-		&blobdomainshader,									//The compute shader blob to be filled.
-		&errorBlob);									//Error blob that will catch additional error messages.
+	hr = D3DCompileFromFile(L"domainshader.hlsl",				//Name of the pixel shader.
+							nullptr,							//ComputeShader macro, ignore.
+							D3D_COMPILE_STANDARD_FILE_INCLUDE,	//Will essentially find the file.
+							"ds_main",							//Entry point for shader function.
+							"ds_5_0",							//Compute shader target (version).
+							flags,								//Flags, in our case adding more debug output.
+							0u,									//Additional flags.
+							&blobdomainshader,					//The compute shader blob to be filled.
+							&errorBlob);						//Error blob that will catch additional error messages.
 	if (FAILED(hr))
 	{
 		if (errorBlob != nullptr)
@@ -570,41 +693,172 @@ VOID Engine::CompileShaders()
 	}
 
 	/*****DomainShader creation*****/
-	hr = device->CreateDomainShader(blobdomainshader->GetBufferPointer(),			//Pointer to the compiled Compute shader buffer.
-		blobdomainshader->GetBufferSize(),			//Size of the compiled Compute shader buffer.
-		nullptr,									//Advanced topic, not used here.
-		&domainshader);						//Address of pointer to the Compute VertexShader.
+	hr = device->CreateDomainShader(blobdomainshader->GetBufferPointer(),		//Pointer to the compiled Compute shader buffer.
+									blobdomainshader->GetBufferSize(),			//Size of the compiled Compute shader buffer.
+									nullptr,									//Advanced topic, not used here.
+									&domainshader);								//Address of pointer to the Compute VertexShader.
 	if (FAILED(hr))
 	{
 		OutputDebugString(L"Error creating DomainShader");
 	}
+	if (errorBlob != nullptr)
+	{
+		errorBlob->Release();
+	}
 }
 
-VOID Engine::Tessellation()
+VOID Engine::ReadyTessellation()
 {
 	//Bind resources
 	context->DSSetSamplers(0u, 1u, &texturesampler);
 	context->DSSetConstantBuffers(0u, 1u, &matrixbuffer);
 }
 
-VOID Engine::VanillaRender()
+VOID Engine::InitializeDeferredRendererResources(UINT width, UINT height)
 {
-	//Bind resources
-	context->PSSetSamplers(0u, 1u, &texturesampler);
-	context->VSSetConstantBuffers(0u, 1u, &matrixbuffer);
-	context->PSSetConstantBuffers(0u, 1u, &lightbuffer);
-	context->PSSetConstantBuffers(1u, 1u, &matrixbuffer);
-	context->RSSetViewports(1u, &defaultviewport);
+	// Textures to be used both as render targets and shader resources:
+	gbufNormal	 = new Texture(width, height, device);
+	gbufDiffuse	 = new Texture(width, height, device);
+	gbufPosition = new Texture(width, height, device);
+	//gbufLightCS  = new Texture(width, height, device);
 }
 
-VOID Engine::Deferred()
+VOID Engine::ReadyGeometryPassResources()
 {
+	SetRenderTargets(DEFERREDTARGET);
+	ClearRenderTargets(DEFERREDTARGET);
+	context->VSSetShader(vertexshader, nullptr, 0u);
+	context->VSSetConstantBuffers(0u, 1u, &matrixbuffer);
+	context->PSSetShader(pixelshadergbuf, nullptr, 0u);
+	context->PSSetSamplers(0u, 1u, &texturesampler);
+	context->IASetInputLayout(inputlayout);
+	context->RSSetViewports(1u, &defaultviewport);
+	ReadyTessellation();
+}
 
+VOID Engine::ReadyLightPassResources()
+{
+	// Unbind texture render target views:
+	ID3D11RenderTargetView* nullRTV[nrOfBuffers] = { nullptr };
+	context->OMSetRenderTargets(nrOfBuffers, nullRTV, nullptr);
+
+	// Update light:
+	context->Map(lightbuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &lightresource);
+	phongLight = (PhongLight_ConstantBuffer_PS*)lightresource.pData;
+	phongLight->ambientColor = XMFLOAT3(1.0f, 1.0f, 1.0f);
+	phongLight->ambientLightIntensity = 0.15f;
+	phongLight->diffuseColor = pointLight.GetColor();
+	phongLight->diffuseLightIntensity = pointLight.GetDiffuseIntensity();
+	phongLight->diffuseLightPosition = pointLight.GetPosition();
+	phongLight->attenuationConstant = pointLight.GetAttenuationConstant();
+	phongLight->attenuationLinear = pointLight.GetAttenuationLinear();
+	phongLight->attenuationQuadratic = pointLight.GetAttenuationQuadratic();
+	phongLight->specularIntensity = pointLight.GetSpecularIntensity();
+	context->Unmap(lightbuffer, 0);
+
+	// Update transform (Ortho-matrix only thing needed updating):
+	context->Map(matrixbuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &transformresource);
+	transform = (TransformationMatrices*)transformresource.pData;
+	transform->projectionmatrix = XMMatrixTranspose(camera.GetOrthoMatrix());
+	context->Unmap(matrixbuffer, 0);
+
+	// Bind new components:
+	SetRenderTargets(QUADTARGET);
+	ClearRenderTargets(QUADTARGET); //?
+	context->VSSetShader(vertexshaderdeferred, nullptr, 0u);
+	context->VSSetConstantBuffers(0u, 1u, &matrixbuffer);
+	context->PSSetShader(pixelshaderlight, nullptr, 0u);
+	context->PSSetConstantBuffers(0u, 1u, &lightbuffer);
+	context->PSSetConstantBuffers(1u, 1u, &matrixbuffer);
+	ID3D11ShaderResourceView* srvArr[nrOfBuffers] = {gbufNormal->GetShaderResourceView(),
+													 gbufDiffuse->GetShaderResourceView(),
+													 gbufPosition->GetShaderResourceView() };
+	context->PSSetShaderResources(0u, nrOfBuffers, srvArr);
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+
+	context->IASetVertexBuffers(0u, 1u, &render2Dquad, &stride, &offset);
+}
+
+VOID Engine::ReadyShadowPass()
+{
+	context->VSSetShader(vertexshadershadow, nullptr, 0u);
+	context->PSSetShader(nullptr, nullptr, 0u);
+	context->IASetInputLayout(inputlayout);
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+}
+
+VOID Engine::DeferredRenderer()
+{
+	ReadyGeometryPassResources();
+	DeferredGeometryPass();
+	ReadyLightPassResources();
+	DeferredLightPass();
+
+	ID3D11ShaderResourceView* nullsrv[nrOfBuffers] = { nullptr };
+	context->PSSetShaderResources(0u, nrOfBuffers, nullsrv);
+}
+
+VOID Engine::DeferredGeometryPass()
+{
+	for (auto model : models) //TODO: Fix the incompatible input output structs in vertex and pixelshader for vanilla rendering.
+	{
+		if (model->IsClockwise())
+			context->RSSetState(clockwise);
+		else
+			context->RSSetState(counterclockwise);
+
+		//Update transformation matrices.
+		context->Map(matrixbuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &transformresource);
+		transform = (TransformationMatrices*)transformresource.pData;
+		transform->worldmatrix = XMMatrixTranspose(model->GetWorldMatrix());
+		transform->viewmatrix = XMMatrixTranspose(camera.GetViewMatrix());
+		transform->projectionmatrix = XMMatrixTranspose(camera.GetProjectionMatrix());
+		XMStoreFloat3(&transform->camerapos, camera.GetPosition());
+		context->Unmap(matrixbuffer, 0);
+
+		std::vector<Texture*> textures = model->GetTextures();
+		ID3D11ShaderResourceView* diffuse = textures[0]->GetShaderResourceView();
+		//Set diffuse texture.
+		context->PSSetShaderResources(0u, 1u, &diffuse);
+
+		// If no tessellation is present:
+		if (textures[1] == nullptr)
+		{
+			context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+			context->VSSetShader(vertexshader, nullptr, 0u);
+			context->HSSetShader(nullptr, nullptr, 0u);
+			context->DSSetShader(nullptr, nullptr, 0u);
+		}
+		// Switch to tessellation if there is a displacement texture
+		else
+		{
+			context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);
+			ID3D11ShaderResourceView* displacement = textures[1]->GetShaderResourceView();
+			context->VSSetShader(vertexshadertess, nullptr, 0u);
+			context->HSSetShader(hullshader, nullptr, 0u);
+			context->DSSetShader(domainshader, nullptr, 0u);
+			context->DSSetShaderResources(0u, 1u, &displacement);
+		}
+
+		// Bind Vertex & Index-Buffers:
+		context->IASetIndexBuffer(model->GetIndexBuffer(), DXGI_FORMAT_R32_UINT, 0u);
+		context->IASetVertexBuffers(0u, 1u, model->GetVertexBuffer(), &stride, &offset);
+
+		// Draw:
+		context->DrawIndexed(model->GetIndexCount(), 0u, 0u);
+
+		if (textures[1] != nullptr)
+		{
+			context->HSSetShader(nullptr, nullptr, 0u);
+			context->DSSetShader(nullptr, nullptr, 0u);
+		}
+	}
 }
 
 VOID Engine::DeferredLightPass()
 {
-
+	// Simple:
+	context->Draw(4u, 0u);
 }
 
 VOID Engine::ShadowPass()
@@ -633,11 +887,11 @@ VOID Engine::Render2D(Texture* tex)
 	context->RSSetViewports(1u, &defaultviewport);
 
 	/*****Set Vertex Buffers*****/
-	context->IASetVertexBuffers(0u,			//The startslot of the vertex buffer being used. 
-		1u,											//Total number of vertex buffers.
-		&render2Dquad,								//Address of pointer to Vertex buffer.
-		&stride,										//The byte-stride of entities in the Vertex buffer, here vertices.
-		&offset);									//Point of start of the first vertex to be used. Here all vertices are bound to buffer.
+	context->IASetVertexBuffers(0u,				//The startslot of the vertex buffer being used. 
+								1u,				//Total number of vertex buffers.
+								&render2Dquad,	//Address of pointer to Vertex buffer.
+								&stride,		//The byte-stride of entities in the Vertex buffer, here vertices.
+								&offset);		//Point of start of the first vertex to be used. Here all vertices are bound to buffer.
 
 	/*****Set Primitive topology*****/
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
@@ -681,14 +935,36 @@ VOID Engine::SetRenderTargets(UINT target)
 		context->OMSetRenderTargets(1u, tgt, depthstencilview);
 		context->OMSetDepthStencilState(defaultstencilstate, 0u);
 	}
-	if (target == 2) { // Prepare rendering of texture on 2D quad
-		context->OMSetRenderTargets(1u, &backbuffer, depthstencilview);
+	// Prepare rendering of texture on 2D quad
+	if (target == QUADTARGET) 
+	{ 
 		context->OMSetDepthStencilState(nozstencilstate, 0u);
+		context->OMSetRenderTargets(1u, &backbuffer, depthstencilview);
 	}
-	if (target == 3) { // Set render targets for deferred rendering
-		ID3D11RenderTargetView* gbuffers[] = { gbufcolor->GetRenderTargetView(), gbufnormals->GetRenderTargetView() };
-		context->OMSetRenderTargets(2u, gbuffers, depthstencilview);
+	// Set render targets for deferred rendering
+	if (target == DEFERREDTARGET) 
+	{ 
+		ID3D11RenderTargetView* gbuffers[] = { gbufNormal->GetRenderTargetView(), 
+											   gbufDiffuse->GetRenderTargetView(), 
+											   gbufPosition->GetRenderTargetView(), 
+											   /*gbufLightCS->GetRenderTargetView()*/ };
 		context->OMSetDepthStencilState(defaultstencilstate, 0u);
+		context->OMSetRenderTargets(nrOfBuffers, gbuffers, depthstencilview);
+	}
+}
+
+VOID Engine::ClearRenderTargets(UINT target)
+{
+	if (target == DEFERREDTARGET)
+	{
+		gbufNormal->Clear(clearcolour, context);
+		gbufDiffuse->Clear(clearcolour, context);
+		gbufPosition->Clear(clearcolour, context);
+		//gbufLightCS->Clear(clearcolour, context);
+	}
+	if (target == QUADTARGET)
+	{
+		// Do we need...?
 	}
 }
 
@@ -696,76 +972,18 @@ VOID Engine::Update()
 {
 	context->ClearDepthStencilView(depthstencilview, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0u);
 	context->ClearRenderTargetView(backbuffer, clearcolour);
-
 	context->ClearRenderTargetView(rendertexture->GetRenderTargetView(), clearcolour);
 	
 	camera.Update();
-	SetRenderTargets(0u);	// 0 = backbuffer, 1 = render to rendertexture, 2 = backbuffer and no depth buffer
-	VanillaRender();
-	Tessellation();
+	DeferredRenderer();
 
-	for (auto model : models) //TODO: Fix the incompatible input output structs in vertex and pixelshader for vanilla rendering.
-	{
-		if (model->IsClockwise())
-			context->RSSetState(clockwise);
-		else
-			context->RSSetState(counterclockwise);
-
-
-		//Update tranformation matrices.
-		context->Map(matrixbuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &transformresource);
-		transform = (TransformationMatrices*)transformresource.pData;
-		transform->worldmatrix = XMMatrixTranspose(model->GetWorldMatrix());
-		transform->viewmatrix = XMMatrixTranspose(camera.GetViewMatrix());
-		transform->projectionmatrix = XMMatrixTranspose(camera.GetProjectionMatrix());
-		XMStoreFloat3(&transform->camerapos, camera.GetPosition());
-		context->Unmap(matrixbuffer, 0);
-
-
-		//Update light.
-		context->Map(lightbuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &lightresouce);
-		light = (Light*)lightresouce.pData;
-		light->diffuseColour = XMFLOAT4(0.1f, 1.0f, 1.0f, 1.0f);
-		light->pos = XMFLOAT3(10.0f, 10.0f, 0.0f);
-		light->padding = 0.0f;
-		context->Unmap(lightbuffer, 0);
-
-		std::vector<Texture*> textures = model->GetTextures();
-		ID3D11ShaderResourceView* diffuse = textures[0]->GetShaderResourceView();
-
-		// Switch to tessellation if there is a displacement texture
-		if (textures[1] == nullptr) {
-			context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-			context->VSSetShader(vertexshader, nullptr, 0u);
-			context->HSSetShader(nullptr, nullptr, 0u);
-			context->DSSetShader(nullptr, nullptr, 0u);
-		}
-		else {
-			context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);
-			ID3D11ShaderResourceView* displacement = textures[1]->GetShaderResourceView();
-			context->VSSetShader(vertexshadertess, nullptr, 0u);
-			context->HSSetShader(hullshader, nullptr, 0u);
-			context->DSSetShader(domainshader, nullptr, 0u);
-			context->DSSetShaderResources(0u, 1u, &displacement);
-		}
-		//Set texture.
-		context->PSSetShaderResources(0u, 1u, &diffuse);
-
-		context->IASetIndexBuffer(model->GetIndexBuffer(), DXGI_FORMAT_R32_UINT, 0u);
-		context->IASetVertexBuffers(0u, 1u, model->GetVertexBuffer(), &stride, &offset);
-		context->DrawIndexed(model->GetIndexCount(), 0u, 0u);
-
-		if (textures[1] != nullptr) {
-			context->HSSetShader(nullptr, nullptr, 0u);
-			context->DSSetShader(nullptr, nullptr, 0u);
-		}
-	}
 
 	//Blur(rendertexture, blurtarget);
 	//SetRenderTargets(2u);	// 0 = backbuffer, 1 = render to rendertexture, 2 = backbuffer and no depth buffer
 	//Render2D(rendertexture);
 
-	swapchain->Present(1u, 0u);
+	HRESULT HR = swapchain->Present(1u, 0u);
+	assert(SUCCEEDED(HR));
 }
 
 VOID Engine::LoadDrawables() 

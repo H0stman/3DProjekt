@@ -5,7 +5,7 @@ Model::Model(std::string file, ID3D11Device* device)
 	Assimp::Importer importer;
 
 	const aiScene* pScene = importer.ReadFile(file.c_str(),
-		aiProcess_Triangulate
+		  aiProcess_Triangulate
 		| aiProcess_ConvertToLeftHanded
 		| aiProcess_CalcTangentSpace
 		| aiProcess_GenNormals
@@ -101,12 +101,12 @@ Model::Model(std::string file, ID3D11Device* device)
 		D3D11_BUFFER_DESC vertexBufferDescriptor;
 		ZeroMemory(&vertexBufferDescriptor, sizeof(D3D11_BUFFER_DESC));
 
-		vertexBufferDescriptor.Usage = D3D11_USAGE_IMMUTABLE;								//CPU has no access and GPU has read only, i.e. buffer won't ever change. Fastest option.
-		vertexBufferDescriptor.ByteWidth = sizeof(vertex) * vertices.size(); 			    //Size in bytes of Vertex buffer.
-		vertexBufferDescriptor.BindFlags = D3D11_BIND_VERTEX_BUFFER;						//The buffer is of type Vertex buffer.
-		vertexBufferDescriptor.CPUAccessFlags = 0u;											//CPU does not require read or write access after the buffer has been created.
-		vertexBufferDescriptor.MiscFlags = 0u;												//No misc flags needed for Vertex buffer.
-		vertexBufferDescriptor.StructureByteStride = 0u;									//Only applies for structured buffers.
+		vertexBufferDescriptor.Usage = D3D11_USAGE_IMMUTABLE;									//CPU has no access and GPU has read only, i.e. buffer won't ever change. Fastest option.
+		vertexBufferDescriptor.ByteWidth = static_cast<UINT>(sizeof(vertex) * vertices.size()); //Size in bytes of Vertex buffer.
+		vertexBufferDescriptor.BindFlags = D3D11_BIND_VERTEX_BUFFER;							//The buffer is of type Vertex buffer.
+		vertexBufferDescriptor.CPUAccessFlags = 0u;												//CPU does not require read or write access after the buffer has been created.
+		vertexBufferDescriptor.MiscFlags = 0u;													//No misc flags needed for Vertex buffer.
+		vertexBufferDescriptor.StructureByteStride = 0u;										//Only applies for structured buffers.
 
 		D3D11_SUBRESOURCE_DATA vertexBufferInitData;
 		ZeroMemory(&vertexBufferInitData, sizeof(D3D11_SUBRESOURCE_DATA));
@@ -124,7 +124,7 @@ Model::Model(std::string file, ID3D11Device* device)
 		ZeroMemory(&indexBufferDescriptor, sizeof(D3D11_BUFFER_DESC));
 
 		indexBufferDescriptor.Usage = D3D11_USAGE_IMMUTABLE;
-		indexBufferDescriptor.ByteWidth = sizeof(DWORD) * indices.size();
+		indexBufferDescriptor.ByteWidth = static_cast<UINT>(sizeof(DWORD) * indices.size());
 		indexBufferDescriptor.BindFlags = D3D11_BIND_INDEX_BUFFER;
 		indexBufferDescriptor.CPUAccessFlags = 0u;
 		indexBufferDescriptor.MiscFlags = 0u;
@@ -153,7 +153,7 @@ Model::~Model()
 
 UINT Model::GetIndexCount()
 {
-	return indices.size();
+	return static_cast<UINT>(indices.size());
 }
 
 

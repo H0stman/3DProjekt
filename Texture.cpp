@@ -83,13 +83,8 @@ BOOL Texture::LoadTexture(std::string file, ID3D11Device* device)
 	return TRUE;
 }
 
-VOID Texture::Clear(FLOAT red, FLOAT green, FLOAT blue, FLOAT alpha, ID3D11DeviceContext* context) 
+VOID Texture::Clear(const FLOAT* clearColour, ID3D11DeviceContext* context) 
 {
-	float color[4];
-	color[0] = red;
-	color[1] = green;
-	color[2] = blue;
-	color[3] = alpha;
-	context->ClearRenderTargetView(rendertargetview, color);
+	context->ClearRenderTargetView(rendertargetview, clearColour);
 }
 

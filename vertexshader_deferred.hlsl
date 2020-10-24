@@ -1,6 +1,8 @@
 cbuffer constantBuffer : register(b0)
 {
-    float4x4 orthographicProjectionMatrix;
+    matrix world;
+    matrix view;
+    matrix orthographicProjectionMatrix;
 }
 
 float4 vs_deferred(in float3 inPosition : POSITION) : SV_POSITION

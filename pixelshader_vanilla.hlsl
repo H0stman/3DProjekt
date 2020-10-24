@@ -18,20 +18,19 @@ cbuffer tranform : register(b1)
 
 struct PS_INPUT
 {
-	float4 position : SV_POSITION;
-	float2 texcoord : TEXCOORD;
-	float3 normal : NORMAL;
-    float3 positionws : POSITION;
+	float4 position     : SV_POSITION;
+	float2 texcoord     : TEXCOORD;
+	float3 normal       : NORMAL;
+    float3 positionws   : POSITION;
 };
 
 float4 ps_main(PS_INPUT input) : SV_TARGET
 {
-    float4 lightposWS = mul(float4(lightpos.xyz, 0), world);
+    float4 lightposWS = mul(float4(lightpos.xyz, 1), world);
     
     // Sample the pixel color from the texture using the sampler at this texture coordinate location.
     float4 textureColor = tex.Sample(samp, input.texcoord);
     float3 lightdir = normalize(lightposWS.xyz - input.positionws.xyz);
     float diffuse = max(dot(input.normal, lightdir.xyz), 0);
     return mul(diffuse, textureColor);
-
 }

@@ -174,7 +174,7 @@ Terrain::~Terrain()
 
 UINT Terrain::GetIndexCount()
 {
-	return indices.size();
+	return static_cast<UINT>(indices.size());
 }
 
 UINT Terrain::GetStartIndexLocation()

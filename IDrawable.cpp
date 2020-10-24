@@ -8,7 +8,7 @@ std::vector<Texture*> IDrawable::GetTextures()
 IDrawable::~IDrawable() {
 	if(vertexbuffer != nullptr) vertexbuffer->Release();
 	if(indexbuffer != nullptr) indexbuffer->Release();
-	for (size_t i = 0; i < 2; ++i) {
+	for (size_t i = 0; i < texture.size(); ++i) {
 		if (texture[i] != nullptr) delete texture[i];
 	}
 }
