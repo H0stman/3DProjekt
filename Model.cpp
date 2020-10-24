@@ -61,17 +61,13 @@ Model::Model(std::string file, ID3D11Device* device)
 		{
 			aiFace face = mesh->mFaces[i];
 			for (unsigned int j{ 0u }; j < face.mNumIndices; j++)
-			{
 				indices.push_back(face.mIndices[j]);
-			}
 		}
 
 
 		aiString texPath;
 		if (pScene->mMaterials[mesh->mMaterialIndex]->GetTextureCount(aiTextureType_DIFFUSE) == 0)
-		{
 			texture[diffuse] = nullptr;
-		}
 		else
 		{
 			pScene->mMaterials[mesh->mMaterialIndex]->GetTexture(aiTextureType_DIFFUSE, 0, &texPath);
@@ -81,9 +77,7 @@ Model::Model(std::string file, ID3D11Device* device)
 
 		texPath.Clear();
 		if (pScene->mMaterials[mesh->mMaterialIndex]->GetTextureCount(aiTextureType_DISPLACEMENT) == 0)
-		{
 			texture[displacement] = nullptr;
-		}
 		else
 		{
 			pScene->mMaterials[mesh->mMaterialIndex]->GetTexture(aiTextureType_DISPLACEMENT, 0, &texPath);
@@ -93,9 +87,7 @@ Model::Model(std::string file, ID3D11Device* device)
 
 		texPath.Clear();
 		if (pScene->mMaterials[mesh->mMaterialIndex]->GetTextureCount(aiTextureType_NORMALS) == 0)
-		{
 			texture[normalmap] = nullptr;
-		}
 		else
 		{
 			pScene->mMaterials[mesh->mMaterialIndex]->GetTexture(aiTextureType_NORMALS, 0, &texPath);
@@ -111,11 +103,11 @@ Model::Model(std::string file, ID3D11Device* device)
 		D3D11_BUFFER_DESC vertexBufferDescriptor;
 		ZeroMemory(&vertexBufferDescriptor, sizeof(D3D11_BUFFER_DESC));
 
-		vertexBufferDescriptor.Usage = D3D11_USAGE_IMMUTABLE;								//CPU has no access and GPU has read only, i.e. buffer won't ever change. Fastest option.
-		vertexBufferDescriptor.ByteWidth = sizeof(vertex) * vertices.size(); 			    //Size in bytes of Vertex buffer.
-		vertexBufferDescriptor.BindFlags = D3D11_BIND_VERTEX_BUFFER;						//The buffer is of type Vertex buffer.
-		vertexBufferDescriptor.CPUAccessFlags = 0u;											//CPU does not require read or write access after the buffer has been created.
-		vertexBufferDescriptor.MiscFlags = 0u;												//No misc flags needed for Vertex buffer.
+		vertexBufferDescriptor.Usage = D3D11_USAGE_DYNAMIC;								//CPU has access and GPU has read only, i.e. buffer changes.
+		vertexBufferDescriptor.ByteWidth = sizeof(vertex) * vertices.size(); 		//Size in bytes of Vertex buffer.
+		vertexBufferDescriptor.BindFlags = D3D11_BIND_VERTEX_BUFFER;					//The buffer is of type Vertex buffer.
+		vertexBufferDescriptor.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;				//CPU does not require read or write access after the buffer has been created.
+		vertexBufferDescriptor.MiscFlags = 0u;													//No misc flags needed for Vertex buffer.
 		vertexBufferDescriptor.StructureByteStride = 0u;									//Only applies for structured buffers.
 
 		D3D11_SUBRESOURCE_DATA vertexBufferInitData;
@@ -125,9 +117,7 @@ Model::Model(std::string file, ID3D11Device* device)
 		/*****Creating Vertex buffer*****/
 		HRESULT HR = device->CreateBuffer(&vertexBufferDescriptor, &vertexBufferInitData, &vertexbuffer);
 		if (FAILED(HR))
-		{
 			OutputDebugString(L"Error creating Vertex Buffer for model.");
-		}
 
 		/*Index Buffer description*/
 		D3D11_BUFFER_DESC indexBufferDescriptor;
@@ -147,9 +137,7 @@ Model::Model(std::string file, ID3D11Device* device)
 		/*Creating Index Buffer*/
 		HR = device->CreateBuffer(&indexBufferDescriptor, &indexBufferInitData, &indexbuffer);
 		if (FAILED(HR))
-		{
 			OutputDebugString(L"Error creating Index Buffer for model.");
-		}
 
 		worldmatrix = XMMatrixIdentity();
 		clockwise = false;
@@ -176,7 +164,6 @@ INT Model::GetBaseVertexLocation()
 {
 	return 0u;
 }
-
 
 ID3D11Buffer** Model::GetVertexBuffer()
 {

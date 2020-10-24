@@ -5,16 +5,17 @@
 #include <dxgi1_6.h>
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
+#include <DirectXCollision.h>
 #include <DirectXTK\Mouse.h>
 #include <DirectXTK\Keyboard.h>
 #include <string>
 #include <vector>
 
-#include <DirectXCollision.h>
 #include "Terrain.hpp"
 #include "Texture.hpp"
 #include "Camera.hpp"
 #include "Model.hpp"
+#include "Water.hpp"
 
 using namespace DirectX;
 
@@ -32,6 +33,11 @@ struct Light
 	FLOAT padding;
 };
 
+struct Particle
+{
+	XMFLOAT3 pos;
+};
+
 class Engine
 {
 	ID3D11Device* device;
@@ -44,14 +50,15 @@ class Engine
 	ID3D11DepthStencilState* defaultstencilstate, *nozstencilstate;
 
 	ID3D11PixelShader *pixelshader, *pixelshader2D;
-	ID3D11VertexShader *vertexshader, *vertexshader2D;
+	ID3D11VertexShader *vertexshader, *vertexshader2D, *vertexshaderparticle;
+	ID3D11GeometryShader* geometryshaderparticle;
 	ID3D11ComputeShader* csblurshader;
 
 	ID3D11RasterizerState* clocklwise, *counterclockwise;
 
 	UINT stride, offset;
 
-	ID3DBlob* blobpixelvanilla, *blobpixel2D, *blobvertexvanilla, *blobvertex2D, *blobcsblur;
+	ID3DBlob* blobpixelvanilla, *blobpixel2D, *blobvertexvanilla, *blobvertex2D, *blobcsblur, *blobvertexparticle, *blobgeometryparticle;
 
 	ID3D11InputLayout* inputlayout;
 
@@ -65,6 +72,7 @@ class Engine
 	HWND windowhandle;
 
 	std::vector<IDrawable*> models;
+	std::vector<Particle> particlepositions;
 
 	Camera camera;
 	Light* light;
@@ -72,14 +80,18 @@ class Engine
 
 	ID3D11SamplerState* texturesampler;
 
-	ID3D11Buffer* lightbuffer, *matrixbuffer, *render2Dquad;
+	ID3D11ShaderResourceView* particleview;
+
+	ID3D11Buffer* lightbuffer, *matrixbuffer, *render2Dquad, *particlebuffer, *indirectargs;
 
 	VOID VanillaRender();
 	VOID DeferredRenderer();
 	VOID Render2D();
 	VOID CreateRasterizerStates();
+	VOID CreateParticles();
 	VOID CompileShaders();
 	VOID LoadDrawables();
+	VOID DrawParticles();
 	VOID SetRenderTargets(UINT target);
 	VOID Blur(Texture* source, Texture* target);
 

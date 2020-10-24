@@ -42,6 +42,9 @@
     <ClCompile Include="Model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Water.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine.hpp">
@@ -66,6 +69,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Model.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Water.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -112,13 +118,11 @@
     <FxCompile Include="vertexshader_vanilla.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="heightmap.bmp">
+    <FxCompile Include="vertexshader_particle.hlsl">
       <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="grass.png">
+    </FxCompile>
+    <FxCompile Include="geometryshader_particle.hlsl">
       <Filter>Resource Files</Filter>
-    </Image>
+    </FxCompile>
   </ItemGroup>
 </Project>
