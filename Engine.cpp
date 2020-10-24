@@ -1146,6 +1146,8 @@ VOID Engine::LoadDrawables()
 	for (size_t i = 0; i < models.size(); ++i) 
 		models[i]->Transform(XMMatrixTranslation(-20.0 + (float)i * 5.0, 0.0, -15.0));
 	water->Transform(XMMatrixTranslation(0.0, -4.0, 0.0));
+	models.push_back(new Model("cubemetal.obj", device));
+	models.back()->Transform(XMMatrixTranslation(7.0, 14.0, 9.0));
 	quadtree.Add(models);
 }
 

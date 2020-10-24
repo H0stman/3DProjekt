@@ -2,6 +2,7 @@
 
 Water::Water(ID3D11Device* device) : Model("water.obj", device)
 {
+	clockwise = true;
 }
 
 VOID Water::UpdateWater(ID3D11DeviceContext* context)
