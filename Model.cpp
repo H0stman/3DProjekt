@@ -10,7 +10,6 @@ Model::Model(std::string file, ID3D11Device* device)
 		| aiProcess_ConvertToLeftHanded
 		| aiProcess_CalcTangentSpace
 		| aiProcess_GenNormals
-		| aiProcess_ConvertToLeftHanded
 		| aiProcess_JoinIdenticalVertices);
 	if (pScene == nullptr)
 	{
