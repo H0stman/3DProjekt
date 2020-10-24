@@ -9,7 +9,7 @@ QuadTree::~QuadTree()
 {
 	DestroyQuadTree(root);
 	for(Instance* i : drawables) {
-		i->pdrawable == nullptr;		// the object is safeguarded in the models vector in Engine
+		i->pdrawable = nullptr;		// the object is safeguarded in the models vector in Engine
 		delete i;
 	}
 }

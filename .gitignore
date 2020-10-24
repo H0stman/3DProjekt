@@ -9,12 +9,6 @@
 *.user
 *.userosscache
 *.sln.docstates
-!cube.obj
-!FalloutGirl.obj
-!sphere.obj
-!suzanne.obj
-!texTree.obj
-!water.obj
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -81,6 +75,12 @@ StyleCopReport.xml
 *.ilk
 *.meta
 *.obj
+!cube.obj
+!FalloutGirl.obj
+!sphere.obj
+!suzanne.obj
+!texTree.obj
+!water.obj
 *.iobj
 *.pch
 *.pdb
