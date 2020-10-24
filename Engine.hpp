@@ -21,6 +21,7 @@
 #include "QuadTree.hpp"
 #include "Water.hpp"
 
+#define BLURTARGET 1
 #define QUADTARGET 2
 #define DEFERREDTARGET 3
 

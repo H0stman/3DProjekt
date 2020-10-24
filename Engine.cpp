@@ -891,7 +891,6 @@ VOID Engine::ReadyLightPassResources()
 	context->Unmap(matrixbuffer, 0);
 
 	// Bind new components:
-	SetRenderTargets(QUADTARGET);
 	ClearRenderTargets(QUADTARGET); //?
 	context->VSSetShader(vertexshaderdeferred, nullptr, 0u);
 	context->VSSetConstantBuffers(0u, 1u, &matrixbuffer);
@@ -985,8 +984,23 @@ VOID Engine::DeferredGeometryPass()
 
 VOID Engine::DeferredLightPass()
 {
+	auto kb = keyboard.GetState();
+
+	if (kb.B)
+		SetRenderTargets(BLURTARGET);
+	else
+		SetRenderTargets(QUADTARGET);
+
+	
 	// Simple:
 	context->Draw(4u, 0u);
+
+	if (kb.B)
+	{
+		Blur(rendertexture, blurtarget);
+		SetRenderTargets(QUADTARGET);
+		Render2D(blurtarget);
+	}
 }
 
 VOID Engine::ShadowPass()
@@ -1060,7 +1074,7 @@ VOID Engine::SetRenderTargets(UINT target)
 		context->OMSetRenderTargets(1u, &backbuffer, depthstencilview);
 		context->OMSetDepthStencilState(defaultstencilstate, 0u);
 	}
-	if (target == 1) // Set one texture as render target (used for blur)
+	if (target == BLURTARGET) // Set one texture as render target (used for blur)
 	{ 
 		ID3D11RenderTargetView* tgt[] = { rendertexture->GetRenderTargetView() };
 		context->OMSetRenderTargets(1u, tgt, depthstencilview);
@@ -1101,7 +1115,6 @@ VOID Engine::ClearRenderTargets(UINT target)
 
 VOID Engine::Update()
 {
-	auto kb = keyboard.GetState();
 	context->ClearDepthStencilView(depthstencilview, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0u);
 	context->ClearRenderTargetView(backbuffer, clearcolour);
 	context->ClearRenderTargetView(rendertexture->GetRenderTargetView(), clearcolour);
@@ -1115,12 +1128,6 @@ VOID Engine::Update()
 
 	water->UpdateWater(context);
 
-	//if (kb.B)
-	//{
-	//	Blur(rendertexture, blurtarget);
-	//	SetRenderTargets(2u);	// 0 = backbuffer, 1 = render to rendertexture, 2 = backbuffer and no depth buffer
-	//	Render2D(blurtarget);
-	//}
 
 	HRESULT HR = swapchain->Present(1u, 0u);
 	assert(SUCCEEDED(HR));
