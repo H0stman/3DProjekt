@@ -138,8 +138,8 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 
 	camera = Camera();
 
-	context->VSSetShader(vertexshader, nullptr, 0u);
-	context->PSSetShader(pixelshader, nullptr, 0u);
+	//context->VSSetShader(vertexshader, nullptr, 0u);
+	//context->PSSetShader(pixelshader, nullptr, 0u);
 
 	//Creating texturesampler
 	D3D11_SAMPLER_DESC samplerDescriptor;
@@ -590,6 +590,8 @@ VOID Engine::Tessellation()
 VOID Engine::VanillaRender()
 {
 	//Bind resources
+	//context->VSSetShader(vertexshader, nullptr, 0u);
+	context->PSSetShader(pixelshader, nullptr, 0u);
 	context->PSSetSamplers(0u, 1u, &texturesampler);
 	context->VSSetConstantBuffers(0u, 1u, &matrixbuffer);
 	context->PSSetConstantBuffers(0u, 1u, &lightbuffer);
