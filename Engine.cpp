@@ -926,11 +926,12 @@ VOID Engine::LoadDrawables()
 	models.push_back(water);
 	models.push_back(new Model("cube.obj", device));
 	models.push_back(new Model("FalloutGirl.obj", device));
-	//models.push_back(new Model("suzanne.obj", device));
+	models.push_back(new Model("suzanne.obj", device));
 	models.push_back(new Model("texTree.obj", device));
 	models.push_back(new Model("sphere.obj", device));
-	for (size_t i = 0; i < models.size(); ++i) {
+	for (size_t i = 0; i < models.size(); ++i) 
 		models[i]->Transform(XMMatrixTranslation(-20.0 + (float)i * 5.0, 0.0, -15.0));
+	water->Transform(XMMatrixTranslation(0.0, -4.0, 0.0));
 	quadtree.Add(models);
 }
 

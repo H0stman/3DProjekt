@@ -10,6 +10,7 @@ Model::Model(std::string file, ID3D11Device* device)
 		| aiProcess_ConvertToLeftHanded
 		| aiProcess_CalcTangentSpace
 		| aiProcess_GenNormals
+		| aiProcess_ConvertToLeftHanded
 		| aiProcess_JoinIdenticalVertices);
 	if (pScene == nullptr)
 	{
@@ -143,7 +144,10 @@ Model::Model(std::string file, ID3D11Device* device)
 			OutputDebugString(L"Error creating Index Buffer for model.");
 
 		worldmatrix = XMMatrixIdentity();
-		clockwise = false;
+		if(texture[1] != nullptr)
+			clockwise = true;
+		else
+			clockwise = false;
 	}
 }
 
