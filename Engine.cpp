@@ -31,13 +31,13 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 
 	HRESULT hr = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, flags, nullptr, 0, D3D11_SDK_VERSION, &swap_chain_descr, &swapchain, &device, feature_level, &context);
 
-	
+
 	mouse.SetWindow(hndl);
 	mouse.Get().SetMode(Mouse::MODE_ABSOLUTE);
-	
+
 
 	/***RENDER TARGET VIEW CREATION***/
-	
+
 	ID3D11Texture2D* pBackBuffer = nullptr, * pDepthStencilBuffer = nullptr;
 
 	hr = swapchain->GetBuffer(0u, __uuidof(ID3D11Texture2D), (void**)&pBackBuffer);
@@ -53,7 +53,7 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	blurtarget = new Texture(width, height, device);
 	gbufcolor = new Texture(width, height, device);
 	gbufnormals = new Texture(width, height, device);
-	
+
 	/*****DEPTH/STENCIL VIEW CREATION*****/
 	D3D11_TEXTURE2D_DESC depthBufferDescriptor;
 	ZeroMemory(&depthBufferDescriptor, sizeof(D3D11_TEXTURE2D_DESC));
@@ -134,7 +134,7 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 		blobvertexvanilla->GetBufferPointer(),		//Pointer to the compiled pixel shader buffer.
 		blobvertexvanilla->GetBufferSize(),			//Size of the compiled pixel shader buffer.
 		&inputlayout);										//Adress of pointer of yhe input layout. 
- context->IASetInputLayout(inputlayout);
+	context->IASetInputLayout(inputlayout);
 
 	camera = Camera();
 
@@ -154,7 +154,6 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	samplerDescriptor.MaxLOD = D3D11_FLOAT32_MAX;
 
 	hr = device->CreateSamplerState(&samplerDescriptor, &texturesampler);
-
 
 	LoadDrawables();
 
@@ -177,7 +176,7 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	matrixBufferDesc.StructureByteStride = 0;
 	hr = device->CreateBuffer(&matrixBufferDesc, nullptr, &matrixbuffer);
 	assert(SUCCEEDED(hr));
-	
+
 	/** Setting up dynamic quad for rendering 2D images/textures **/
 	//OutputDebugString(std::to_wstring(height).c_str());
 	//OutputDebugString(std::to_wstring(width).c_str());
@@ -229,6 +228,10 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	if (FAILED(HR))
 		OutputDebugString(L"Error creating Quad-buffer");
 
+	CreateParticles();
+
+	VanillaRender();
+
 }
 
 Engine::~Engine()
@@ -263,10 +266,15 @@ Engine::~Engine()
 	matrixbuffer->Release();
 	render2Dquad->Release();
 	texturesampler->Release();
-	if(rendertexture != nullptr) delete rendertexture;
-	if(blurtarget != nullptr) delete blurtarget;
-	if(gbufcolor != nullptr) delete gbufcolor;
-	if(gbufnormals != nullptr) delete gbufnormals;
+	vertexshaderparticle->Release();
+	geometryshaderparticle->Release();
+	blobgeometryparticle->Release();
+	blobvertexparticle->Release();
+	particlebuffer->Release();
+	if (rendertexture != nullptr) delete rendertexture;
+	if (blurtarget != nullptr) delete blurtarget;
+	if (gbufcolor != nullptr) delete gbufcolor;
+	if (gbufnormals != nullptr) delete gbufnormals;
 }
 
 BOOL Engine::Run()
@@ -315,6 +323,64 @@ VOID Engine::CreateRasterizerStates()
 
 	rdesc.FrontCounterClockwise = FALSE;
 	device->CreateRasterizerState(&rdesc, &clockwise);
+}
+
+VOID Engine::CreateParticles()
+{
+	Particle p;
+	//Fill particle position vector.
+	for (FLOAT i = 0; i < 512; i++)
+	{
+		p.pos = { i,i,0.0f };
+		particlepositions.push_back(p);
+	}
+
+	D3D11_BUFFER_DESC bdesc = { 0 };
+	bdesc.Usage = D3D11_USAGE_DEFAULT;
+	bdesc.CPUAccessFlags = NULL;
+	bdesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS;
+	bdesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+	bdesc.ByteWidth = sizeof(Particle) * 512;
+	bdesc.StructureByteStride = sizeof(Particle);
+
+	D3D11_SUBRESOURCE_DATA sdata = { &particlepositions[0], NULL, NULL };
+
+	HRESULT hr = device->CreateBuffer(&bdesc, &sdata, &particlebuffer);
+
+	if (FAILED(hr))
+		OutputDebugString(L"Error creating buffer for particlepositions.\n");
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC CbSRVdesc = {};
+	CbSRVdesc.Format = DXGI_FORMAT_UNKNOWN;
+	CbSRVdesc.Buffer.FirstElement = 0;
+	CbSRVdesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+	CbSRVdesc.Buffer.NumElements = 512u;
+
+	hr = device->CreateShaderResourceView(particlebuffer, &CbSRVdesc, &particleview);
+
+	if (FAILED(hr))
+		OutputDebugString(L"Error creating view for particles.\n");
+
+	D3D11_BUFFER_DESC inArgsdesc = { 0 };
+	inArgsdesc.Usage = D3D11_USAGE_DEFAULT;
+	inArgsdesc.MiscFlags = D3D11_RESOURCE_MISC_DRAWINDIRECT_ARGS;
+	inArgsdesc.ByteWidth = sizeof(UINT) * 4;
+	inArgsdesc.StructureByteStride = 0;
+	inArgsdesc.BindFlags = NULL;
+	inArgsdesc.CPUAccessFlags = NULL;
+
+	UINT pInitArgs[4] = { 512u,1u,0u,0u };
+
+	D3D11_SUBRESOURCE_DATA InitArgsData;
+
+	InitArgsData.pSysMem = &pInitArgs;
+	InitArgsData.SysMemPitch = 0;
+	InitArgsData.SysMemSlicePitch = 0;
+
+	hr = device->CreateBuffer(&inArgsdesc, &InitArgsData, &indirectargs);
+
+	if (FAILED(hr))
+		OutputDebugString(L"Error creating arg buffer for particles.\n");
 }
 
 VOID Engine::CompileShaders()
@@ -419,7 +485,7 @@ VOID Engine::CompileShaders()
 		errorBlob->Release();
 	}
 
-	if(errorBlob)
+	if (errorBlob)
 		errorBlob->Release();
 
 	/*****Vertexshader 2D compilation*****/
@@ -454,8 +520,72 @@ VOID Engine::CompileShaders()
 		errorBlob->Release();
 	}
 
-	if(errorBlob)
+	if (errorBlob)
 		errorBlob->Release();
+
+	/*****Particle vertexshader compilation*****/
+	hr = D3DCompileFromFile(L"vertexshader_particle.hlsl",				//Name of the vertex shader.
+		nullptr,																			//Vertexshader macro, ignore.
+		D3D_COMPILE_STANDARD_FILE_INCLUDE,										//Will essentially find the file.
+		"VSMAIN",																		//Entry point for shader function.
+		"vs_5_0",																		//Pixel shader target (version).
+		flags,																			//Flags, in our case adding more debug output.
+		0u,																				//Additional flags.
+		&blobvertexparticle,															//The vertex shader blob to be filled.
+		&errorBlob);																	//Error blob that will catch additional error messages.
+
+	if (FAILED(hr))
+	{
+		if (errorBlob != nullptr)
+			OutputDebugStringA((char*)errorBlob->GetBufferPointer());			//Will yield additional debug information from vertex shader.
+
+		OutputDebugString(L"Error compiling vertexshader_particle\n");
+		errorBlob->Release();
+	}
+
+	/*****Particle vertexshader creation*****/
+	hr = device->CreateVertexShader(blobvertexparticle->GetBufferPointer(),			//Pointer to the compiled vertex shader buffer.
+		blobvertexparticle->GetBufferSize(),														//Size of the compiled vertex shader buffer.
+		nullptr,																							//Advanced topic, not used here.
+		&vertexshaderparticle);																				//Address of pointer to the Pixel VertexShader.
+
+	if (FAILED(hr))
+	{
+		OutputDebugString(L"Error creating vertexshader_particle\n");
+		errorBlob->Release();
+	}
+
+	/*****Particle geommetryshader compilation*****/
+	hr = D3DCompileFromFile(L"geometryshader_particle.hlsl",				//Name of the geomtery shader.
+		nullptr,																			//Vertexshader macro, ignore.
+		D3D_COMPILE_STANDARD_FILE_INCLUDE,										//Will essentially find the file.
+		"GSMAIN",																		//Entry point for shader function.
+		"gs_5_0",																		//Pixel shader target (version).
+		flags,																			//Flags, in our case adding more debug output.
+		0u,																				//Additional flags.
+		&blobgeometryparticle,														//The geometry shader blob to be filled.
+		&errorBlob);																	//Error blob that will catch additional error messages.
+
+	if (FAILED(hr))
+	{
+		if (errorBlob != nullptr)
+			OutputDebugStringA((char*)errorBlob->GetBufferPointer());			//Will yield additional debug information from Pixel shader.
+
+		OutputDebugString(L"Error compiling geometryshader_particle\n");
+		errorBlob->Release();
+	}
+
+	/*****Particle geometryshader creation*****/
+	hr = device->CreateGeometryShader(blobgeometryparticle->GetBufferPointer(),			//Pointer to the compiled geometry shader buffer.
+		blobgeometryparticle->GetBufferSize(),															//Size of the compiled Pixel shader buffer.
+		nullptr,																									//Advanced topic, not used here.
+		&geometryshaderparticle);																			//Address of pointer to the Pixel VertexShader.
+
+	if (FAILED(hr))
+	{
+		OutputDebugString(L"Error creating geometryshader_particle\n");
+		errorBlob->Release();
+	}
 
 	/*****Vertexshader 2D compilation*****/
 	hr = D3DCompileFromFile(L"vertexshader_tessellation.hlsl",					//Name of the vertex shader.
@@ -489,7 +619,7 @@ VOID Engine::CompileShaders()
 		errorBlob->Release();
 	}
 
-	if(errorBlob)
+	if (errorBlob)
 		errorBlob->Release();
 
 	/*****Computeshader compilation*****/
@@ -623,12 +753,12 @@ VOID Engine::Render2D(Texture* tex)
 	// Set Shaders for 2D rendering
 	context->VSSetShader(vertexshader2D, nullptr, 0u);
 	context->PSSetShader(pixelshader2D, nullptr, 0u);
-	
+
 	//Update tranformation matrices.
 	context->Map(matrixbuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &transformresource);
 	transform = (TransformationMatrices*)transformresource.pData;
 	transform->worldmatrix = XMMatrixIdentity();
-	transform->viewmatrix = XMMatrixIdentity(); // XMMatrixTranspose(camera.GetViewMatrix());
+	transform->viewmatrix = XMMatrixIdentity(); //XMMatrixTranspose(camera.GetViewMatrix());
 	transform->projectionmatrix = XMMatrixTranspose(camera.GetOrthoMatrix());
 	context->Unmap(matrixbuffer, 0);
 
@@ -656,7 +786,7 @@ VOID Engine::Blur(Texture* source, Texture* target)
 	context->CSSetShader(csblurshader, nullptr, 0u);
 	ID3D11RenderTargetView* unset[] = { nullptr };
 	context->OMSetRenderTargets(0u, unset, nullptr);
-	
+
 	// Bind resources to pipeline
 	ID3D11ShaderResourceView* srv[] = { source->GetShaderResourceView() };
 	context->CSSetShaderResources(1u, 1u, srv);
@@ -675,27 +805,31 @@ VOID Engine::Blur(Texture* source, Texture* target)
 
 VOID Engine::SetRenderTargets(UINT target)
 {
-	if (target == 0) { // Default backbuffer rendering
+	if (target == 0) // Default backbuffer rendering
+	{ 
 		context->OMSetRenderTargets(1u, &backbuffer, depthstencilview);
 		context->OMSetDepthStencilState(defaultstencilstate, 0u);
 	}
-	if (target == 1) { // Set one texture as render target (used for blur)
+	if (target == 1) // Set one texture as render target (used for blur)
+	{ 
 		ID3D11RenderTargetView* tgt[] = { rendertexture->GetRenderTargetView() };
 		context->OMSetRenderTargets(1u, tgt, depthstencilview);
 		context->OMSetDepthStencilState(defaultstencilstate, 0u);
 	}
-	if (target == 2) { // Prepare rendering of texture on 2D quad
+	if (target == 2) // Prepare rendering of texture on 2D quad
+	{ 
 		context->OMSetRenderTargets(1u, &backbuffer, depthstencilview);
 		context->OMSetDepthStencilState(nozstencilstate, 0u);
 	}
-	if (target == 3) { // Set render targets for deferred rendering
+	if (target == 3) // Set render targets for deferred rendering
+	{ 
 		ID3D11RenderTargetView* gbuffers[] = { gbufcolor->GetRenderTargetView(), gbufnormals->GetRenderTargetView() };
 		context->OMSetRenderTargets(2u, gbuffers, depthstencilview);
 		context->OMSetDepthStencilState(defaultstencilstate, 0u);
 	}
 }
 
-VOID Engine::Update() 
+VOID Engine::Update()
 {
 	auto kb = keyboard.GetState();
 	context->ClearDepthStencilView(depthstencilview, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0u);
@@ -703,9 +837,9 @@ VOID Engine::Update()
 
 	context->ClearRenderTargetView(rendertexture->GetRenderTargetView(), clearcolour);
 	context->ClearRenderTargetView(blurtarget->GetRenderTargetView(), clearcolour);
-	
+
 	camera.Update();
-	if (kb.B) 
+	if (kb.B)
 		SetRenderTargets(1u);	// 0 = backbuffer, 1 = render to rendertexture, 2 = backbuffer and no depth buffer
 	else
 		SetRenderTargets(0u);	// 0 = backbuffer, 1 = render to rendertexture, 2 = backbuffer and no depth buffer
@@ -719,16 +853,14 @@ VOID Engine::Update()
 		else
 			context->RSSetState(counterclockwise);
 
-
 		//Update tranformation matrices.
-		context->Map(matrixbuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &transformresource);
+		context->Map(matrixbuffer, 0u, D3D11_MAP_WRITE_DISCARD, 0u, &transformresource);
 		transform = (TransformationMatrices*)transformresource.pData;
 		transform->worldmatrix = XMMatrixTranspose(model->GetWorldMatrix());
 		transform->viewmatrix = XMMatrixTranspose(camera.GetViewMatrix());
 		transform->projectionmatrix = XMMatrixTranspose(camera.GetProjectionMatrix());
 		XMStoreFloat3(&transform->camerapos, camera.GetPosition());
 		context->Unmap(matrixbuffer, 0);
-
 
 		//Update light.
 		context->Map(lightbuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &lightresouce);
@@ -742,14 +874,16 @@ VOID Engine::Update()
 		ID3D11ShaderResourceView* diffuse = textures[0]->GetShaderResourceView();
 
 		// Switch to tessellation if there is a displacement texture
-		if (textures[2] == nullptr) {
+		if (textures[1] == nullptr)
+		{
 			// Disable tessellation
 			context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 			context->VSSetShader(vertexshader, nullptr, 0u);
 			context->HSSetShader(nullptr, nullptr, 0u);
 			context->DSSetShader(nullptr, nullptr, 0u);
 		}
-		else {
+		else
+		{
 			// Enable tessellation
 			context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);
 			ID3D11ShaderResourceView* displacement = textures[1]->GetShaderResourceView();
@@ -765,13 +899,18 @@ VOID Engine::Update()
 		context->IASetVertexBuffers(0u, 1u, model->GetVertexBuffer(), &stride, &offset);
 		context->DrawIndexed(model->GetIndexCount(), 0u, 0u);
 
-		if (textures[2] != nullptr) {
+		if (textures[1] != nullptr)
+		{
 			context->HSSetShader(nullptr, nullptr, 0u);
 			context->DSSetShader(nullptr, nullptr, 0u);
 		}
 	}
+	DrawParticles();
 
-	if (kb.B) {
+	water->UpdateWater(context);
+
+	if (kb.B)
+	{
 		Blur(rendertexture, blurtarget);
 		SetRenderTargets(2u);	// 0 = backbuffer, 1 = render to rendertexture, 2 = backbuffer and no depth buffer
 		Render2D(blurtarget);
@@ -780,16 +919,30 @@ VOID Engine::Update()
 	swapchain->Present(1u, 0u);
 }
 
-VOID Engine::LoadDrawables() 
+VOID Engine::LoadDrawables()
 {
-	//models.push_back(new Terrain("heightmap.bmp", device));
+	water = new Water(device);
+	models.push_back(new Terrain("heightmap.bmp", device));
+	models.push_back(water);
 	models.push_back(new Model("cube.obj", device));
 	models.push_back(new Model("FalloutGirl.obj", device));
-	models.push_back(new Model("suzanne.obj", device));
+	//models.push_back(new Model("suzanne.obj", device));
 	models.push_back(new Model("texTree.obj", device));
 	models.push_back(new Model("sphere.obj", device));
 	for (size_t i = 0; i < models.size(); ++i) {
 		models[i]->Transform(XMMatrixTranslation(-20.0 + (float)i * 5.0, 0.0, -15.0));
-	}
 	quadtree.Add(models);
+}
+
+VOID Engine::DrawParticles()
+{
+	context->RSSetState(clockwise);
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+	context->VSSetShader(vertexshaderparticle, nullptr, 0u);
+	context->GSSetShader(geometryshaderparticle, nullptr, 0u);
+	context->VSSetShaderResources(0u, 1u, &particleview);
+	context->GSSetConstantBuffers(0u, 1u, &matrixbuffer);
+	context->DrawInstancedIndirect(indirectargs, 0u);
+	context->GSSetShader(nullptr, nullptr, 0u);
+	context->VSSetShader(nullptr, nullptr, 0u);
 }

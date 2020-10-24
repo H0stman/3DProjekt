@@ -5,17 +5,19 @@
 #include <dxgi1_6.h>
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
+#include <DirectXCollision.h>
 #include <DirectXTK\Mouse.h>
 #include <DirectXTK\Keyboard.h>
 #include <string>
 #include <vector>
-#include <DirectXCollision.h>
 
+#include <DirectXCollision.h>
 #include "Terrain.hpp"
 #include "Texture.hpp"
 #include "Camera.hpp"
 #include "Model.hpp"
 #include "QuadTree.hpp"
+#include "Water.hpp"
 
 using namespace DirectX;
 
@@ -34,6 +36,11 @@ struct Light
 	FLOAT padding;
 };
 
+struct Particle
+{
+	XMFLOAT3 pos;
+};
+
 class Engine
 {
 	ID3D11Device* device;
@@ -46,7 +53,8 @@ class Engine
 	ID3D11DepthStencilState* defaultstencilstate, *nozstencilstate;
 
 	ID3D11PixelShader *pixelshader, *pixelshader2D;
-	ID3D11VertexShader *vertexshader, *vertexshader2D, *vertexshadertess;
+	ID3D11VertexShader *vertexshader, *vertexshader2D, *vertexshadertess, *vertexshaderparticle;
+	ID3D11GeometryShader* geometryshaderparticle;
 	ID3D11ComputeShader* csblurshader;
 	ID3D11HullShader* hullshader;
 	ID3D11DomainShader* domainshader;
@@ -55,7 +63,7 @@ class Engine
 
 	UINT stride, offset;
 
-	ID3DBlob* blobpixelvanilla, *blobpixel2D, *blobvertexvanilla, *blobvertextess, *blobvertex2D, *blobcsblur, *blobhullshader, *blobdomainshader;
+	ID3DBlob* blobpixelvanilla, *blobpixel2D, *blobvertexvanilla, *blobvertextess, *blobvertex2D, *blobcsblur, *blobhullshader, *blobdomainshader, *blobgeometryparticle, *blobvertexparticle;
 
 	ID3D11InputLayout* inputlayout;
 
@@ -70,14 +78,18 @@ class Engine
 
 	std::vector<IDrawable*> models;
 	QuadTree quadtree;
+	std::vector<Particle> particlepositions;
 
 	Camera camera;
 	Light* light;
+	Water* water;
 	D3D11_MAPPED_SUBRESOURCE lightresouce, transformresource;
 
 	ID3D11SamplerState* texturesampler;
 
-	ID3D11Buffer* lightbuffer, *matrixbuffer, *render2Dquad;
+	ID3D11ShaderResourceView* particleview;
+
+	ID3D11Buffer* lightbuffer, *matrixbuffer, *render2Dquad, *particlebuffer, *indirectargs;
 
 	VOID VanillaRender();
 	VOID Deferred();
@@ -86,8 +98,10 @@ class Engine
 	VOID Tessellation();
 	VOID Render2D(Texture* tex);
 	VOID CreateRasterizerStates();
+	VOID CreateParticles();
 	VOID CompileShaders();
 	VOID LoadDrawables();
+	VOID DrawParticles();
 	VOID SetRenderTargets(UINT target);
 	VOID Blur(Texture* source, Texture* target);
 
