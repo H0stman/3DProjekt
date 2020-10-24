@@ -5,11 +5,22 @@ Camera::Camera() : lookat(XMVectorZero())
 	position = XMVectorSet(0.0f, 0.0f, -70.0f, 1.0f);
 	updirection = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	view = XMMatrixLookAtLH(position, lookat, updirection);
-	projection = XMMatrixPerspectiveFovLH(XMConvertToRadians(90.0f), 1280.0f / 720.0f, 0.1f, 1000.0f);
-	pitch = yaw = 0.0f;
+	projection = XMMatrixPerspectiveFovLH(XMConvertToRadians(90.0f), 1424.0f / 720.0f, 0.1f, 1000.0f);
+	fpitch = fyaw = pitch = yaw = 0.0f;
 	rotation = 0.005f;
 	movement = 0.7f;
 	forward = XMVector4Normalize(lookat - position);
+
+	//XMMATRIX viewprojection = view * projection;
+	//frustum = BoundingFrustum(viewprojection);
+
+	frustum = BoundingFrustum(projection);
+	frustum.Transform(frustum, view);
+
+	//XMStoreFloat3(&frustum.Origin, position);
+	//XMVECTOR qangle = XMVector3AngleBetweenNormals(forward, XMVectorSet(1.0, 0.0, 0.0, 1.0));
+	//XMVECTOR qorient = XMQuaternionRotationRollPitchYawFromVector(qangle);
+	//XMStoreFloat4(&frustum.Orientation, qorient);
 }
 
 XMMATRIX Camera::GetViewMatrix()
@@ -24,7 +35,7 @@ XMMATRIX Camera::GetProjectionMatrix()
 
 XMMATRIX Camera::GetOrthoMatrix()
 {
-	return XMMatrixOrthographicLH(1280, 720, 0.0f, 1000.0f);
+	return XMMatrixOrthographicLH(1424, 720, 0.1f, 1000.0f);
 }
 
 XMVECTOR Camera::GetPosition()
@@ -82,11 +93,33 @@ VOID Camera::Update()
 		position -= updirection;
 
 	if (kb.O)
-		projection = XMMatrixOrthographicLH(1280, 720, 0.1f, 1000.0f);
+		projection = XMMatrixOrthographicLH(1424, 720, 0.1f, 1000.0f);
 
 	if (kb.P)
-		projection = XMMatrixPerspectiveFovLH(XMConvertToRadians(90.0f), 1280.0f / 720.0f, 0.1f, 1000.0f);
+		projection = XMMatrixPerspectiveFovLH(XMConvertToRadians(90.0f), 1424.0f / 720.0f, 0.1f, 1000.0f);
 
 	view = XMMatrixLookToLH(position, forward, updirection);
+	
+	//fpitch += 0.01f;
+	//if (fpitch > 2.0 * 3.14) {
+	//	fyaw += 0.01;
+	//	fpitch = 0.0;
+	//}
 
+	//XMVECTOR qangle = XMVector3AngleBetweenNormals(forward, XMVectorSet(1.0, 0.0, 0.0, 1.0));
+	//XMVECTOR qorient = XMQuaternionRotationRollPitchYawFromVector(qangle);
+	//XMVECTOR qorient = XMQuaternionRotationRollPitchYaw(fpitch, fyaw, 0.0f);
+	//XMStoreFloat4(&frustum.Orientation, qorient);
+	frustum = BoundingFrustum(projection);
+	XMVECTOR det = XMMatrixDeterminant(view);
+	frustum.Transform(frustum, XMMatrixInverse(&det, view));
+	//frustum.Transform(frustum, view);
+
+	//XMMATRIX viewprojection = view * projection;
+	
+}
+
+BoundingFrustum Camera::GetFrustum()
+{
+	return frustum;
 }

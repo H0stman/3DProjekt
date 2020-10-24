@@ -5,6 +5,7 @@
 #include <dxgi1_6.h>
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
+#include <DirectXCollision.h>
 #include <DirectXTK\Mouse.h>
 #include <DirectXTK\Keyboard.h>
 #include <string>
@@ -17,6 +18,8 @@
 #include "Model.hpp"
 #include "PointLight.h"
 #include "ShadowMap.h"
+#include "QuadTree.hpp"
+#include "Water.hpp"
 
 #define QUADTARGET 2
 #define DEFERREDTARGET 3
@@ -47,6 +50,11 @@ struct PhongLight_ConstantBuffer_PS
 	float specularIntensity;
 };
 
+struct Particle
+{
+	XMFLOAT3 pos;
+};
+
 class Engine
 {
 private:
@@ -60,16 +68,16 @@ private:
 	ID3D11DepthStencilState* defaultstencilstate, *nozstencilstate;
 
 	ID3D11PixelShader *pixelshader, *pixelshader2D, *pixelshadergbuf, *pixelshaderlight;
-	ID3D11VertexShader *vertexshader, *vertexshader2D, *vertexshadertess, *vertexshaderdeferred, *vertexshadershadow;
+	ID3D11VertexShader *vertexshader, *vertexshader2D, *vertexshadertess, *vertexshaderdeferred, *vertexshadershadow, * vertexshaderparticle;
 	ID3D11ComputeShader* csblurshader;
 	ID3D11HullShader* hullshader;
 	ID3D11DomainShader* domainshader;
-
+	ID3D11GeometryShader* geometryshaderparticle;
 	ID3D11RasterizerState* clockwise, *counterclockwise;
 
 	UINT stride, offset;
 
-	ID3DBlob* blobpixelvanilla, *blobpixel2D, *blobpixelgbuf, *blobpixellight,*blobvertexvanilla, *blobvertextess, *blobvertex2D, *blobvertexDeferred, *blobvertexshadow, *blobcsblur, *blobhullshader, *blobdomainshader;
+	ID3DBlob* blobpixelvanilla, *blobpixel2D, *blobpixelgbuf, *blobpixellight,*blobvertexvanilla, *blobvertextess, *blobvertex2D, *blobvertexDeferred, *blobvertexshadow, *blobcsblur, *blobhullshader, *blobdomainshader, * blobgeometryparticle, * blobvertexparticle;
 
 	ID3D11InputLayout* inputlayout;
 
@@ -83,14 +91,18 @@ private:
 	HWND windowhandle;
 
 	std::vector<IDrawable*> models;
+	QuadTree quadtree;
+	std::vector<Particle> particlepositions;
 
 	Camera camera;
 	PointLight pointLight;
 	D3D11_MAPPED_SUBRESOURCE lightresource, transformresource;
-
+	Water* water;
 	ID3D11SamplerState* texturesampler;
 
-	ID3D11Buffer* lightbuffer, *matrixbuffer, *render2Dquad;
+	ID3D11ShaderResourceView* particleview;
+
+	ID3D11Buffer* lightbuffer, *matrixbuffer, *render2Dquad, *particlebuffer, *indirectargs;
 
 	static constexpr unsigned int nrOfBuffers{ 3u };
 	Texture* gbufNormal;
@@ -112,8 +124,10 @@ private:
 	VOID ReadyTessellation();
 	VOID Render2D(Texture* tex);
 	VOID CreateRasterizerStates();
+	VOID CreateParticles();
 	VOID CompileShaders();
 	VOID LoadDrawables();
+	VOID DrawParticles();
 	VOID SetRenderTargets(UINT target);
 	VOID ClearRenderTargets(UINT target);
 	VOID Blur(Texture* source, Texture* target);

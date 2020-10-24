@@ -20,6 +20,7 @@ struct vertex
 class IDrawable
 {	
 protected:
+	std::string name;
 	BOOL clockwise;
 	XMMATRIX worldmatrix;
 	BoundingBox boundingbox;
@@ -31,12 +32,14 @@ protected:
 	std::vector<Texture*> texture;
 
 public:
-	~IDrawable();;
+	~IDrawable();
 	virtual UINT GetIndexCount() = 0;
 	virtual UINT GetStartIndexLocation() = 0;
 	virtual INT GetBaseVertexLocation() = 0;
 	virtual ID3D11Buffer** GetVertexBuffer() = 0;
 	virtual ID3D11Buffer* GetIndexBuffer() = 0;
+	std::string GetName();
+	VOID Transform(XMMATRIX trans);
 	std::vector<Texture*> GetTextures();
 	XMMATRIX GetWorldMatrix();
 	BOOL IsClockwise();

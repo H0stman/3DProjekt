@@ -11,8 +11,13 @@
 class Model : public IDrawable
 {
 	Model() = delete;
+
+protected:
+
+
 public:
 	Model(std::string file, ID3D11Device* device);
+	Model(std::string file, XMMATRIX translate, ID3D11Device* device);
 	~Model();
 	UINT GetIndexCount();
 	UINT GetStartIndexLocation();
