@@ -26,7 +26,7 @@ struct PS_INPUT
 
 float4 ps_main(PS_INPUT input) : SV_TARGET
 {
-    float4 lightposWS = mul(float4(lightpos.xyz, 0), world);
+    float4 lightposWS = mul(float4(lightpos.xyz, 1.0), world);
     
     // Sample the pixel color from the texture using the sampler at this texture coordinate location.
     float4 textureColor = tex.Sample(samp, input.texcoord);

@@ -84,7 +84,7 @@ DS_OUTPUT ds_main(const OutputPatch<HS_POINT_OUTPUT, 3> TriPatch, float3 Coords 
 		// Displacement performed along interpolated normal vector
         const float fScale = 0.9f;
 		output.outPositionWS = output.outPositionWS + output.outNormalWS * texHeight.r * fScale;
-		output.outPositionWS = mul(float4(output.outPositionWS, 1.0), world).xyz;
+		//output.outPositionWS = mul(float4(output.outPositionWS, 1.0), world).xyz;
     //}
 
     output.outPositionCS = mul(mul(float4(output.outPositionWS, 1.0f), view), projection);

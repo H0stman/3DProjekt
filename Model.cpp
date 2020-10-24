@@ -2,6 +2,7 @@
 
 Model::Model(std::string file, ID3D11Device* device)
 {
+	name = file;
 	Assimp::Importer importer;
 
 	const aiScene* pScene = importer.ReadFile(file.c_str(),
@@ -141,8 +142,7 @@ Model::Model(std::string file, ID3D11Device* device)
 			OutputDebugString(L"Error creating Index Buffer for model.");
 		}
 
-		worldmatrix = XMMatrixTranslation(32.0, 15.0, 50.0);
-		//worldmatrix = XMMatrixIdentity();
+		worldmatrix = XMMatrixIdentity();
 		clockwise = false;
 	}
 }

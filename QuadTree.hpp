@@ -33,6 +33,7 @@ public:
 	~QuadTree();
 
 	void Add(IDrawable* drawable);
+	void Add(std::vector<IDrawable*> drawables);
 	std::vector<IDrawable*> GetRenderQueue(BoundingFrustum frustum);
 	std::vector<IDrawable*> GetRenderQueue();
 };

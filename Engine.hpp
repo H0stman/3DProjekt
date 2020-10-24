@@ -9,12 +9,13 @@
 #include <DirectXTK\Keyboard.h>
 #include <string>
 #include <vector>
-
 #include <DirectXCollision.h>
+
 #include "Terrain.hpp"
 #include "Texture.hpp"
 #include "Camera.hpp"
 #include "Model.hpp"
+#include "QuadTree.hpp"
 
 using namespace DirectX;
 
@@ -68,6 +69,7 @@ class Engine
 	HWND windowhandle;
 
 	std::vector<IDrawable*> models;
+	QuadTree quadtree;
 
 	Camera camera;
 	Light* light;

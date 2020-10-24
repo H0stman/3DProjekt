@@ -614,6 +614,7 @@ VOID Engine::ShadowPass()
 
 VOID Engine::Render2D(Texture* tex)
 {
+	context->ClearDepthStencilView(depthstencilview, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0u);
 	// Set Rasterizer State
 	context->RSSetState(counterclockwise);
 
@@ -704,7 +705,7 @@ VOID Engine::Update()
 	VanillaRender();
 	Tessellation();
 
-	for (auto model : models) //TODO: Fix the incompatible input output structs in vertex and pixelshader for vanilla rendering.
+	for (auto model : quadtree.GetRenderQueue(camera.GetFrustum())) //TODO: Fix the incompatible input output structs in vertex and pixelshader for vanilla rendering.
 	{
 		if (model->IsClockwise())
 			context->RSSetState(clockwise);
@@ -735,12 +736,14 @@ VOID Engine::Update()
 
 		// Switch to tessellation if there is a displacement texture
 		if (textures[1] == nullptr) {
+			// Disable tessellation
 			context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 			context->VSSetShader(vertexshader, nullptr, 0u);
 			context->HSSetShader(nullptr, nullptr, 0u);
 			context->DSSetShader(nullptr, nullptr, 0u);
 		}
 		else {
+			// Enable tessellation
 			context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);
 			ID3D11ShaderResourceView* displacement = textures[1]->GetShaderResourceView();
 			context->VSSetShader(vertexshadertess, nullptr, 0u);
@@ -770,6 +773,13 @@ VOID Engine::Update()
 
 VOID Engine::LoadDrawables() 
 {
-	models.push_back(new Terrain("heightmap.bmp", device));
+	//models.push_back(new Terrain("heightmap.bmp", device));
 	models.push_back(new Model("cube.obj", device));
+	models.push_back(new Model("FalloutGirl.obj", device));
+	models.push_back(new Model("suzanne.obj", device));
+	models.push_back(new Model("texTree.obj", device));
+	for (size_t i = 0; i < models.size(); ++i) {
+		models[i]->Transform(XMMatrixTranslation(-20.0 + (float)i * 5.0, 0.0, -15.0));
+	}
+	quadtree.Add(models);
 }
