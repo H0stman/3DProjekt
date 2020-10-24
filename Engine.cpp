@@ -662,9 +662,9 @@ VOID Engine::Blur(Texture* source, Texture* target)
 	context->CSSetUnorderedAccessViews(0u, 1u, uav, nullptr);
 
 	// Run the blur shader
-	context->Dispatch(32u, 32u, 1u);
+	context->Dispatch(64u, 64u, 1u);
 
-	// Unbind resources to pipeline
+	// Unbind resources from pipeline
 	srv[0] = nullptr;
 	context->CSSetShaderResources(1u, 1u, srv);
 	uav[0] = nullptr;
@@ -695,13 +695,18 @@ VOID Engine::SetRenderTargets(UINT target)
 
 VOID Engine::Update() 
 {
+	auto kb = keyboard.GetState();
 	context->ClearDepthStencilView(depthstencilview, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0u);
 	context->ClearRenderTargetView(backbuffer, clearcolour);
 
 	context->ClearRenderTargetView(rendertexture->GetRenderTargetView(), clearcolour);
+	context->ClearRenderTargetView(blurtarget->GetRenderTargetView(), clearcolour);
 	
 	camera.Update();
-	SetRenderTargets(0u);	// 0 = backbuffer, 1 = render to rendertexture, 2 = backbuffer and no depth buffer
+	if (kb.B) 
+		SetRenderTargets(1u);	// 0 = backbuffer, 1 = render to rendertexture, 2 = backbuffer and no depth buffer
+	else
+		SetRenderTargets(0u);	// 0 = backbuffer, 1 = render to rendertexture, 2 = backbuffer and no depth buffer
 	VanillaRender();
 	Tessellation();
 
@@ -764,9 +769,11 @@ VOID Engine::Update()
 		}
 	}
 
-	//Blur(rendertexture, blurtarget);
-	//SetRenderTargets(2u);	// 0 = backbuffer, 1 = render to rendertexture, 2 = backbuffer and no depth buffer
-	//Render2D(rendertexture);
+	if (kb.B) {
+		Blur(rendertexture, blurtarget);
+		SetRenderTargets(2u);	// 0 = backbuffer, 1 = render to rendertexture, 2 = backbuffer and no depth buffer
+		Render2D(blurtarget);
+	}
 
 	swapchain->Present(1u, 0u);
 }
