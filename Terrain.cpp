@@ -5,7 +5,8 @@ Terrain::Terrain(PCSTR filename, ID3D11Device* device)
 	clockwise = TRUE;
 	worldmatrix = XMMatrixIdentity();
 
-	facecount = vertexcount = 0u;
+	UINT facecount = 0u;
+	UINT vertexcount = 0u;
 	UINT stride = sizeof(vertex);
 	UINT offset = 0u;
 	vertices.clear();
@@ -168,8 +169,6 @@ Terrain::Terrain(PCSTR filename, ID3D11Device* device)
 
 Terrain::~Terrain()
 {
-	indexbuffer->Release();
-	vertexbuffer->Release();
 }
 
 UINT Terrain::GetIndexCount()
