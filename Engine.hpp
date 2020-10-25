@@ -10,14 +10,15 @@
 #include <DirectXTK\Keyboard.h>
 #include <string>
 #include <vector>
+#include <time.h>
 
 #include <DirectXCollision.h>
 #include "Terrain.hpp"
 #include "Texture.hpp"
 #include "Camera.hpp"
 #include "Model.hpp"
-#include "PointLight.h"
-#include "ShadowMap.h"
+#include "PointLight.hpp"
+#include "ShadowMap.hpp"
 #include "QuadTree.hpp"
 #include "Water.hpp"
 
@@ -125,6 +126,8 @@ private:
 	Texture* gbufDiffuse;
 	Texture* gbufPosition;
 	Texture* gbufLightCS;
+
+	Texture *particle;
 
 	PhongLight_ConstantBuffer_PS* phongLight;
 	ShadowMap shadowMap;

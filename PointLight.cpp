@@ -1,4 +1,4 @@
-#include "PointLight.h"
+#include "PointLight.hpp"
 
 PointLight::PointLight()
 	: m_Position{ DirectX::XMFLOAT3(7.0f, 26.0f, 9.0f) },

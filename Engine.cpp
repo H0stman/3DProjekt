@@ -265,6 +265,8 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	CreateParticles();
 	InitializeDeferredRendererResources(width, height);
 	shadowMap.Initialize(device, 1024, 1024);
+
+	particle = new Texture("star.png", device);
 }
 
 Engine::~Engine()
@@ -375,9 +377,10 @@ VOID Engine::CreateParticles()
 {
 	Particle p;
 	//Fill particle position vector.
-	for (FLOAT i = 0; i < 512; i++)
+	srand(time(nullptr));
+	for (FLOAT i = 0, x = 0, z = 0; i < 512; x = rand() % 200, z = rand() % 200, i++ )
 	{
-		p.pos = { i,0.0f,0.0f };
+		p.pos = { x,100.0f,z };
 		particlepositions.push_back(p);
 	}
 
@@ -1039,9 +1042,7 @@ VOID Engine::DeferredGeometryPass()
 		transform->viewmatrix = XMMatrixTranspose(camera.GetViewMatrix());
 		transform->projectionmatrix = XMMatrixTranspose(camera.GetProjectionMatrix());
 		transform->lightVPMatrix = XMMatrixTranspose(pointLight.GetViewMatrix() * pointLight.GetProjectionMatrix());
-		transform->lightWVPMatrix = XMMatrixTranspose(model->GetWorldMatrix() * 
-													  pointLight.GetViewMatrix() * 
-													  pointLight.GetProjectionMatrix());
+		transform->lightWVPMatrix = XMMatrixTranspose(model->GetWorldMatrix() * pointLight.GetViewMatrix() * pointLight.GetProjectionMatrix());
 		XMStoreFloat3(&transform->camerapos, camera.GetPosition());
 		context->Unmap(matrixbuffer, 0);
 		context->VSSetConstantBuffers(0u, 1u, &matrixbuffer);
@@ -1099,6 +1100,7 @@ VOID Engine::DeferredGeometryPass()
 			context->DSSetShader(nullptr, nullptr, 0u);
 		}
 	}
+	DrawParticles();
 }
 
 VOID Engine::DeferredLightPass()
@@ -1276,8 +1278,6 @@ VOID Engine::Update()
 	camera.Update();
 	DeferredRenderer();
 	water->UpdateWater(context);
-		
-	//DrawParticles();
 
 	//Terrain collision
 	Terrain* terrain = (Terrain*)models[0];
@@ -1318,7 +1318,9 @@ VOID Engine::LoadDrawables()
 
 VOID Engine::DrawParticles()
 {
-	//context->RSSetState(clockwise);
+	ID3D11ShaderResourceView* view = particle->GetShaderResourceView();
+	context->PSSetShaderResources(0u, 1u, &view);
+	context->RSSetState(clockwise);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 	context->VSSetShader(vertexshaderparticle, nullptr, 0u);
 	context->GSSetShader(geometryshaderparticle, nullptr, 0u);
@@ -1327,4 +1329,5 @@ VOID Engine::DrawParticles()
 	context->DrawInstancedIndirect(indirectargs, 0u);
 	context->GSSetShader(nullptr, nullptr, 0u);
 	context->VSSetShader(nullptr, nullptr, 0u);
+	context->RSSetState(counterclockwise);
 }
