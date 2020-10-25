@@ -19,11 +19,11 @@ struct VS_INPUT
 
 struct VS_OUTPUT
 {
-	float3 outPositionWS    : POSITIONWS;
-	float2 outTexCoord      : TEXCOORD;
-	float3 outNormalWS      : NORMALWS;
-    float3 outTangentWS     : TANGENTWS;
-    float3 outBiTangentWS   : BITANGENTWS;
+	float3 outPositionWS        : POSITIONWS;
+	float2 outTexCoord          : TEXCOORD;
+	float3 outNormalWS          : NORMALWS;
+    float3 outTangentWS         : TANGENTWS;
+    float3 outBiTangentWS       : BITANGENTWS;
 };
 
 VS_OUTPUT vs_tess_main(VS_INPUT vsInput)
@@ -36,6 +36,7 @@ VS_OUTPUT vs_tess_main(VS_INPUT vsInput)
     vsOutput.outTangentWS = normalize(mul(float4(vsInput.inTangent, 0.0f), world).xyz);
     vsOutput.outBiTangentWS = normalize(mul(float4(vsInput.inBiTangent, 0.0f), world).xyz);
 	
+    
     //Forwarding texture coord.
 	vsOutput.outTexCoord = vsInput.inTexCoord;
 

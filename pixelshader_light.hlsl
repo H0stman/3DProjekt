@@ -27,6 +27,7 @@ cbuffer transform : register(b1)
     float4x4 world;
     float4x4 view;
     float4x4 projection;
+    float4x4 lightVP;
     float4x4 lightWVP;
     float3 cameraPos;
 };
