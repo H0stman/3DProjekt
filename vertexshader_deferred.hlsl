@@ -1,8 +1,11 @@
 cbuffer constantBuffer : register(b0)
 {
-    matrix world;
-    matrix view;
-    matrix orthographicProjectionMatrix;
+    float4x4 world;
+    float4x4 view;
+    float4x4 orthographicProjectionMatrix;
+    float4x4 lightVP;
+    float4x4 lightWVP;
+    float3 cameraPos;
 }
 
 float4 vs_deferred(in float3 inPosition : POSITION) : SV_POSITION

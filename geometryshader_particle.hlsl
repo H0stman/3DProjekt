@@ -18,6 +18,8 @@ cbuffer Matrices : register(b0)
     matrix world;
     matrix view;
     matrix projection;
+    matrix lightWVP;
+    float3 cameraPos;
 };
 
 struct GS_INPUT
@@ -27,10 +29,10 @@ struct GS_INPUT
 
 struct PS_INPUT
 {
-    float4 position : SV_Position;
-    float2 texcoord : texcoord;
-    float3 normal : normal;
-    float3 positionws : Position;
+    float4 position     : SV_Position;
+    float2 texcoord     : texcoord;
+    float3 normal       : normal;
+    float3 positionws   : Position;
 };
 
 [maxvertexcount(4)]

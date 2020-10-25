@@ -135,6 +135,19 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 								   &inputlayout);										//Adress of pointer of yhe input layout. 
  context->IASetInputLayout(inputlayout);
 
+ /*****Deferred Vertex Input Layout*****/
+ D3D11_INPUT_ELEMENT_DESC iedescDeferred[] =
+ {
+	 {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0}
+ };
+
+ /*****Input layout creation*****/
+ hr = device->CreateInputLayout(iedescDeferred,									//Pointer to the first element in the descriptor array.
+	 ARRAYSIZE(iedescDeferred),						//Number of elements in descriptor array.
+	 blobvertexDeferred->GetBufferPointer(),	//Pointer to the compiled pixel shader buffer.
+	 blobvertexDeferred->GetBufferSize(),		//Size of the compiled pixel shader buffer.
+	 &inputlayoutdeferred);										//Adress of pointer of yhe input layout. 
+
 	camera = Camera();
 
 	//context->VSSetShader(vertexshader, nullptr, 0u);
@@ -153,6 +166,18 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	samplerDescriptor.MaxLOD = D3D11_FLOAT32_MAX;
 
 	hr = device->CreateSamplerState(&samplerDescriptor, &texturesampler);
+
+	samplerDescriptor.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+	samplerDescriptor.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDescriptor.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDescriptor.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDescriptor.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
+	samplerDescriptor.BorderColor[0] = 0.0f;
+	samplerDescriptor.BorderColor[1] = 0.0f;
+	samplerDescriptor.BorderColor[2] = 0.0f;
+	samplerDescriptor.BorderColor[3] = 0.0f;
+
+	hr = device->CreateSamplerState(&samplerDescriptor, &pointSampler);
 
 	LoadDrawables();
 
@@ -174,6 +199,16 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	matrixBufferDesc.MiscFlags = 0;
 	matrixBufferDesc.StructureByteStride = 0;
 	hr = device->CreateBuffer(&matrixBufferDesc, nullptr, &matrixbuffer);
+	assert(SUCCEEDED(hr));
+
+	D3D11_BUFFER_DESC shadowBufferDesc = {};
+	shadowBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	shadowBufferDesc.ByteWidth = sizeof(ShadowData_ConstantBuffer_PS);
+	shadowBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	shadowBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	shadowBufferDesc.MiscFlags = 0;
+	shadowBufferDesc.StructureByteStride = 0;
+	hr = device->CreateBuffer(&shadowBufferDesc, nullptr, &shadowbuffer);
 	assert(SUCCEEDED(hr));
 
 	/** Setting up dynamic quad for rendering 2D images/textures **/
@@ -265,21 +300,25 @@ Engine::~Engine()
 	blobhullshader->Release();
 	blobdomainshader->Release();
 	inputlayout->Release();
+	inputlayoutdeferred->Release();
 	lightbuffer->Release();
 	matrixbuffer->Release();
+	shadowbuffer->Release();
 	render2Dquad->Release();
+	particlebuffer->Release();
+	indirectargs->Release();
 	texturesampler->Release();
+	pointSampler->Release();
 	if(rendertexture != nullptr) delete rendertexture;
 	if(blurtarget != nullptr) delete blurtarget;
 	if(gbufNormal != nullptr) delete gbufNormal;
 	if(gbufDiffuse != nullptr) delete gbufDiffuse;
 	if(gbufPosition != nullptr) delete gbufPosition;
-	//if(gbufLightCS != nullptr) delete gbufLightCS;
+	if(gbufLightCS != nullptr) delete gbufLightCS;
 	vertexshaderparticle->Release();
 	geometryshaderparticle->Release();
 	blobgeometryparticle->Release();
 	blobvertexparticle->Release();
-	particlebuffer->Release();
 }
 
 BOOL Engine::Run()
@@ -848,11 +887,28 @@ VOID Engine::InitializeDeferredRendererResources(UINT width, UINT height)
 	gbufNormal	 = new Texture(width, height, device);
 	gbufDiffuse	 = new Texture(width, height, device);
 	gbufPosition = new Texture(width, height, device);
-	//gbufLightCS  = new Texture(width, height, device);
+	gbufLightCS  = new Texture(width, height, device);
+}
+
+VOID Engine::ReadyShadowPass()
+{
+	context->VSSetShader(vertexshadershadow, nullptr, 0u);
+	context->PSSetShader(nullptr, nullptr, 0u);
+	context->IASetInputLayout(inputlayout);
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	context->RSSetViewports(1u, &shadowMap.GetViewPort());
+	SetRenderTargets(DEPTHTARGET);
+	ClearRenderTargets(DEPTHTARGET);
 }
 
 VOID Engine::ReadyGeometryPassResources()
 {
+	// Unbind shadow map resource (that is bound on input to depth stencil)
+	ID3D11DepthStencilView* dsvNull = nullptr;
+	ID3D11RenderTargetView* rtvNull[1] = { nullptr };
+	context->OMSetRenderTargets(1u, rtvNull, dsvNull);
+
+	// Ready new components:
 	SetRenderTargets(DEFERREDTARGET);
 	ClearRenderTargets(DEFERREDTARGET);
 	context->VSSetShader(vertexshader, nullptr, 0u);
@@ -890,6 +946,14 @@ VOID Engine::ReadyLightPassResources()
 	transform->projectionmatrix = XMMatrixTranspose(camera.GetOrthoMatrix());
 	context->Unmap(matrixbuffer, 0);
 
+	// Update Shadow Data:
+	context->Map(shadowbuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &shadowresource);
+	shadowData = (ShadowData_ConstantBuffer_PS*)shadowresource.pData;
+	shadowData->shadowMapSize = shadowMap.GetShadowMapSize();
+	shadowData->shadowBias = shadowMap.GetShadowBias();
+	shadowData->pcfCount = shadowMap.GetPcfCount();
+	context->Unmap(shadowbuffer, 0);
+
 	// Bind new components:
 	SetRenderTargets(QUADTARGET);
 	ClearRenderTargets(QUADTARGET); //?
@@ -898,39 +962,40 @@ VOID Engine::ReadyLightPassResources()
 	context->PSSetShader(pixelshaderlight, nullptr, 0u);
 	context->PSSetConstantBuffers(0u, 1u, &lightbuffer);
 	context->PSSetConstantBuffers(1u, 1u, &matrixbuffer);
+	context->PSSetConstantBuffers(2u, 1u, &shadowbuffer);
 	ID3D11ShaderResourceView* srvArr[nrOfBuffers] = {gbufNormal->GetShaderResourceView(),
 													 gbufDiffuse->GetShaderResourceView(),
 													 gbufPosition->GetShaderResourceView() };
 	context->PSSetShaderResources(0u, nrOfBuffers, srvArr);
+	context->PSSetShaderResources(nrOfBuffers, 1u, shadowMap.GetShaderResourceView().GetAddressOf());
+	context->PSSetSamplers(0u, 1u, &pointSampler);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	context->IASetInputLayout(inputlayoutdeferred);
 
-	context->IASetVertexBuffers(0u, 1u, &render2Dquad, &stride, &offset);
-}
+	UINT vertexStride = 14 * sizeof(float);
+	UINT vertexOffset = 0;
 
-VOID Engine::ReadyShadowPass()
-{
-	context->VSSetShader(vertexshadershadow, nullptr, 0u);
-	context->PSSetShader(nullptr, nullptr, 0u);
-	context->IASetInputLayout(inputlayout);
-	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	context->IASetVertexBuffers(0u, 1u, &render2Dquad, &vertexStride, &vertexOffset);
 }
 
 VOID Engine::DeferredRenderer()
 {
+	ReadyShadowPass();
+	ShadowPass();
 	ReadyGeometryPassResources();
 	DeferredGeometryPass();
 	ReadyLightPassResources();
 	DeferredLightPass();
 
-	ID3D11ShaderResourceView* nullsrv[nrOfBuffers] = { nullptr };
-	context->PSSetShaderResources(0u, nrOfBuffers, nullsrv);
+	ID3D11ShaderResourceView* nullsrv[5] = { nullptr };
+	context->PSSetShaderResources(0u, 5u, nullsrv);
 }
 
 VOID Engine::DeferredGeometryPass()
 {
 	for (auto model : quadtree.GetRenderQueue(camera.GetFrustum())) //TODO: Fix the incompatible input output structs in vertex and pixelshader for vanilla rendering.
 	{
-		if (model->IsClockwise())
+		if (!model->IsClockwise())
 			context->RSSetState(clockwise);
 		else
 			context->RSSetState(counterclockwise);
@@ -941,6 +1006,10 @@ VOID Engine::DeferredGeometryPass()
 		transform->worldmatrix = XMMatrixTranspose(model->GetWorldMatrix());
 		transform->viewmatrix = XMMatrixTranspose(camera.GetViewMatrix());
 		transform->projectionmatrix = XMMatrixTranspose(camera.GetProjectionMatrix());
+		transform->lightVPMatrix = XMMatrixTranspose(pointLight.GetViewMatrix() * pointLight.GetProjectionMatrix());
+		transform->lightWVPMatrix = XMMatrixTranspose(model->GetWorldMatrix() * 
+													  pointLight.GetViewMatrix() * 
+													  pointLight.GetProjectionMatrix());
 		XMStoreFloat3(&transform->camerapos, camera.GetPosition());
 		context->Unmap(matrixbuffer, 0);
 
@@ -966,6 +1035,7 @@ VOID Engine::DeferredGeometryPass()
 			context->HSSetShader(hullshader, nullptr, 0u);
 			context->DSSetShader(domainshader, nullptr, 0u);
 			context->DSSetShaderResources(0u, 1u, &displacement);
+			context->DSSetConstantBuffers(0u, 1u, &matrixbuffer);
 		}
 
 		// Bind Vertex & Index-Buffers:
@@ -991,7 +1061,24 @@ VOID Engine::DeferredLightPass()
 
 VOID Engine::ShadowPass()
 {
+	for (auto model : models) // Render Queue here...?
+	{
+		if (!model->IsClockwise())
+			context->RSSetState(clockwise);
+		else
+			context->RSSetState(counterclockwise);
 
+		context->Map(matrixbuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &transformresource);
+		transform = (TransformationMatrices*)transformresource.pData;
+		transform->lightWVPMatrix = DirectX::XMMatrixTranspose(model->GetWorldMatrix() * 
+															   pointLight.GetViewMatrix() *
+															   pointLight.GetProjectionMatrix());
+		context->Unmap(matrixbuffer, 0);
+
+		context->IASetVertexBuffers(0u, 1u, model->GetVertexBuffer(), &stride, &offset);
+		context->IASetIndexBuffer(model->GetIndexBuffer(), DXGI_FORMAT_R32_UINT, 0u);
+		context->DrawIndexed(model->GetIndexCount(), 0u, 0u);
+	}
 }
 
 VOID Engine::Render2D(Texture* tex)
@@ -1078,9 +1165,15 @@ VOID Engine::SetRenderTargets(UINT target)
 		ID3D11RenderTargetView* gbuffers[] = { gbufNormal->GetRenderTargetView(), 
 											   gbufDiffuse->GetRenderTargetView(), 
 											   gbufPosition->GetRenderTargetView(), 
-											   /*gbufLightCS->GetRenderTargetView()*/ };
+											   gbufLightCS->GetRenderTargetView() };
 		context->OMSetDepthStencilState(defaultstencilstate, 0u);
 		context->OMSetRenderTargets(nrOfBuffers, gbuffers, depthstencilview);
+	}
+	if (target == DEPTHTARGET)
+	{
+		context->OMSetDepthStencilState(defaultstencilstate, 0u);
+		ID3D11RenderTargetView* rtvNull[1] = { nullptr };
+		context->OMSetRenderTargets(1u, rtvNull, shadowMap.GetDepthStencilView());
 	}
 }
 
@@ -1091,11 +1184,15 @@ VOID Engine::ClearRenderTargets(UINT target)
 		gbufNormal->Clear(clearcolour, context);
 		gbufDiffuse->Clear(clearcolour, context);
 		gbufPosition->Clear(clearcolour, context);
-		//gbufLightCS->Clear(clearcolour, context);
+		gbufLightCS->Clear(clearcolour, context);
 	}
 	if (target == QUADTARGET)
 	{
 		// Do we need...?
+	}
+	if (target == DEPTHTARGET)
+	{
+		context->ClearDepthStencilView(shadowMap.GetDepthStencilView(), D3D11_CLEAR_DEPTH, 1.0f, 0u);
 	}
 }
 

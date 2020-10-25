@@ -3,7 +3,9 @@ cbuffer constantBuffer : register(b0)
     float4x4 world;
     float4x4 view;
     float4x4 projection;
-    float3 camerapos;
+    float4x4 lightVP;
+    float4x4 lightWVP;
+    float3 cameraPos;
 };
 
 struct VS_INPUT
