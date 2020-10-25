@@ -3,9 +3,11 @@ SamplerState LinearSampler : SAMPLER    : register(s0);
 
 cbuffer constantBuffer : register(b0)
 {
-    matrix world;
-    matrix view;
-    matrix projection;
+    float4x4 world;
+    float4x4 view;
+    float4x4 projection;
+    float4x4 lightVP;
+    float4x4 lightWVP;
     float3 camerapos;
 };
 
@@ -32,7 +34,7 @@ struct DS_OUTPUT
 	float3 outPositionWS    : POSITIONWS;
     //float3 outTangentWS : TANGENTWS;
     //float3 outBiTangentWS : BITANGENTWS;
-    //float4 outPositionLightCS : POSITIONLIGHTCS;
+    float4 outPositionLightCS : POSITIONLIGHTCS;
 };
 
 [domain("tri")]
@@ -67,6 +69,7 @@ DS_OUTPUT ds_main(const OutputPatch<HS_POINT_OUTPUT, 3> TriPatch, float3 Coords 
 
     output.outPositionCS = mul(float4(output.outPositionWS, 1.0f), view);
     output.outPositionCS = mul(float4(output.outPositionCS), projection);
+    output.outPositionLightCS = mul(float4(output.outPositionWS, 1.0f), lightVP);
 
 	return output;
 }

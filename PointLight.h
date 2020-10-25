@@ -23,6 +23,8 @@ public:
 	[[nodiscard]] const float& GetAttenuationQuadratic() const;
 	[[nodiscard]] const float& GetDiffuseIntensity() const;
 	[[nodiscard]] const float& GetSpecularIntensity() const;
+	[[nodiscard]] const DirectX::XMMATRIX GetViewMatrix() const;
+	[[nodiscard]] const DirectX::XMMATRIX GetProjectionMatrix() const;
 
 	void SetPosition(const float& x, const float& y, const float& z);
 	void SetColor(const float& r, const float& g, const float& b);

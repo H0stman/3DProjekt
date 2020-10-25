@@ -24,6 +24,7 @@
 #define BLURTARGET 1
 #define QUADTARGET 2
 #define DEFERREDTARGET 3
+#define DEPTHTARGET 4
 
 using namespace DirectX;
 
@@ -32,6 +33,8 @@ struct TransformationMatrices
 	XMMATRIX worldmatrix;
 	XMMATRIX viewmatrix;
 	XMMATRIX projectionmatrix;
+	XMMATRIX lightVPMatrix;
+	XMMATRIX lightWVPMatrix;
 	XMFLOAT3 camerapos;
 };
 
@@ -49,6 +52,14 @@ struct PhongLight_ConstantBuffer_PS
 	float attenuationLinear;
 	float attenuationQuadratic;
 	float specularIntensity;
+};
+
+struct ShadowData_ConstantBuffer_PS
+{
+	float shadowMapSize;
+	float shadowBias;
+	int pcfCount;
+	float padding;
 };
 
 struct Particle
@@ -80,7 +91,7 @@ private:
 
 	ID3DBlob* blobpixelvanilla, *blobpixel2D, *blobpixelgbuf, *blobpixellight,*blobvertexvanilla, *blobvertextess, *blobvertex2D, *blobvertexDeferred, *blobvertexshadow, *blobcsblur, *blobhullshader, *blobdomainshader, * blobgeometryparticle, * blobvertexparticle;
 
-	ID3D11InputLayout* inputlayout;
+	ID3D11InputLayout* inputlayout, *inputlayoutdeferred;
 
 	TransformationMatrices *transform;
 
@@ -97,27 +108,28 @@ private:
 
 	Camera camera;
 	PointLight pointLight;
-	D3D11_MAPPED_SUBRESOURCE lightresource, transformresource;
+	D3D11_MAPPED_SUBRESOURCE lightresource, transformresource, shadowresource;
 	Water* water;
-	ID3D11SamplerState* texturesampler;
+	ID3D11SamplerState* texturesampler, *pointSampler;
 
 	ID3D11ShaderResourceView* particleview;
 
-	ID3D11Buffer* lightbuffer, *matrixbuffer, *render2Dquad, *particlebuffer, *indirectargs;
+	ID3D11Buffer* lightbuffer, * matrixbuffer, *shadowbuffer, *render2Dquad, * particlebuffer, * indirectargs;
 
-	static constexpr unsigned int nrOfBuffers{ 3u };
+	static constexpr unsigned int nrOfBuffers{ 4u };
 	Texture* gbufNormal;
 	Texture* gbufDiffuse;
 	Texture* gbufPosition;
-	//Texture* gbufLightCS;
+	Texture* gbufLightCS;
 
 	PhongLight_ConstantBuffer_PS* phongLight;
 	ShadowMap shadowMap;
+	ShadowData_ConstantBuffer_PS* shadowData;
 private:
 	VOID InitializeDeferredRendererResources(UINT width, UINT height);
+	VOID ReadyShadowPass();
 	VOID ReadyGeometryPassResources();
 	VOID ReadyLightPassResources();
-	VOID ReadyShadowPass();
 	VOID DeferredRenderer();
 	VOID DeferredGeometryPass();
 	VOID DeferredLightPass();

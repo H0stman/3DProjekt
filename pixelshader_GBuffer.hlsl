@@ -7,6 +7,9 @@ struct PS_INPUT
     float2 inTexCoord           : TEXCOORD;
     float3 inNormalWS           : NORMALWS;
     float3 inPositionWS         : POSITIONWS;
+    //float3 inTangentWS        : TANGENTWS;
+    //float3 inBiTangentWS      : BITANGENTWS;
+    float4 inPositionLightCS    : POSITIONLIGHTCS;
 };
 
 struct PS_OUTPUT_GBUFFER
@@ -14,6 +17,7 @@ struct PS_OUTPUT_GBUFFER
     float4 outNormalWS          : SV_TARGET0;
     float4 outDiffuseTexture    : SV_TARGET1;
     float4 outPositionWS        : SV_TARGET2;
+    float4 outPositionLightCS   : SV_TARGET3;
 };
 
 PS_OUTPUT_GBUFFER ps_gbuffer(PS_INPUT psInput)
@@ -29,6 +33,7 @@ PS_OUTPUT_GBUFFER ps_gbuffer(PS_INPUT psInput)
     psOutput.outNormalWS = float4(normal, 1.0f);
     psOutput.outDiffuseTexture = float4(diffuseTexture, 1.0f);
     psOutput.outPositionWS = float4(psInput.inPositionWS, 1.0f);
+    psOutput.outPositionLightCS = psInput.inPositionLightCS;
     
     return psOutput;
 }
