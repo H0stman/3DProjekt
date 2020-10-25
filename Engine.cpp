@@ -912,11 +912,11 @@ VOID Engine::ReadyGeometryPassResources()
 	SetRenderTargets(DEFERREDTARGET);
 	ClearRenderTargets(DEFERREDTARGET);
 	context->VSSetShader(vertexshader, nullptr, 0u);
-	context->VSSetConstantBuffers(0u, 1u, &matrixbuffer);
 	context->PSSetShader(pixelshadergbuf, nullptr, 0u);
 	context->PSSetSamplers(0u, 1u, &texturesampler);
 	context->IASetInputLayout(inputlayout);
 	context->RSSetViewports(1u, &defaultviewport);
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	ReadyTessellation();
 }
 
@@ -955,6 +955,7 @@ VOID Engine::ReadyLightPassResources()
 	context->Unmap(shadowbuffer, 0);
 
 	// Bind new components:
+
 	ClearRenderTargets(QUADTARGET); //?
 	context->VSSetShader(vertexshaderdeferred, nullptr, 0u);
 	context->VSSetConstantBuffers(0u, 1u, &matrixbuffer);
@@ -1011,6 +1012,7 @@ VOID Engine::DeferredGeometryPass()
 													  pointLight.GetProjectionMatrix());
 		XMStoreFloat3(&transform->camerapos, camera.GetPosition());
 		context->Unmap(matrixbuffer, 0);
+		context->VSSetConstantBuffers(0u, 1u, &matrixbuffer);
 
 		std::vector<Texture*> textures = model->GetTextures();
 		ID3D11ShaderResourceView* diffuse[] = { textures[0]->GetShaderResourceView() };
@@ -1020,7 +1022,7 @@ VOID Engine::DeferredGeometryPass()
 		// If no tessellation is present:
 		if (textures[1] == nullptr)
 		{
-			context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+			context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			context->VSSetShader(vertexshader, nullptr, 0u);
 			context->HSSetShader(nullptr, nullptr, 0u);
 			context->DSSetShader(nullptr, nullptr, 0u);
@@ -1033,7 +1035,6 @@ VOID Engine::DeferredGeometryPass()
 			context->VSSetShader(vertexshadertess, nullptr, 0u);
 			context->HSSetShader(hullshader, nullptr, 0u);
 			context->DSSetShader(domainshader, nullptr, 0u);
-			context->DSSetConstantBuffers(0u, 1u, &matrixbuffer);
 			context->DSSetShaderResources(0u, 1u, displacement);
 		}
 
@@ -1062,7 +1063,6 @@ VOID Engine::DeferredLightPass()
 	else
 		SetRenderTargets(QUADTARGET);
 
-	
 	// Simple:
 	context->Draw(4u, 0u);
 
@@ -1078,10 +1078,10 @@ VOID Engine::ShadowPass()
 {
 	for (auto model : models) // Render Queue here...?
 	{
-		if (model->IsClockwise())
-			context->RSSetState(clockwise);
-		else
-			context->RSSetState(counterclockwise);
+		//if (model->IsClockwise())
+		//	context->RSSetState(clockwise);
+		//else
+		//	context->RSSetState(counterclockwise);
 
 		context->Map(matrixbuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &transformresource);
 		transform = (TransformationMatrices*)transformresource.pData;
@@ -1089,6 +1089,7 @@ VOID Engine::ShadowPass()
 															   pointLight.GetViewMatrix() *
 															   pointLight.GetProjectionMatrix());
 		context->Unmap(matrixbuffer, 0);
+		context->VSSetConstantBuffers(0u, 1u, &matrixbuffer);
 
 		context->IASetVertexBuffers(0u, 1u, model->GetVertexBuffer(), &stride, &offset);
 		context->IASetIndexBuffer(model->GetIndexBuffer(), DXGI_FORMAT_R32_UINT, 0u);
@@ -1101,6 +1102,8 @@ VOID Engine::Render2D(Texture* tex)
 	context->ClearDepthStencilView(depthstencilview, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0u);
 	// Set Rasterizer State
 	context->RSSetState(counterclockwise);
+
+	context->IASetInputLayout(inputlayout);
 
 	// Set Shaders for 2D rendering
 	context->VSSetShader(vertexshader2D, nullptr, 0u);
@@ -1234,8 +1237,6 @@ VOID Engine::Update()
 			camera.SetPositionY(v->at(i).position.y + 6.0f);
 	}
 
-
-
 	HRESULT HR = swapchain->Present(1u, 0u);
 	assert(SUCCEEDED(HR));
 }
@@ -1254,7 +1255,7 @@ VOID Engine::LoadDrawables()
 		models[i]->Transform(XMMatrixTranslation((float)(-20.0 + (float)i * 5.0), (float)0.0, (float)-15.0));
 	water->Transform(XMMatrixTranslation(0.0, -4.0, 0.0));
 	models.push_back(new Model("cubemetal.obj", device));
-	models.back()->Transform(XMMatrixTranslation(7.0, 14.0, 9.0));
+	models.back()->Transform(XMMatrixTranslation(8.0, 65.0, 20.0));
 	models.push_back(new Model("xyz.obj", device));
 	models.back()->Transform(XMMatrixTranslation(0.0, 7.0, 0.0));
 	models.push_back(new Model("moon.obj", device));
