@@ -955,7 +955,6 @@ VOID Engine::ReadyLightPassResources()
 	context->Unmap(shadowbuffer, 0);
 
 	// Bind new components:
-	SetRenderTargets(QUADTARGET);
 	ClearRenderTargets(QUADTARGET); //?
 	context->VSSetShader(vertexshaderdeferred, nullptr, 0u);
 	context->VSSetConstantBuffers(0u, 1u, &matrixbuffer);
@@ -995,7 +994,7 @@ VOID Engine::DeferredGeometryPass()
 {
 	for (auto model : quadtree.GetRenderQueue(camera.GetFrustum())) //TODO: Fix the incompatible input output structs in vertex and pixelshader for vanilla rendering.
 	{
-		if (!model->IsClockwise())
+		if (model->IsClockwise())
 			context->RSSetState(clockwise);
 		else
 			context->RSSetState(counterclockwise);
@@ -1014,9 +1013,9 @@ VOID Engine::DeferredGeometryPass()
 		context->Unmap(matrixbuffer, 0);
 
 		std::vector<Texture*> textures = model->GetTextures();
-		ID3D11ShaderResourceView* diffuse = textures[0]->GetShaderResourceView();
+		ID3D11ShaderResourceView* diffuse[] = { textures[0]->GetShaderResourceView() };
 		//Set diffuse texture.
-		context->PSSetShaderResources(0u, 1u, &diffuse);
+		context->PSSetShaderResources(0u, 1u, diffuse);
 
 		// If no tessellation is present:
 		if (textures[1] == nullptr)
@@ -1030,12 +1029,12 @@ VOID Engine::DeferredGeometryPass()
 		else
 		{
 			context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);
-			ID3D11ShaderResourceView* displacement = textures[1]->GetShaderResourceView();
+			ID3D11ShaderResourceView* displacement[] = { textures[1]->GetShaderResourceView() };
 			context->VSSetShader(vertexshadertess, nullptr, 0u);
 			context->HSSetShader(hullshader, nullptr, 0u);
 			context->DSSetShader(domainshader, nullptr, 0u);
-			context->DSSetShaderResources(0u, 1u, &displacement);
 			context->DSSetConstantBuffers(0u, 1u, &matrixbuffer);
+			context->DSSetShaderResources(0u, 1u, displacement);
 		}
 
 		// Bind Vertex & Index-Buffers:
@@ -1055,15 +1054,31 @@ VOID Engine::DeferredGeometryPass()
 
 VOID Engine::DeferredLightPass()
 {
+	auto kb = keyboard.GetState();
+	bool doblur = kb.B ? true : false;
+
+	if (doblur)
+		SetRenderTargets(BLURTARGET);
+	else
+		SetRenderTargets(QUADTARGET);
+
+	
 	// Simple:
 	context->Draw(4u, 0u);
+
+	if (doblur)
+	{
+		Blur(rendertexture, blurtarget);
+		SetRenderTargets(QUADTARGET);
+		Render2D(blurtarget);
+	}
 }
 
 VOID Engine::ShadowPass()
 {
 	for (auto model : models) // Render Queue here...?
 	{
-		if (!model->IsClockwise())
+		if (model->IsClockwise())
 			context->RSSetState(clockwise);
 		else
 			context->RSSetState(counterclockwise);
@@ -1147,7 +1162,7 @@ VOID Engine::SetRenderTargets(UINT target)
 		context->OMSetRenderTargets(1u, &backbuffer, depthstencilview);
 		context->OMSetDepthStencilState(defaultstencilstate, 0u);
 	}
-	if (target == 1) // Set one texture as render target (used for blur)
+	if (target == BLURTARGET) // Set one texture as render target (used for blur)
 	{ 
 		ID3D11RenderTargetView* tgt[] = { rendertexture->GetRenderTargetView() };
 		context->OMSetRenderTargets(1u, tgt, depthstencilview);
@@ -1198,7 +1213,6 @@ VOID Engine::ClearRenderTargets(UINT target)
 
 VOID Engine::Update()
 {
-	auto kb = keyboard.GetState();
 	context->ClearDepthStencilView(depthstencilview, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0u);
 	context->ClearRenderTargetView(backbuffer, clearcolour);
 	context->ClearRenderTargetView(rendertexture->GetRenderTargetView(), clearcolour);
@@ -1212,12 +1226,6 @@ VOID Engine::Update()
 
 	water->UpdateWater(context);
 
-	//if (kb.B)
-	//{
-	//	Blur(rendertexture, blurtarget);
-	//	SetRenderTargets(2u);	// 0 = backbuffer, 1 = render to rendertexture, 2 = backbuffer and no depth buffer
-	//	Render2D(blurtarget);
-	//}
 
 	HRESULT HR = swapchain->Present(1u, 0u);
 	assert(SUCCEEDED(HR));
@@ -1234,8 +1242,14 @@ VOID Engine::LoadDrawables()
 	models.push_back(new Model("texTree.obj", device));
 	models.push_back(new Model("sphere.obj", device));
 	for (size_t i = 0; i < models.size(); ++i) 
-		models[i]->Transform(XMMatrixTranslation(-20.0 + (float)i * 5.0, 0.0, -15.0));
+		models[i]->Transform(XMMatrixTranslation((float)(-20.0 + (float)i * 5.0), (float)0.0, (float)-15.0));
 	water->Transform(XMMatrixTranslation(0.0, -4.0, 0.0));
+	models.push_back(new Model("cubemetal.obj", device));
+	models.back()->Transform(XMMatrixTranslation(7.0, 14.0, 9.0));
+	models.push_back(new Model("xyz.obj", device));
+	models.back()->Transform(XMMatrixTranslation(0.0, 7.0, 0.0));
+	models.push_back(new Model("moon.obj", device));
+	models.back()->Transform(XMMatrixTranslation(8.0, 70.0, 20.0));
 	quadtree.Add(models);
 }
 

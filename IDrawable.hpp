@@ -33,9 +33,9 @@ protected:
 
 public:
 	~IDrawable();
-	virtual UINT GetIndexCount() = 0;
-	virtual UINT GetStartIndexLocation() = 0;
-	virtual INT GetBaseVertexLocation() = 0;
+	UINT GetIndexCount();
+	UINT GetStartIndexLocation();
+	INT GetBaseVertexLocation();
 	virtual ID3D11Buffer** GetVertexBuffer() = 0;
 	virtual ID3D11Buffer* GetIndexBuffer() = 0;
 	std::string GetName();

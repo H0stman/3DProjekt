@@ -38,3 +38,20 @@ std::string IDrawable::GetName()
 {
 	return name;
 }
+
+UINT IDrawable::GetStartIndexLocation()
+{
+	return 0u;
+}
+
+
+INT IDrawable::GetBaseVertexLocation()
+{
+	return 0u;
+}
+
+UINT IDrawable::GetIndexCount()
+{
+	return static_cast<UINT>(indices.size());
+}
+

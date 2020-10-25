@@ -40,7 +40,7 @@ void GSMAIN(point GS_INPUT input[1], inout TriangleStream<PS_INPUT> SpriteStream
 {
     PS_INPUT output;
     
-    output.positionws = float4(input[0].position.xyz, 1);
+    output.positionws = float4(input[0].position.xyz, 1).xyz;
     
     
     //Transform to view space
