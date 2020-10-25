@@ -150,6 +150,7 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	 &inputlayoutdeferred);										//Adress of pointer of yhe input layout. 
 
 	camera = Camera();
+	bicam = Camera();
 
 	//context->VSSetShader(vertexshader, nullptr, 0u);
 	//context->PSSetShader(pixelshader, nullptr, 0u);
@@ -213,8 +214,6 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	assert(SUCCEEDED(hr));
 
 	/** Setting up dynamic quad for rendering 2D images/textures **/
-	//OutputDebugString(std::to_wstring(height).c_str());
-	//OutputDebugString(std::to_wstring(width).c_str());
 	float top = static_cast<float>(height) / 2.0f;
 	float left = static_cast<float>(width) / 2.0f;
 	float right = -left; // right
@@ -262,6 +261,45 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	HRESULT HR = device->CreateBuffer(&quadDesc, &quadData, &render2Dquad);
 	if (FAILED(HR))
 		OutputDebugString(L"Error creating Quad-buffer");
+
+
+	/** Setting up dynamic quad for rendering 2D images/textures **/
+	top = static_cast<float>(height) / 2.0f;
+	left = static_cast<float>(width) / 2.0f;
+	right = left + 150; // right
+	bottom = top + 100; // down
+	float bicamquad[] = {
+		left, top, 0.0,				// Vertex
+		1.0, 0.0,					// Texture coordinate
+		0.0, 0.0, 1.0,				// Normal (not used but necessary to comply with current input layout)
+		0.0, 0.0, 1.0,				// Tangent (not used but necessary to comply with current input layout)
+		0.0, 0.0, 1.0,				// Bitangent (not used but necessary to comply with current input layout)
+		right, top, 0.0,
+		0.0, 0.0,
+		0.0, 0.0, 1.0,				// Normal (not used but necessary to comply with current input layout)
+		0.0, 0.0, 1.0,				// Tangent (not used but necessary to comply with current input layout)
+		0.0, 0.0, 1.0,				// Bitangent (not used but necessary to comply with current input layout)
+		left, bottom, 0.0,
+		1.0, 1.0,
+		0.0, 0.0, 1.0,				// Normal (not used but necessary to comply with current input layout)
+		0.0, 0.0, 1.0,				// Tangent (not used but necessary to comply with current input layout)
+		0.0, 0.0, 1.0,				// Bitangent (not used but necessary to comply with current input layout)
+		right, bottom, 0.0,
+		0.0, 1.0,
+		0.0, 0.0, 1.0,				// Normal (not used but necessary to comply with current input layout)
+		0.0, 0.0, 1.0,				// Tangent (not used but necessary to comply with current input layout)
+		0.0, 0.0, 1.0,				// Bitangent (not used but necessary to comply with current input layout)
+	};
+
+	D3D11_SUBRESOURCE_DATA bicamquadData;
+	bicamquadData.pSysMem = bicamquad;
+	bicamquadData.SysMemPitch = 0;
+	bicamquadData.SysMemSlicePitch = 0;
+
+	HR = device->CreateBuffer(&quadDesc, &bicamquadData, &bicam2Dquad);
+	if (FAILED(HR))
+		OutputDebugString(L"Error creating Quad-buffer for bi-camera");
+
 	CreateParticles();
 	InitializeDeferredRendererResources(width, height);
 	shadowMap.Initialize(device, 1024, 1024);
@@ -1090,6 +1128,8 @@ VOID Engine::DeferredLightPass()
 		Render2D(blurtarget);
 	}
 	context->RSSetState(clockwise);
+
+	RenderBicam();
 }
 
 VOID Engine::ShadowPass()
@@ -1241,6 +1281,7 @@ VOID Engine::Update()
 	context->ClearRenderTargetView(blurtarget->GetRenderTargetView(), clearcolour);
 
 	camera.Update();
+	bicam.Update(camera.GetPosition(), camera.GetForward());
 	DeferredRenderer();
 
 	water->UpdateWater(context);
@@ -1261,6 +1302,12 @@ VOID Engine::Update()
 	HRESULT HR = swapchain->Present(1u, 0u);
 	assert(SUCCEEDED(HR));
 }
+
+VOID Engine::RenderBicam()
+{
+
+}
+
 
 VOID Engine::LoadDrawables()
 {
