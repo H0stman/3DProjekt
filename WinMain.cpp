@@ -1,3 +1,8 @@
+/******************************************************/
+/*             Whacky Engine made by:                 */
+/*    Emil Fransson, Oscar Milstein & Ove Ødegård     */
+/******************************************************/
+
 #define DEBUG
 
 #include "Engine.hpp"

@@ -383,10 +383,10 @@ VOID Engine::CreateParticles()
 {
 	Particle p;
 	//Fill particle position vector.
-	srand(time(nullptr));
-	for (FLOAT i = 0, x = 0, z = 0; i < 512; x = rand() % 200, z = rand() % 200, i++ )
+	srand((UINT)time(nullptr));
+	for (UINT i = 0, x = 0, z = 0; i < 512; x = rand() % 200, z = rand() % 200, i++ )
 	{
-		p.pos = { x,100.0f,z };
+		p.pos = { (float)x,100.0f, (float)z };
 		particlepositions.push_back(p);
 	}
 
@@ -970,7 +970,7 @@ VOID Engine::ReadyLightPassResources()
 	context->Map(lightbuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &lightresource);
 	phongLight = (PhongLight_ConstantBuffer_PS*)lightresource.pData;
 	phongLight->ambientColor = XMFLOAT3(1.0f, 1.0f, 1.0f);
-	phongLight->ambientLightIntensity = 0.25f;
+	phongLight->ambientLightIntensity = 0.45f;
 	phongLight->diffuseColor = pointLight.GetColor();
 	phongLight->diffuseLightIntensity = pointLight.GetDiffuseIntensity();
 	phongLight->diffuseLightPosition = pointLight.GetPosition();
@@ -1133,7 +1133,7 @@ VOID Engine::DeferredLightPass()
 
 VOID Engine::ShadowPass()
 {
-	for (auto model : currentrenderqueue) 
+	for (auto model : models) 
 	{
 		context->Map(matrixbuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &transformresource);
 		transform = (TransformationMatrices*)transformresource.pData;
@@ -1299,22 +1299,25 @@ VOID Engine::LoadDrawables()
 	water = new Water(device);
 	models.push_back(new Terrain("heightmap.bmp", device));
 	models.push_back(water);
+	water->Transform(XMMatrixTranslation(-15.0, -2.0, 9.0));
 	models.push_back(new Model("cube.obj", device));
+	models.back()->Transform(XMMatrixTranslation(3.0, 3.0, -28.0));
 	models.push_back(new Model("FalloutGirl.obj", device));
+	models.back()->Transform(XMMatrixTranslation(42.0, 7.0, 33.0));
 	models.push_back(new Model("suzanne.obj", device));
+	models.back()->Transform(XMMatrixTranslation(25.0, 8.0, 23.0));
 	models.push_back(new Model("texTree.obj", device));
+	models.back()->Transform(XMMatrixTranslation(36.0, 7.0, 11.0));
 	models.push_back(new Model("sphere.obj", device));
-	for (size_t i = 0; i < models.size(); ++i) 
-		models[i]->Transform(XMMatrixTranslation((float)(-20.0 + (float)i * 5.0), (float)0.0, (float)-15.0));
-	water->Transform(XMMatrixTranslation(5.0, -4.0, 9.0));
+	models.back()->Transform(XMMatrixTranslation(36.0, 70.0, 11.0));
 	models.push_back(new Model("cubebrick.obj", device));
-	models.back()->Transform(XMMatrixTranslation(7.0, 14.0, 9.0));
+	models.back()->Transform(XMMatrixTranslation(13.0, 14.0, 9.0));
 	models.push_back(new Model("cubebrick.obj", device));
-	models.back()->Transform(XMMatrixTranslation(7.0, 19.0, 9.0));
+	models.back()->Transform(XMMatrixTranslation(13.0, 19.0, 9.0));
 	models.push_back(new Model("cubemetal.obj", device));
-	models.back()->Transform(XMMatrixTranslation(9.0, 14.0, 9.0));
+	models.back()->Transform(XMMatrixTranslation(15.0, 14.0, 9.0));
 	models.push_back(new Model("moon.obj", device));
-	models.back()->Transform(XMMatrixTranslation(8.0, 70.0, 20.0));
+	models.back()->Transform(XMMatrixTranslation(58.0, 50.0, 20.0));
 	quadtree.Add(models);
 }
 

@@ -1,7 +1,7 @@
 #include "PointLight.hpp"
 
 PointLight::PointLight()
-	: m_Position{ DirectX::XMFLOAT3(7.0f, 26.0f, 9.0f) },
+	: m_Position{ DirectX::XMFLOAT3(13.0f, 36.0f, 9.0f) },
 	m_DiffuseColor{ DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f) },
 	m_AttenuationConstant{ 1.0f },
 	m_AttenuationLinear{ 0.045f },
@@ -49,7 +49,7 @@ const float& PointLight::GetSpecularIntensity() const
 const DirectX::XMMATRIX PointLight::GetViewMatrix() const
 {
 	const DirectX::XMFLOAT3 upDirection = DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f);
-	const DirectX::XMFLOAT3 focusPosition = DirectX::XMFLOAT3(7.0f, 19.0f, 9.0f);
+	const DirectX::XMFLOAT3 focusPosition = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
 
 	return  (DirectX::XMMatrixLookAtLH(DirectX::XMLoadFloat3(&this->GetPosition()),
 								                             DirectX::XMLoadFloat3(&focusPosition),

@@ -2,7 +2,7 @@
 
 Camera::Camera() : lookat(XMVectorZero())
 {
-	position = XMVectorSet(0.0f, 0.0f, -50.0f, 1.0f);
+	position = XMVectorSet(-25.0f, 9.0f, -30.0f, 1.0f);
 	updirection = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	view = XMMatrixLookAtLH(position, lookat, updirection);
 	projection = XMMatrixPerspectiveFovLH(XMConvertToRadians(90.0f), 1424.0f / 720.0f, 0.1f, 1000.0f);
