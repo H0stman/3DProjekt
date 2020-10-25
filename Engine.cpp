@@ -1125,6 +1125,7 @@ VOID Engine::Render2D(Texture* tex)
 								&offset);		//Point of start of the first vertex to be used. Here all vertices are bound to buffer.
 
 	/*****Set Primitive topology*****/
+	context->IASetInputLayout(inputlayout);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	ID3D11ShaderResourceView* srv[] = { tex->GetShaderResourceView() };
 	context->PSSetShaderResources(0u, 1u, srv);
