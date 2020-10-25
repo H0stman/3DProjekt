@@ -283,6 +283,7 @@ Engine::~Engine()
 	pixelshader->Release();
 	pixelshader2D->Release();
 	pixelshadergbuf->Release();
+	pixelshadergbufnorm->Release();
 	pixelshaderlight->Release();
 	vertexshader->Release();
 	vertexshader2D->Release();
@@ -524,6 +525,36 @@ VOID Engine::CompileShaders()
 	if (FAILED(hr))
 	{
 		OutputDebugString(L"Error creating PixelShader G-buffer");
+		errorBlob->Release();
+	}
+
+	/*****Pixelshader for Gbuffer N-MAP compilation*****/
+	hr = D3DCompileFromFile(L"pixelshader_Gbuffer_Normal.hlsl",		//Name of the pixel shader.
+							nullptr,								//PixelShader macro, ignore.
+							D3D_COMPILE_STANDARD_FILE_INCLUDE,		//Will essentially find the file.
+							"ps_gbuffer_normal",					//Entry point for shader function.
+							"ps_5_0",								//Pixel shader target (version).
+							flags,									//Flags, in our case adding more debug output.
+							0u,										//Additional flags.
+							&blobpixelgbufnorm,						//The pixel shader blob to be filled.
+							&errorBlob);							//Error blob that will catch additional error messages.
+	if (FAILED(hr))
+	{
+		if (errorBlob != nullptr)
+			OutputDebugStringA((char*)errorBlob->GetBufferPointer());			//Will yield additional debug information from Pixel shader.
+
+		OutputDebugString(L"Error compiling PixelShader G-Buffer N-MAP");
+		errorBlob->Release();
+	}
+
+	/*****Pixelshader Gbuffer N-MAP creation*****/
+	hr = device->CreatePixelShader(blobpixelgbufnorm->GetBufferPointer(),	//Pointer to the compiled Pixel shader buffer.
+								   blobpixelgbufnorm->GetBufferSize(),		//Size of the compiled Pixel shader buffer.
+								   nullptr,								//Advanced topic, not used here.
+								   &pixelshadergbufnorm);					//Address of pointer to the Pixel VertexShader.
+	if (FAILED(hr))
+	{
+		OutputDebugString(L"Error creating PixelShader G-buffer N-MAP");
 		errorBlob->Release();
 	}
 
@@ -913,7 +944,6 @@ VOID Engine::ReadyGeometryPassResources()
 	SetRenderTargets(DEFERREDTARGET);
 	ClearRenderTargets(DEFERREDTARGET);
 	context->VSSetShader(vertexshader, nullptr, 0u);
-	context->PSSetShader(pixelshadergbuf, nullptr, 0u);
 	context->PSSetSamplers(0u, 1u, &texturesampler);
 	context->IASetInputLayout(inputlayout);
 	context->RSSetViewports(1u, &defaultviewport);
@@ -931,7 +961,7 @@ VOID Engine::ReadyLightPassResources()
 	context->Map(lightbuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &lightresource);
 	phongLight = (PhongLight_ConstantBuffer_PS*)lightresource.pData;
 	phongLight->ambientColor = XMFLOAT3(1.0f, 1.0f, 1.0f);
-	phongLight->ambientLightIntensity = 0.15f;
+	phongLight->ambientLightIntensity = 0.25f;
 	phongLight->diffuseColor = pointLight.GetColor();
 	phongLight->diffuseLightIntensity = pointLight.GetDiffuseIntensity();
 	phongLight->diffuseLightPosition = pointLight.GetPosition();
@@ -945,6 +975,7 @@ VOID Engine::ReadyLightPassResources()
 	context->Map(matrixbuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &transformresource);
 	transform = (TransformationMatrices*)transformresource.pData;
 	transform->projectionmatrix = XMMatrixTranspose(camera.GetOrthoMatrix());
+	XMStoreFloat3(&transform->camerapos, camera.GetPosition());
 	context->Unmap(matrixbuffer, 0);
 
 	// Update Shadow Data:
@@ -1016,27 +1047,43 @@ VOID Engine::DeferredGeometryPass()
 		context->VSSetConstantBuffers(0u, 1u, &matrixbuffer);
 
 		std::vector<Texture*> textures = model->GetTextures();
-		ID3D11ShaderResourceView* diffuse[] = { textures[0]->GetShaderResourceView() };
+		ID3D11ShaderResourceView* diffuse[] = { textures[DIFFUSE]->GetShaderResourceView() };
 		//Set diffuse texture.
 		context->PSSetShaderResources(0u, 1u, diffuse);
 
 		// If no tessellation is present:
-		if (textures[1] == nullptr)
+		if (textures[DISPLACEMENT] == nullptr)
 		{
 			context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			context->VSSetShader(vertexshader, nullptr, 0u);
 			context->HSSetShader(nullptr, nullptr, 0u);
 			context->DSSetShader(nullptr, nullptr, 0u);
+			if (textures[NORMALMAP] == nullptr)
+				context->PSSetShader(pixelshadergbuf, nullptr, 0u);
+			else
+			{
+				context->PSSetShader(pixelshadergbufnorm, nullptr, 0u);
+				ID3D11ShaderResourceView* normalmap[] = { textures[NORMALMAP]->GetShaderResourceView() };
+				context->PSSetShaderResources(1u, 1u, normalmap);
+			}
 		}
 		// Switch to tessellation if there is a displacement texture
 		else
 		{
 			context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);
-			ID3D11ShaderResourceView* displacement[] = { textures[1]->GetShaderResourceView() };
+			ID3D11ShaderResourceView* displacement[] = { textures[DISPLACEMENT]->GetShaderResourceView() };
 			context->VSSetShader(vertexshadertess, nullptr, 0u);
 			context->HSSetShader(hullshader, nullptr, 0u);
 			context->DSSetShader(domainshader, nullptr, 0u);
 			context->DSSetShaderResources(0u, 1u, displacement);
+			if (textures[NORMALMAP] == nullptr)
+				context->PSSetShader(pixelshadergbuf, nullptr, 0u);
+			else
+			{
+				context->PSSetShader(pixelshadergbufnorm, nullptr, 0u);
+				ID3D11ShaderResourceView* normalmap[] = { textures[NORMALMAP]->GetShaderResourceView() };
+				context->PSSetShaderResources(1u, 1u, normalmap);
+			}
 		}
 
 		// Bind Vertex & Index-Buffers:
@@ -1258,10 +1305,12 @@ VOID Engine::LoadDrawables()
 	for (size_t i = 0; i < models.size(); ++i) 
 		models[i]->Transform(XMMatrixTranslation((float)(-20.0 + (float)i * 5.0), (float)0.0, (float)-15.0));
 	water->Transform(XMMatrixTranslation(5.0, -4.0, 9.0));
+	models.push_back(new Model("cubebrick.obj", device));
+	models.back()->Transform(XMMatrixTranslation(7.0, 14.0, 9.0));
+	models.push_back(new Model("cubebrick.obj", device));
+	models.back()->Transform(XMMatrixTranslation(7.0, 19.0, 9.0));
 	models.push_back(new Model("cubemetal.obj", device));
-	models.back()->Transform(XMMatrixTranslation(8.0, 65.0, 20.0));
-	models.push_back(new Model("xyz.obj", device));
-	models.back()->Transform(XMMatrixTranslation(0.0, 7.0, 0.0));
+	models.back()->Transform(XMMatrixTranslation(9.0, 14.0, 9.0));
 	models.push_back(new Model("moon.obj", device));
 	models.back()->Transform(XMMatrixTranslation(8.0, 70.0, 20.0));
 	quadtree.Add(models);

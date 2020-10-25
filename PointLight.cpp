@@ -1,7 +1,7 @@
 #include "PointLight.h"
 
 PointLight::PointLight()
-	: m_Position{ DirectX::XMFLOAT3(8.0f, 75.0f, 20.0f) },
+	: m_Position{ DirectX::XMFLOAT3(7.0f, 26.0f, 9.0f) },
 	m_DiffuseColor{ DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f) },
 	m_AttenuationConstant{ 1.0f },
 	m_AttenuationLinear{ 0.045f },

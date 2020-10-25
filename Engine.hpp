@@ -26,6 +26,10 @@
 #define DEFERREDTARGET 3
 #define DEPTHTARGET 4
 
+#define DIFFUSE 0
+#define DISPLACEMENT 1
+#define NORMALMAP 2
+
 using namespace DirectX;
 
 struct TransformationMatrices
@@ -89,7 +93,7 @@ private:
 
 	UINT stride, offset;
 
-	ID3DBlob* blobpixelvanilla, * blobpixel2D, * blobpixelgbuf, * blobpixellight, * blobvertexvanilla, * blobvertextess, * blobvertex2D, * blobvertexDeferred, * blobvertexshadow, * blobcsblur, * blobhullshader, * blobdomainshader, * blobgeometryparticle, * blobvertexparticle;
+	ID3DBlob* blobpixelvanilla, * blobpixel2D, * blobpixelgbuf, *blobpixelgbufnorm,* blobpixellight, * blobvertexvanilla, * blobvertextess, * blobvertex2D, * blobvertexDeferred, * blobvertexshadow, * blobcsblur, * blobhullshader, * blobdomainshader, * blobgeometryparticle, * blobvertexparticle;
 
 	ID3D11InputLayout* inputlayout, * inputlayoutdeferred;
 
