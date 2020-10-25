@@ -331,7 +331,7 @@ VOID Engine::CreateParticles()
 	//Fill particle position vector.
 	for (FLOAT i = 0; i < 512; i++)
 	{
-		p.pos = { i,i,0.0f };
+		p.pos = { i,0.0f,0.0f };
 		particlepositions.push_back(p);
 	}
 
@@ -846,7 +846,7 @@ VOID Engine::Update()
 	VanillaRender();
 	Tessellation();
 
-	for (auto model : quadtree.GetRenderQueue(camera.GetFrustum())) //TODO: Fix the incompatible input output structs in vertex and pixelshader for vanilla rendering.
+	for (auto model : quadtree.GetRenderQueue(camera.GetFrustum()))
 	{
 		if (model->IsClockwise())
 			context->RSSetState(clockwise);
@@ -892,6 +892,7 @@ VOID Engine::Update()
 			context->DSSetShader(domainshader, nullptr, 0u);
 			context->DSSetShaderResources(0u, 1u, &displacement);
 		}
+
 		//Set texture.
 		context->PSSetShaderResources(0u, 1u, &diffuse);
 
@@ -905,9 +906,19 @@ VOID Engine::Update()
 			context->DSSetShader(nullptr, nullptr, 0u);
 		}
 	}
-	DrawParticles();
 
+	DrawParticles();
 	water->UpdateWater(context);
+
+	//Terrain collision
+	Terrain* terrain = (Terrain*)models[0];
+	auto* v = terrain->GetVertices();
+	for (size_t i = 0; i < terrain->GetVertices()->size(); i++)
+	{
+		if ((XMVectorGetX(camera.GetPosition()) > v->at(i).position.x - 0.5f && XMVectorGetY(camera.GetPosition()) < v->at(i).position.x + 0.5f) && (XMVectorGetZ(camera.GetPosition()) > v->at(i).position.z - 0.5f && XMVectorGetZ(camera.GetPosition()) < v->at(i).position.z + 0.5f))
+			camera.SetPositionY(v->at(i).position.y + 6.0f);
+	}
+
 
 	if (kb.B)
 	{
@@ -929,7 +940,7 @@ VOID Engine::LoadDrawables()
 	//models.push_back(new Model("suzanne.obj", device));
 	models.push_back(new Model("texTree.obj", device));
 	for (size_t i = 2; i < models.size(); ++i)
-		models[i]->Transform(XMMatrixTranslation(-20.0 + (float)i * 5.0, 0.0, -15.0));
+		models[i]->Transform(XMMatrixTranslation(-20.0f + (float)i * 5.0, 0.0, -15.0));
 	quadtree.Add(models);
 }
 

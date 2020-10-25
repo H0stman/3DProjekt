@@ -22,5 +22,6 @@ public:
 	XMVECTOR GetPosition();
 	VOID Update();
 	BoundingFrustum GetFrustum();
+	VOID SetPositionY(float value);
 };
 
