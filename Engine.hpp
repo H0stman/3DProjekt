@@ -26,6 +26,10 @@
 #define DEFERREDTARGET 3
 #define DEPTHTARGET 4
 
+#define DIFFUSE 0
+#define DISPLACEMENT 1
+#define NORMALMAP 2
+
 using namespace DirectX;
 
 struct TransformationMatrices
@@ -79,7 +83,7 @@ private:
 	ID3D11DepthStencilView* depthstencilview;
 	ID3D11DepthStencilState* defaultstencilstate, * nozstencilstate;
 
-	ID3D11PixelShader* pixelshader, * pixelshader2D, * pixelshadergbuf, * pixelshaderlight;
+	ID3D11PixelShader* pixelshader, * pixelshader2D, * pixelshadergbuf, * pixelshadergbufnorm, * pixelshaderlight;
 	ID3D11VertexShader* vertexshader, * vertexshader2D, * vertexshadertess, * vertexshaderdeferred, * vertexshadershadow, * vertexshaderparticle;
 	ID3D11ComputeShader* csblurshader;
 	ID3D11HullShader* hullshader;

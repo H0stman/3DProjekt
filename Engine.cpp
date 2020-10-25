@@ -913,7 +913,6 @@ VOID Engine::ReadyGeometryPassResources()
 	SetRenderTargets(DEFERREDTARGET);
 	ClearRenderTargets(DEFERREDTARGET);
 	context->VSSetShader(vertexshader, nullptr, 0u);
-	context->PSSetShader(pixelshadergbuf, nullptr, 0u);
 	context->PSSetSamplers(0u, 1u, &texturesampler);
 	context->IASetInputLayout(inputlayout);
 	context->RSSetViewports(1u, &defaultviewport);
@@ -1014,28 +1013,44 @@ VOID Engine::DeferredGeometryPass()
 		context->VSSetConstantBuffers(0u, 1u, &matrixbuffer);
 
 		std::vector<Texture*> textures = model->GetTextures();
-		ID3D11ShaderResourceView* diffuse[] = { textures[0]->GetShaderResourceView() };
+		ID3D11ShaderResourceView* diffuse[] = { textures[DIFFUSE]->GetShaderResourceView() };
 		//Set diffuse texture.
 		context->PSSetShaderResources(0u, 1u, diffuse);
 
 		// If no tessellation is present:
-		if (textures[1] == nullptr)
+		if (textures[DISPLACEMENT] == nullptr)
 		{
 			context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			context->VSSetShader(vertexshader, nullptr, 0u);
 			context->HSSetShader(nullptr, nullptr, 0u);
 			context->DSSetShader(nullptr, nullptr, 0u);
+			if (textures[NORMALMAP] == nullptr)
+				context->PSSetShader(pixelshadergbuf, nullptr, 0u);
+			else
+			{
+				context->PSSetShader(pixelshadergbufnorm, nullptr, 0u);
+				ID3D11ShaderResourceView* normalmap[] = { textures[NORMALMAP]->GetShaderResourceView() };
+				context->PSSetShaderResources(1u, 1u, normalmap);
+			}
 		}
 		// Switch to tessellation if there is a displacement texture
 		else
 		{
 			context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);
-			ID3D11ShaderResourceView* displacement[] = { textures[1]->GetShaderResourceView() };
+			ID3D11ShaderResourceView* displacement[] = { textures[DISPLACEMENT]->GetShaderResourceView() };
 			context->VSSetShader(vertexshadertess, nullptr, 0u);
 			context->HSSetShader(hullshader, nullptr, 0u);
 			context->DSSetShader(domainshader, nullptr, 0u);
 			context->DSSetConstantBuffers(0u, 1u, &matrixbuffer);
 			context->DSSetShaderResources(0u, 1u, displacement);
+			if (textures[NORMALMAP] == nullptr)
+				context->PSSetShader(pixelshadergbuf, nullptr, 0u);
+			else
+			{
+				context->PSSetShader(pixelshadergbufnorm, nullptr, 0u);
+				ID3D11ShaderResourceView* normalmap[] = { textures[NORMALMAP]->GetShaderResourceView() };
+				context->PSSetShaderResources(1u, 1u, normalmap);
+			}
 		}
 
 		// Bind Vertex & Index-Buffers:
@@ -1262,8 +1277,6 @@ VOID Engine::LoadDrawables()
 	water->Transform(XMMatrixTranslation(5.0, -4.0, 9.0));
 	models.push_back(new Model("cubemetal.obj", device));
 	models.back()->Transform(XMMatrixTranslation(7.0, 14.0, 9.0));
-	models.push_back(new Model("xyz.obj", device));
-	models.back()->Transform(XMMatrixTranslation(0.0, 7.0, 0.0));
 	models.push_back(new Model("moon.obj", device));
 	models.back()->Transform(XMMatrixTranslation(8.0, 70.0, 20.0));
 	quadtree.Add(models);
