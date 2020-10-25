@@ -18,9 +18,6 @@ public:
 	virtual ~Terrain();
 	
 
-	virtual UINT GetIndexCount();
-	virtual UINT GetStartIndexLocation();
-	virtual INT GetBaseVertexLocation();
 	virtual ID3D11Buffer** GetVertexBuffer();
 	virtual ID3D11Buffer* GetIndexBuffer();
 };

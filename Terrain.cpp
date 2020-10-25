@@ -172,21 +172,6 @@ Terrain::~Terrain()
 {
 }
 
-UINT Terrain::GetIndexCount()
-{
-	return static_cast<UINT>(indices.size());
-}
-
-UINT Terrain::GetStartIndexLocation()
-{
-	return 0u;
-}
-
-INT Terrain::GetBaseVertexLocation()
-{
-	return 0u;
-}
-
 ID3D11Buffer** Terrain::GetVertexBuffer()
 {
 	return &vertexbuffer;

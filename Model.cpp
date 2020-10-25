@@ -155,23 +155,6 @@ Model::~Model()
 {
 }
 
-UINT Model::GetIndexCount()
-{
-	return static_cast<UINT>(indices.size());
-}
-
-
-UINT Model::GetStartIndexLocation()
-{
-	return 0u;
-}
-
-
-INT Model::GetBaseVertexLocation()
-{
-	return 0u;
-}
-
 ID3D11Buffer** Model::GetVertexBuffer()
 {
 	return &vertexbuffer;
