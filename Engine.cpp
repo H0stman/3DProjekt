@@ -289,19 +289,25 @@ Engine::~Engine()
 	vertexshader->Release();
 	vertexshader2D->Release();
 	vertexshaderdeferred->Release();
+	vertexshadertess->Release();
+	vertexshadershadow->Release();
 	csblurshader->Release();
 	hullshader->Release();
 	domainshader->Release();
 	blobpixelvanilla->Release();
 	blobpixel2D->Release();
 	blobpixelgbuf->Release();
+	blobpixelgbufnorm->Release();
 	blobpixellight->Release();
 	blobvertexvanilla->Release();
+	blobvertextess->Release();
 	blobvertex2D->Release();
+	blobvertexshadow->Release();
 	blobvertexDeferred->Release();
 	blobcsblur->Release();
 	blobhullshader->Release();
 	blobdomainshader->Release();
+	particleview->Release();
 	inputlayout->Release();
 	inputlayoutdeferred->Release();
 	lightbuffer->Release();
@@ -318,6 +324,7 @@ Engine::~Engine()
 	if(gbufDiffuse != nullptr) delete gbufDiffuse;
 	if(gbufPosition != nullptr) delete gbufPosition;
 	if(gbufLightCS != nullptr) delete gbufLightCS;
+	if (particle != nullptr) delete particle;
 	vertexshaderparticle->Release();
 	geometryshaderparticle->Release();
 	blobgeometryparticle->Release();
@@ -1284,11 +1291,6 @@ VOID Engine::Update()
 
 	HRESULT HR = swapchain->Present(1u, 0u);
 	assert(SUCCEEDED(HR));
-}
-
-VOID Engine::RenderBicam()
-{
-	
 }
 
 
