@@ -20,7 +20,9 @@ public:
 	XMMATRIX GetProjectionMatrix();
 	XMMATRIX GetOrthoMatrix();
 	XMVECTOR GetPosition();
+	XMVECTOR GetForward();
 	VOID Update();
+	VOID Update(XMVECTOR parentpos, XMVECTOR parentforward);
 	BoundingFrustum GetFrustum();
 	VOID SetPositionY(float value);
 };

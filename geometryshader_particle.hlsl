@@ -30,10 +30,13 @@ struct GS_INPUT
 
 struct PS_INPUT
 {
-    float4 position     : SV_Position;
-    float2 texcoord     : texcoord;
-    float3 normal       : normal;
-    float3 positionws   : Position;
+    float4 position : SV_POSITION;
+    float2 texcoord : TEXCOORD;
+    float3 normal : NORMALWS;
+    float3 positionws : POSITIONWS;
+    float3 inTangentWS : TANGENTWS; //NOT USED IN THIS PS 
+    float3 inBiTangentWS : BITANGENTWS; //NOT USED IN THIS PS
+    float4 inPositionLightCS : POSITIONLIGHTCS;
 };
 
 [maxvertexcount(4)]
@@ -42,7 +45,9 @@ void GSMAIN(point GS_INPUT input[1], inout TriangleStream<PS_INPUT> SpriteStream
     PS_INPUT output;
     
     output.positionws = float4(input[0].position.xyz, 1).xyz;
-    
+    output.inBiTangentWS = float3(0.0f, 0.0f, 0.0f);
+    output.inTangentWS = float3(0.0f, 0.0f, 0.0f);
+    output.inPositionLightCS= float4(0.0f, 0.0f, 0.0f, 0.0f);
     
     //Transform to view space
     float4 viewposition = float4(input[0].position.xyz, 1);
@@ -59,4 +64,6 @@ void GSMAIN(point GS_INPUT input[1], inout TriangleStream<PS_INPUT> SpriteStream
     }
     
     SpriteStream.RestartStrip();
+    
+    
 }

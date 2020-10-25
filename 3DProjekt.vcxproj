@@ -161,9 +161,9 @@
     <ClInclude Include="Engine.hpp" />
     <ClInclude Include="IDrawable.hpp" />
     <ClInclude Include="Model.hpp" />
-    <ClInclude Include="PointLight.h" />
+    <ClInclude Include="PointLight.hpp" />
     <ClInclude Include="QuadTree.hpp" />
-    <ClInclude Include="ShadowMap.h" />
+    <ClInclude Include="ShadowMap.hpp" />
     <ClInclude Include="Terrain.hpp" />
     <ClInclude Include="Texture.hpp" />
     <ClInclude Include="Water.hpp" />

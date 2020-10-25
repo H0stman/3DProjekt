@@ -1,4 +1,4 @@
-#include "ShadowMap.h"
+#include "ShadowMap.hpp"
 
 ShadowMap::ShadowMap()
 	: m_ViewPort{}, m_Hresult{}, m_ShadowMapSize{ 0.0f }, m_ShadowBias{ 0.0f }, m_PcfCount{ 2 }

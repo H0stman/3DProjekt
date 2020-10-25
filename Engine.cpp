@@ -150,6 +150,7 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	 &inputlayoutdeferred);										//Adress of pointer of yhe input layout. 
 
 	camera = Camera();
+	bicam = Camera();
 
 	//context->VSSetShader(vertexshader, nullptr, 0u);
 	//context->PSSetShader(pixelshader, nullptr, 0u);
@@ -213,8 +214,6 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	assert(SUCCEEDED(hr));
 
 	/** Setting up dynamic quad for rendering 2D images/textures **/
-	//OutputDebugString(std::to_wstring(height).c_str());
-	//OutputDebugString(std::to_wstring(width).c_str());
 	float top = static_cast<float>(height) / 2.0f;
 	float left = static_cast<float>(width) / 2.0f;
 	float right = -left; // right
@@ -262,9 +261,50 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	HRESULT HR = device->CreateBuffer(&quadDesc, &quadData, &render2Dquad);
 	if (FAILED(HR))
 		OutputDebugString(L"Error creating Quad-buffer");
+
+
+	/** Setting up dynamic quad for rendering 2D images/textures **/
+	top = static_cast<float>(height) / 2.0f;
+	left = static_cast<float>(width) / 2.0f;
+	right = left + 150; // right
+	bottom = top + 100; // down
+	float bicamquad[] = {
+		left, top, 0.0,				// Vertex
+		1.0, 0.0,					// Texture coordinate
+		0.0, 0.0, 1.0,				// Normal (not used but necessary to comply with current input layout)
+		0.0, 0.0, 1.0,				// Tangent (not used but necessary to comply with current input layout)
+		0.0, 0.0, 1.0,				// Bitangent (not used but necessary to comply with current input layout)
+		right, top, 0.0,
+		0.0, 0.0,
+		0.0, 0.0, 1.0,				// Normal (not used but necessary to comply with current input layout)
+		0.0, 0.0, 1.0,				// Tangent (not used but necessary to comply with current input layout)
+		0.0, 0.0, 1.0,				// Bitangent (not used but necessary to comply with current input layout)
+		left, bottom, 0.0,
+		1.0, 1.0,
+		0.0, 0.0, 1.0,				// Normal (not used but necessary to comply with current input layout)
+		0.0, 0.0, 1.0,				// Tangent (not used but necessary to comply with current input layout)
+		0.0, 0.0, 1.0,				// Bitangent (not used but necessary to comply with current input layout)
+		right, bottom, 0.0,
+		0.0, 1.0,
+		0.0, 0.0, 1.0,				// Normal (not used but necessary to comply with current input layout)
+		0.0, 0.0, 1.0,				// Tangent (not used but necessary to comply with current input layout)
+		0.0, 0.0, 1.0,				// Bitangent (not used but necessary to comply with current input layout)
+	};
+
+	D3D11_SUBRESOURCE_DATA bicamquadData;
+	bicamquadData.pSysMem = bicamquad;
+	bicamquadData.SysMemPitch = 0;
+	bicamquadData.SysMemSlicePitch = 0;
+
+	HR = device->CreateBuffer(&quadDesc, &bicamquadData, &bicam2Dquad);
+	if (FAILED(HR))
+		OutputDebugString(L"Error creating Quad-buffer for bi-camera");
+
 	CreateParticles();
 	InitializeDeferredRendererResources(width, height);
 	shadowMap.Initialize(device, 1024, 1024);
+
+	particle = new Texture("star.png", device);
 }
 
 Engine::~Engine()
@@ -375,9 +415,10 @@ VOID Engine::CreateParticles()
 {
 	Particle p;
 	//Fill particle position vector.
-	for (FLOAT i = 0; i < 512; i++)
+	srand(time(nullptr));
+	for (FLOAT i = 0, x = 0, z = 0; i < 512; x = rand() % 200, z = rand() % 200, i++ )
 	{
-		p.pos = { i,0.0f,0.0f };
+		p.pos = { x,100.0f,z };
 		particlepositions.push_back(p);
 	}
 
@@ -1024,7 +1065,7 @@ VOID Engine::DeferredRenderer()
 
 VOID Engine::DeferredGeometryPass()
 {
-	for (auto model : quadtree.GetRenderQueue(camera.GetFrustum())) //TODO: Fix the incompatible input output structs in vertex and pixelshader for vanilla rendering.
+	for (auto model : currentrenderqueue) //TODO: Fix the incompatible input output structs in vertex and pixelshader for vanilla rendering.
 	{
 		if (model->IsClockwise())
 			context->RSSetState(clockwise);
@@ -1038,9 +1079,7 @@ VOID Engine::DeferredGeometryPass()
 		transform->viewmatrix = XMMatrixTranspose(camera.GetViewMatrix());
 		transform->projectionmatrix = XMMatrixTranspose(camera.GetProjectionMatrix());
 		transform->lightVPMatrix = XMMatrixTranspose(pointLight.GetViewMatrix() * pointLight.GetProjectionMatrix());
-		transform->lightWVPMatrix = XMMatrixTranspose(model->GetWorldMatrix() * 
-													  pointLight.GetViewMatrix() * 
-													  pointLight.GetProjectionMatrix());
+		transform->lightWVPMatrix = XMMatrixTranspose(model->GetWorldMatrix() * pointLight.GetViewMatrix() * pointLight.GetProjectionMatrix());
 		XMStoreFloat3(&transform->camerapos, camera.GetPosition());
 		context->Unmap(matrixbuffer, 0);
 		context->VSSetConstantBuffers(0u, 1u, &matrixbuffer);
@@ -1098,6 +1137,7 @@ VOID Engine::DeferredGeometryPass()
 			context->DSSetShader(nullptr, nullptr, 0u);
 		}
 	}
+	DrawParticles();
 }
 
 VOID Engine::DeferredLightPass()
@@ -1121,11 +1161,13 @@ VOID Engine::DeferredLightPass()
 		Render2D(blurtarget);
 	}
 	context->RSSetState(clockwise);
+
+	RenderBicam();
 }
 
 VOID Engine::ShadowPass()
 {
-	for (auto model : models) // Render Queue here...?
+	for (auto model : currentrenderqueue) // Render Queue here...?
 	{
 		if (model->IsClockwise())
 			context->RSSetState(clockwise);
@@ -1273,10 +1315,10 @@ VOID Engine::Update()
 	context->ClearRenderTargetView(blurtarget->GetRenderTargetView(), clearcolour);
 
 	camera.Update();
+	bicam.Update(camera.GetPosition(), camera.GetForward());
+	currentrenderqueue = quadtree.GetRenderQueue(camera.GetFrustum());
 	DeferredRenderer();
 	water->UpdateWater(context);
-		
-	//DrawParticles();
 
 	//Terrain collision
 	Terrain* terrain = (Terrain*)models[0];
@@ -1290,6 +1332,12 @@ VOID Engine::Update()
 	HRESULT HR = swapchain->Present(1u, 0u);
 	assert(SUCCEEDED(HR));
 }
+
+VOID Engine::RenderBicam()
+{
+
+}
+
 
 VOID Engine::LoadDrawables()
 {
@@ -1317,7 +1365,9 @@ VOID Engine::LoadDrawables()
 
 VOID Engine::DrawParticles()
 {
-	//context->RSSetState(clockwise);
+	ID3D11ShaderResourceView* view = particle->GetShaderResourceView();
+	context->PSSetShaderResources(0u, 1u, &view);
+	context->RSSetState(clockwise);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 	context->VSSetShader(vertexshaderparticle, nullptr, 0u);
 	context->GSSetShader(geometryshaderparticle, nullptr, 0u);
@@ -1326,4 +1376,5 @@ VOID Engine::DrawParticles()
 	context->DrawInstancedIndirect(indirectargs, 0u);
 	context->GSSetShader(nullptr, nullptr, 0u);
 	context->VSSetShader(nullptr, nullptr, 0u);
+	context->RSSetState(counterclockwise);
 }

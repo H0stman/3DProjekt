@@ -43,6 +43,11 @@ XMVECTOR Camera::GetPosition()
 	return position;
 }
 
+XMVECTOR Camera::GetForward()
+{
+	return forward;
+}
+
 VOID Camera::Update()
 {
 	auto m = Mouse::Get().GetState();
@@ -117,6 +122,13 @@ VOID Camera::Update()
 
 	//XMMATRIX viewprojection = view * projection;
 	
+}
+
+VOID Camera::Update(XMVECTOR parentpos, XMVECTOR parentforward)
+{
+	XMVECTOR focus = parentpos + parentforward * 3;
+	position = focus + XMVectorSet(4.0, 3.0, 0.0, 1.0);
+	view = XMMatrixLookAtLH(position, focus, updirection);
 }
 
 VOID Camera::SetPositionY(float value)

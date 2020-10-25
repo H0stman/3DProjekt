@@ -24,4 +24,3 @@ public:
 	std::vector<vertex>* GetVertices();
 
 };
-

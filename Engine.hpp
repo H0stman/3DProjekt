@@ -10,14 +10,15 @@
 #include <DirectXTK\Keyboard.h>
 #include <string>
 #include <vector>
+#include <time.h>
 
 #include <DirectXCollision.h>
 #include "Terrain.hpp"
 #include "Texture.hpp"
 #include "Camera.hpp"
 #include "Model.hpp"
-#include "PointLight.h"
-#include "ShadowMap.h"
+#include "PointLight.hpp"
+#include "ShadowMap.hpp"
 #include "QuadTree.hpp"
 #include "Water.hpp"
 
@@ -106,11 +107,11 @@ private:
 
 	HWND windowhandle;
 
-	std::vector<IDrawable*> models;
+	std::vector<IDrawable*> models, currentrenderqueue;
 	QuadTree quadtree;
 	std::vector<Particle> particlepositions;
 
-	Camera camera;
+	Camera camera, bicam;
 	PointLight pointLight;
 	D3D11_MAPPED_SUBRESOURCE lightresource, transformresource, shadowresource;
 	Water* water;
@@ -118,13 +119,15 @@ private:
 
 	ID3D11ShaderResourceView* particleview;
 
-	ID3D11Buffer* lightbuffer, * matrixbuffer, * shadowbuffer, * render2Dquad, * particlebuffer, * indirectargs;
+	ID3D11Buffer* lightbuffer, * matrixbuffer, * shadowbuffer, * render2Dquad, * bicam2Dquad, * particlebuffer, * indirectargs;
 
 	static constexpr unsigned int nrOfBuffers{ 4u };
 	Texture* gbufNormal;
 	Texture* gbufDiffuse;
 	Texture* gbufPosition;
 	Texture* gbufLightCS;
+
+	Texture *particle;
 
 	PhongLight_ConstantBuffer_PS* phongLight;
 	ShadowMap shadowMap;
@@ -148,6 +151,7 @@ private:
 	VOID SetRenderTargets(UINT target);
 	VOID ClearRenderTargets(UINT target);
 	VOID Blur(Texture* source, Texture* target);
+	VOID RenderBicam();
 
 public:
 	BOOL Run();
