@@ -75,25 +75,25 @@ private:
 	IDXGISwapChain* swapchain;
 	D3D11_VIEWPORT defaultviewport;
 	ID3D11RenderTargetView* backbuffer;
-	Texture* rendertexture, *blurtarget;
+	Texture* rendertexture, * blurtarget;
 	ID3D11DepthStencilView* depthstencilview;
-	ID3D11DepthStencilState* defaultstencilstate, *nozstencilstate;
+	ID3D11DepthStencilState* defaultstencilstate, * nozstencilstate;
 
-	ID3D11PixelShader *pixelshader, *pixelshader2D, *pixelshadergbuf, *pixelshaderlight;
-	ID3D11VertexShader *vertexshader, *vertexshader2D, *vertexshadertess, *vertexshaderdeferred, *vertexshadershadow, * vertexshaderparticle;
+	ID3D11PixelShader* pixelshader, * pixelshader2D, * pixelshadergbuf, * pixelshaderlight;
+	ID3D11VertexShader* vertexshader, * vertexshader2D, * vertexshadertess, * vertexshaderdeferred, * vertexshadershadow, * vertexshaderparticle;
 	ID3D11ComputeShader* csblurshader;
 	ID3D11HullShader* hullshader;
 	ID3D11DomainShader* domainshader;
 	ID3D11GeometryShader* geometryshaderparticle;
-	ID3D11RasterizerState* clockwise, *counterclockwise;
+	ID3D11RasterizerState* clockwise, * counterclockwise;
 
 	UINT stride, offset;
 
-	ID3DBlob* blobpixelvanilla, *blobpixel2D, *blobpixelgbuf, *blobpixellight,*blobvertexvanilla, *blobvertextess, *blobvertex2D, *blobvertexDeferred, *blobvertexshadow, *blobcsblur, *blobhullshader, *blobdomainshader, * blobgeometryparticle, * blobvertexparticle;
+	ID3DBlob* blobpixelvanilla, * blobpixel2D, * blobpixelgbuf, * blobpixellight, * blobvertexvanilla, * blobvertextess, * blobvertex2D, * blobvertexDeferred, * blobvertexshadow, * blobcsblur, * blobhullshader, * blobdomainshader, * blobgeometryparticle, * blobvertexparticle;
 
-	ID3D11InputLayout* inputlayout, *inputlayoutdeferred;
+	ID3D11InputLayout* inputlayout, * inputlayoutdeferred;
 
-	TransformationMatrices *transform;
+	TransformationMatrices* transform;
 
 	const FLOAT clearcolour[4];
 
@@ -110,11 +110,11 @@ private:
 	PointLight pointLight;
 	D3D11_MAPPED_SUBRESOURCE lightresource, transformresource, shadowresource;
 	Water* water;
-	ID3D11SamplerState* texturesampler, *pointSampler;
+	ID3D11SamplerState* texturesampler, * pointSampler;
 
 	ID3D11ShaderResourceView* particleview;
 
-	ID3D11Buffer* lightbuffer, * matrixbuffer, *shadowbuffer, *render2Dquad, * particlebuffer, * indirectargs;
+	ID3D11Buffer* lightbuffer, * matrixbuffer, * shadowbuffer, * render2Dquad, * particlebuffer, * indirectargs;
 
 	static constexpr unsigned int nrOfBuffers{ 4u };
 	Texture* gbufNormal;
@@ -148,7 +148,7 @@ private:
 public:
 	BOOL Run();
 	Engine() = default;
-	Engine(const Engine &other) = default;
+	Engine(const Engine& other) = default;
 	Engine(HWND hndl);
 	~Engine();
 
