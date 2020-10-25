@@ -28,13 +28,13 @@ struct HS_PATCH_OUTPUT
 
 struct DS_OUTPUT
 {
-	float4 outPositionCS    : SV_POSITION;
-	float2 outTexCoord      : TEXCOORD;
-	float3 outNormalWS      : NORMALWS;
-	float3 outPositionWS    : POSITIONWS;
-    float3 outTangentWS : TANGENTWS;
-    float3 outBiTangentWS : BITANGENTWS;
-    float4 outPositionLightCS : POSITIONLIGHTCS;
+	float4 outPositionCS        : SV_POSITION;
+	float2 outTexCoord          : TEXCOORD;
+	float3 outNormalWS          : NORMALWS;
+	float3 outPositionWS        : POSITIONWS;
+    float3 outTangentWS         : TANGENTWS;
+    float3 outBiTangentWS       : BITANGENTWS;
+    float4 outPositionLightCS   : POSITIONLIGHTCS;
 };
 
 [domain("tri")]

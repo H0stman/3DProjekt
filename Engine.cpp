@@ -990,7 +990,7 @@ VOID Engine::ReadyLightPassResources()
 
 	// Bind new components:
 
-	ClearRenderTargets(QUADTARGET); //?
+	ClearRenderTargets(QUADTARGET); 
 	context->VSSetShader(vertexshaderdeferred, nullptr, 0u);
 	context->VSSetConstantBuffers(0u, 1u, &matrixbuffer);
 	context->PSSetShader(pixelshaderlight, nullptr, 0u);
@@ -999,17 +999,16 @@ VOID Engine::ReadyLightPassResources()
 	context->PSSetConstantBuffers(2u, 1u, &shadowbuffer);
 	ID3D11ShaderResourceView* srvArr[nrOfBuffers] = {gbufNormal->GetShaderResourceView(),
 													 gbufDiffuse->GetShaderResourceView(),
-													 gbufPosition->GetShaderResourceView() };
+													 gbufPosition->GetShaderResourceView(),
+													 gbufLightCS ->GetShaderResourceView()};
 	context->PSSetShaderResources(0u, nrOfBuffers, srvArr);
 	context->PSSetShaderResources(nrOfBuffers, 1u, shadowMap.GetShaderResourceView().GetAddressOf());
 	context->PSSetSamplers(0u, 1u, &pointSampler);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	context->IASetInputLayout(inputlayoutdeferred);
 
-	UINT vertexStride = 14 * sizeof(float);
-	UINT vertexOffset = 0;
 
-	context->IASetVertexBuffers(0u, 1u, &render2Dquad, &vertexStride, &vertexOffset);
+	context->IASetVertexBuffers(0u, 1u, &render2Dquad, &stride, &offset);
 }
 
 VOID Engine::DeferredRenderer()
