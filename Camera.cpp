@@ -115,20 +115,14 @@ VOID Camera::Update()
 	//XMVECTOR qorient = XMQuaternionRotationRollPitchYawFromVector(qangle);
 	//XMVECTOR qorient = XMQuaternionRotationRollPitchYaw(fpitch, fyaw, 0.0f);
 	//XMStoreFloat4(&frustum.Orientation, qorient);
-	frustum = BoundingFrustum(projection);
+	kb = Keyboard::Get().GetState();
+	kb.Y ? frustum = BoundingFrustum(XMMatrixPerspectiveFovLH(XMConvertToRadians(50.0f), 1424.0f / 720.0f, 0.1f, 1000.0f)) : frustum = BoundingFrustum(projection);
 	XMVECTOR det = XMMatrixDeterminant(view);
 	frustum.Transform(frustum, XMMatrixInverse(&det, view));
 	//frustum.Transform(frustum, view);
 
 	//XMMATRIX viewprojection = view * projection;
 	
-}
-
-VOID Camera::Update(XMVECTOR parentpos, XMVECTOR parentforward)
-{
-	XMVECTOR focus = parentpos + parentforward * 3;
-	position = focus + XMVectorSet(4.0, 3.0, 0.0, 1.0);
-	view = XMMatrixLookAtLH(position, focus, updirection);
 }
 
 VOID Camera::SetPositionY(float value)

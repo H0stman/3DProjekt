@@ -111,7 +111,7 @@ private:
 	QuadTree quadtree;
 	std::vector<Particle> particlepositions;
 
-	Camera camera, bicam;
+	Camera camera;
 	PointLight pointLight;
 	D3D11_MAPPED_SUBRESOURCE lightresource, transformresource, shadowresource;
 	Water* water;
@@ -119,7 +119,7 @@ private:
 
 	ID3D11ShaderResourceView* particleview;
 
-	ID3D11Buffer* lightbuffer, * matrixbuffer, * shadowbuffer, * render2Dquad, * bicam2Dquad, * particlebuffer, * indirectargs;
+	ID3D11Buffer* lightbuffer, * matrixbuffer, * shadowbuffer, * render2Dquad, * particlebuffer, * indirectargs;
 
 	static constexpr unsigned int nrOfBuffers{ 4u };
 	Texture* gbufNormal;
