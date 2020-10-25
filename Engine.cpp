@@ -1221,7 +1221,7 @@ VOID Engine::Update()
 
 	camera.Update();
 	DeferredRenderer();
-
+	water->UpdateWater(context);
 		
 	//DrawParticles();
 
