@@ -115,6 +115,7 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	pDepthStencilBuffer->Release();
 
 	CreateRasterizerStates();
+	context->RSSetState(counterclockwise);
 	CompileShaders();
 
 	/*****Vertex Input Layout*****/
@@ -912,7 +913,6 @@ VOID Engine::ReadyGeometryPassResources()
 	SetRenderTargets(DEFERREDTARGET);
 	ClearRenderTargets(DEFERREDTARGET);
 	context->VSSetShader(vertexshader, nullptr, 0u);
-	context->VSSetConstantBuffers(0u, 1u, &matrixbuffer);
 	context->PSSetShader(pixelshadergbuf, nullptr, 0u);
 	context->PSSetSamplers(0u, 1u, &texturesampler);
 	context->IASetInputLayout(inputlayout);
@@ -1011,6 +1011,7 @@ VOID Engine::DeferredGeometryPass()
 													  pointLight.GetProjectionMatrix());
 		XMStoreFloat3(&transform->camerapos, camera.GetPosition());
 		context->Unmap(matrixbuffer, 0);
+		context->VSSetConstantBuffers(0u, 1u, &matrixbuffer);
 
 		std::vector<Texture*> textures = model->GetTextures();
 		ID3D11ShaderResourceView* diffuse[] = { textures[0]->GetShaderResourceView() };
@@ -1020,7 +1021,7 @@ VOID Engine::DeferredGeometryPass()
 		// If no tessellation is present:
 		if (textures[1] == nullptr)
 		{
-			context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+			context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			context->VSSetShader(vertexshader, nullptr, 0u);
 			context->HSSetShader(nullptr, nullptr, 0u);
 			context->DSSetShader(nullptr, nullptr, 0u);
@@ -1054,6 +1055,7 @@ VOID Engine::DeferredGeometryPass()
 
 VOID Engine::DeferredLightPass()
 {
+	context->RSSetState(counterclockwise);
 	auto kb = keyboard.GetState();
 	bool doblur = kb.B ? true : false;
 
@@ -1072,6 +1074,7 @@ VOID Engine::DeferredLightPass()
 		SetRenderTargets(QUADTARGET);
 		Render2D(blurtarget);
 	}
+	context->RSSetState(clockwise);
 }
 
 VOID Engine::ShadowPass()
@@ -1134,6 +1137,7 @@ VOID Engine::Render2D(Texture* tex)
 	context->Draw(4u, 0u);
 	srv[0] = nullptr;
 	context->PSSetShaderResources(0u, 1u, srv);
+	context->RSSetState(clockwise);
 }
 
 VOID Engine::Blur(Texture* source, Texture* target)
@@ -1255,7 +1259,7 @@ VOID Engine::LoadDrawables()
 	models.push_back(new Model("sphere.obj", device));
 	for (size_t i = 0; i < models.size(); ++i) 
 		models[i]->Transform(XMMatrixTranslation((float)(-20.0 + (float)i * 5.0), (float)0.0, (float)-15.0));
-	water->Transform(XMMatrixTranslation(0.0, -4.0, 0.0));
+	water->Transform(XMMatrixTranslation(5.0, -4.0, 9.0));
 	models.push_back(new Model("cubemetal.obj", device));
 	models.back()->Transform(XMMatrixTranslation(7.0, 14.0, 9.0));
 	models.push_back(new Model("xyz.obj", device));
@@ -1267,7 +1271,7 @@ VOID Engine::LoadDrawables()
 
 VOID Engine::DrawParticles()
 {
-	context->RSSetState(clockwise);
+	//context->RSSetState(clockwise);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 	context->VSSetShader(vertexshaderparticle, nullptr, 0u);
 	context->GSSetShader(geometryshaderparticle, nullptr, 0u);
