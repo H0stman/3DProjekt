@@ -115,6 +115,7 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	pDepthStencilBuffer->Release();
 
 	CreateRasterizerStates();
+	context->RSSetState(counterclockwise);
 	CompileShaders();
 
 	/*****Vertex Input Layout*****/
@@ -1055,6 +1056,7 @@ VOID Engine::DeferredGeometryPass()
 
 VOID Engine::DeferredLightPass()
 {
+	context->RSSetState(counterclockwise);
 	auto kb = keyboard.GetState();
 	bool doblur = kb.B ? true : false;
 
@@ -1072,6 +1074,7 @@ VOID Engine::DeferredLightPass()
 		SetRenderTargets(QUADTARGET);
 		Render2D(blurtarget);
 	}
+	context->RSSetState(clockwise);
 }
 
 VOID Engine::ShadowPass()
@@ -1135,6 +1138,7 @@ VOID Engine::Render2D(Texture* tex)
 	context->Draw(4u, 0u);
 	srv[0] = nullptr;
 	context->PSSetShaderResources(0u, 1u, srv);
+	context->RSSetState(clockwise);
 }
 
 VOID Engine::Blur(Texture* source, Texture* target)
@@ -1253,7 +1257,7 @@ VOID Engine::LoadDrawables()
 	models.push_back(new Model("sphere.obj", device));
 	for (size_t i = 0; i < models.size(); ++i) 
 		models[i]->Transform(XMMatrixTranslation((float)(-20.0 + (float)i * 5.0), (float)0.0, (float)-15.0));
-	water->Transform(XMMatrixTranslation(0.0, -4.0, 0.0));
+	water->Transform(XMMatrixTranslation(5.0, -4.0, 9.0));
 	models.push_back(new Model("cubemetal.obj", device));
 	models.back()->Transform(XMMatrixTranslation(8.0, 65.0, 20.0));
 	models.push_back(new Model("xyz.obj", device));
@@ -1265,7 +1269,7 @@ VOID Engine::LoadDrawables()
 
 VOID Engine::DrawParticles()
 {
-	context->RSSetState(clockwise);
+	//context->RSSetState(clockwise);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 	context->VSSetShader(vertexshaderparticle, nullptr, 0u);
 	context->GSSetShader(geometryshaderparticle, nullptr, 0u);

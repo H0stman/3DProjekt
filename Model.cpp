@@ -143,11 +143,7 @@ Model::Model(std::string file, ID3D11Device* device)
 			OutputDebugString(L"Error creating Index Buffer for model.");
 
 		worldmatrix = XMMatrixIdentity();
-		//if(texture[1] != nullptr)
-		//	clockwise = true;
-		//else
-		//	clockwise = false;
-		clockwise = false;
+		clockwise = true;
 	}
 }
 

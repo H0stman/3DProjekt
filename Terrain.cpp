@@ -2,7 +2,7 @@
 
 Terrain::Terrain(PCSTR filename, ID3D11Device* device)
 {
-	clockwise = TRUE;
+	clockwise = false;
 	worldmatrix = XMMatrixIdentity();
 
 	HeightMapInfo hminfo;

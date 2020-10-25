@@ -7,7 +7,7 @@ PointLight::PointLight()
 	m_AttenuationLinear{ 0.045f },
 	m_AttenuationQuadratic{ 0.0075f },
 	m_DiffuseIntensity{ 1.0f },
-	m_SpecularIntensity{ 0.9f }
+	m_SpecularIntensity{ 9.9f }
 {
 }
 

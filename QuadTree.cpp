@@ -124,11 +124,11 @@ void QuadTree::ViewFrustumCulling(QuadTreeNode* node, float size, DirectX::XMFLO
 		for (Instance* i : node->pinstance) {
 			if (!i->pickedForRendering) {
 				i->pickedForRendering = true;
-				OutputDebugString(L"Leaf\n");
+				//OutputDebugString(L"Leaf\n");
 				if (frustum.Contains(i->pdrawable->GetBoundingBox()) > DISJOINT) {
 					renderQueue.push_back(i->pdrawable);
-					OutputDebugStringA(i->pdrawable->GetName().c_str());
-					OutputDebugStringA("\n");
+					//OutputDebugStringA(i->pdrawable->GetName().c_str());
+					//OutputDebugStringA("\n");
 				}
 			}
 		}
