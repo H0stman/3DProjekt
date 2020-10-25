@@ -82,6 +82,8 @@ StyleCopReport.xml
 !suzanne.obj
 !texTree.obj
 !water.obj
+!xyz.obj
+!moon.obj
 *.iobj
 *.pch
 *.pdb

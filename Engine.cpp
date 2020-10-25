@@ -944,9 +944,9 @@ VOID Engine::DeferredGeometryPass()
 		context->Unmap(matrixbuffer, 0);
 
 		std::vector<Texture*> textures = model->GetTextures();
-		ID3D11ShaderResourceView* diffuse = textures[0]->GetShaderResourceView();
+		ID3D11ShaderResourceView* diffuse[] = { textures[0]->GetShaderResourceView() };
 		//Set diffuse texture.
-		context->PSSetShaderResources(0u, 1u, &diffuse);
+		context->PSSetShaderResources(0u, 1u, diffuse);
 
 		// If no tessellation is present:
 		if (textures[1] == nullptr)
@@ -960,11 +960,11 @@ VOID Engine::DeferredGeometryPass()
 		else
 		{
 			context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);
-			ID3D11ShaderResourceView* displacement = textures[1]->GetShaderResourceView();
+			ID3D11ShaderResourceView* displacement[] = { textures[1]->GetShaderResourceView() };
 			context->VSSetShader(vertexshadertess, nullptr, 0u);
 			context->HSSetShader(hullshader, nullptr, 0u);
 			context->DSSetShader(domainshader, nullptr, 0u);
-			context->DSSetShaderResources(0u, 1u, &displacement);
+			context->DSSetShaderResources(0u, 1u, displacement);
 		}
 
 		// Bind Vertex & Index-Buffers:
@@ -985,8 +985,9 @@ VOID Engine::DeferredGeometryPass()
 VOID Engine::DeferredLightPass()
 {
 	auto kb = keyboard.GetState();
+	bool doblur = kb.B ? true : false;
 
-	if (kb.B)
+	if (doblur)
 		SetRenderTargets(BLURTARGET);
 	else
 		SetRenderTargets(QUADTARGET);
@@ -995,7 +996,7 @@ VOID Engine::DeferredLightPass()
 	// Simple:
 	context->Draw(4u, 0u);
 
-	if (kb.B)
+	if (doblur)
 	{
 		Blur(rendertexture, blurtarget);
 		SetRenderTargets(QUADTARGET);
@@ -1150,6 +1151,8 @@ VOID Engine::LoadDrawables()
 	models.back()->Transform(XMMatrixTranslation(7.0, 14.0, 9.0));
 	models.push_back(new Model("xyz.obj", device));
 	models.back()->Transform(XMMatrixTranslation(0.0, 7.0, 0.0));
+	models.push_back(new Model("moon.obj", device));
+	models.back()->Transform(XMMatrixTranslation(8.0, 70.0, 20.0));
 	quadtree.Add(models);
 }
 
