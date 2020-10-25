@@ -1029,7 +1029,7 @@ VOID Engine::DeferredRenderer()
 
 VOID Engine::DeferredGeometryPass()
 {
-	for (auto model : quadtree.GetRenderQueue(camera.GetFrustum())) //TODO: Fix the incompatible input output structs in vertex and pixelshader for vanilla rendering.
+	for (auto model : currentrenderqueue) //TODO: Fix the incompatible input output structs in vertex and pixelshader for vanilla rendering.
 	{
 		if (model->IsClockwise())
 			context->RSSetState(clockwise);
@@ -1134,7 +1134,7 @@ VOID Engine::DeferredLightPass()
 
 VOID Engine::ShadowPass()
 {
-	for (auto model : models) // Render Queue here...?
+	for (auto model : currentrenderqueue) // Render Queue here...?
 	{
 		if (model->IsClockwise())
 			context->RSSetState(clockwise);
@@ -1282,6 +1282,7 @@ VOID Engine::Update()
 
 	camera.Update();
 	bicam.Update(camera.GetPosition(), camera.GetForward());
+	currentrenderqueue = quadtree.GetRenderQueue(camera.GetFrustum());
 	DeferredRenderer();
 
 	water->UpdateWater(context);

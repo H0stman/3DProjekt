@@ -106,7 +106,7 @@ private:
 
 	HWND windowhandle;
 
-	std::vector<IDrawable*> models;
+	std::vector<IDrawable*> models, currentrenderqueue;
 	QuadTree quadtree;
 	std::vector<Particle> particlepositions;
 
