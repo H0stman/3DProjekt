@@ -2,7 +2,7 @@
 
 Camera::Camera() : lookat(XMVectorZero())
 {
-	position = XMVectorSet(0.0f, 0.0f, -70.0f, 1.0f);
+	position = XMVectorSet(0.0f, 0.0f, -50.0f, 1.0f);
 	updirection = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	view = XMMatrixLookAtLH(position, lookat, updirection);
 	projection = XMMatrixPerspectiveFovLH(XMConvertToRadians(90.0f), 1424.0f / 720.0f, 0.1f, 1000.0f);
@@ -68,7 +68,7 @@ VOID Camera::Update()
 
 	if (kb.Home)
 	{
-		position = XMVectorZero();
+		position = XMVectorSet(0.0f, 0.0f, -50.0f, 1.0f);
 		pitch = yaw = 0;
 	}
 
@@ -117,6 +117,11 @@ VOID Camera::Update()
 
 	//XMMATRIX viewprojection = view * projection;
 	
+}
+
+VOID Camera::SetPositionY(float value)
+{
+	position = XMVectorSetY(this->position, value);
 }
 
 BoundingFrustum Camera::GetFrustum()

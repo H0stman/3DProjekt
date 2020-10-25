@@ -166,6 +166,17 @@ Terrain::Terrain(PCSTR filename, ID3D11Device* device)
 	texture.push_back(new Texture("grass.png", device));
 	texture.push_back(nullptr);
 	texture.push_back(nullptr);
+
+	//Make bounding box
+	XMVECTOR min = XMVectorZero();
+
+	auto itx = std::max_element(vertices.begin(), vertices.end(), [](vertex first, vertex other) {return first.position.x < other.position.x;});
+	auto ity = std::max_element(vertices.begin(), vertices.end(), [](vertex first, vertex other) {return first.position.y < other.position.y;});
+	auto itz = std::max_element(vertices.begin(), vertices.end(), [](vertex first, vertex other) {return first.position.z < other.position.z;});
+
+	XMVECTOR max = XMVectorSet(itx->position.x, ity->position.y, itz->position.z, 1.0f);
+
+	BoundingBox::CreateFromPoints(boundingbox, min, max);
 }
 
 Terrain::~Terrain()
@@ -180,5 +191,10 @@ ID3D11Buffer** Terrain::GetVertexBuffer()
 ID3D11Buffer* Terrain::GetIndexBuffer()
 {
 	return indexbuffer;
+}
+
+std::vector<vertex>* Terrain::GetVertices()
+{
+	return &vertices;
 }
 

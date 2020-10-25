@@ -375,7 +375,7 @@ VOID Engine::CreateParticles()
 	//Fill particle position vector.
 	for (FLOAT i = 0; i < 512; i++)
 	{
-		p.pos = { i,i,0.0f };
+		p.pos = { i,0.0f,0.0f };
 		particlepositions.push_back(p);
 	}
 
@@ -1225,7 +1225,15 @@ VOID Engine::Update()
 		
 	//DrawParticles();
 
-	water->UpdateWater(context);
+	//Terrain collision
+	Terrain* terrain = (Terrain*)models[0];
+	auto* v = terrain->GetVertices();
+	for (size_t i = 0; i < terrain->GetVertices()->size(); i++)
+	{
+		if ((XMVectorGetX(camera.GetPosition()) > v->at(i).position.x - 0.5f && XMVectorGetY(camera.GetPosition()) < v->at(i).position.x + 0.5f) && (XMVectorGetZ(camera.GetPosition()) > v->at(i).position.z - 0.5f && XMVectorGetZ(camera.GetPosition()) < v->at(i).position.z + 0.5f))
+			camera.SetPositionY(v->at(i).position.y + 6.0f);
+	}
+
 
 
 	HRESULT HR = swapchain->Present(1u, 0u);

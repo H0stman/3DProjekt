@@ -1,6 +1,7 @@
 #pragma once
 #include "IDrawable.hpp"
 #include <vector>
+#include <algorithm>
 
 class Terrain : public IDrawable
 {
@@ -20,5 +21,7 @@ public:
 
 	virtual ID3D11Buffer** GetVertexBuffer();
 	virtual ID3D11Buffer* GetIndexBuffer();
+	std::vector<vertex>* GetVertices();
+
 };
 
