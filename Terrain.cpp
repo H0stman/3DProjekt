@@ -5,6 +5,7 @@ Terrain::Terrain(PCSTR filename, ID3D11Device* device)
 	clockwise = TRUE;
 	worldmatrix = XMMatrixIdentity();
 
+	HeightMapInfo hminfo;
 	UINT facecount = 0u;
 	UINT vertexcount = 0u;
 	UINT stride = sizeof(vertex);

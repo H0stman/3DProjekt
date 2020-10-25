@@ -11,7 +11,6 @@ class Terrain : public IDrawable
 		XMFLOAT3* heightMap;			//Array to store terrain's vertex positions
 	};
 
-	HeightMapInfo hminfo;
 
 public:
 	Terrain() = default;
