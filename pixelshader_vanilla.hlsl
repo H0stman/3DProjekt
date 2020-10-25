@@ -33,5 +33,4 @@ float4 ps_main(in PS_INPUT input) : SV_Target
     float3 lightdir = normalize(lightposWS.xyz - input.positionws.xyz);
     float diffuse = max(dot(input.normal, lightdir.xyz), 0);
     return mul(diffuse, textureColor);
-
 }

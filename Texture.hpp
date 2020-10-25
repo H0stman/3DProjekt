@@ -24,6 +24,6 @@ public:
 	ID3D11UnorderedAccessView* GetUnorderedAccessView();
 	BOOL LoadTexture(std::string file, ID3D11Device* device);
 
-	VOID Clear(FLOAT red, FLOAT green, FLOAT blue, FLOAT alpha, ID3D11DeviceContext* context);
+	VOID Clear(const FLOAT* clearColour, ID3D11DeviceContext* context);
 };
 

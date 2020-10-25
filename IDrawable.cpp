@@ -8,7 +8,7 @@ std::vector<Texture*> IDrawable::GetTextures()
 IDrawable::~IDrawable() {
 	if(vertexbuffer != nullptr) vertexbuffer->Release();
 	if(indexbuffer != nullptr) indexbuffer->Release();
-	for (size_t i = 0; i < 2; ++i) {
+	for (size_t i = 0; i < texture.size(); ++i) {
 		if (texture[i] != nullptr) delete texture[i];
 	}
 }
@@ -38,3 +38,20 @@ std::string IDrawable::GetName()
 {
 	return name;
 }
+
+UINT IDrawable::GetStartIndexLocation()
+{
+	return 0u;
+}
+
+
+INT IDrawable::GetBaseVertexLocation()
+{
+	return 0u;
+}
+
+UINT IDrawable::GetIndexCount()
+{
+	return static_cast<UINT>(indices.size());
+}
+

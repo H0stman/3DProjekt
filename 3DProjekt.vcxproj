@@ -147,7 +147,9 @@
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="IDrawable.cpp" />
     <ClCompile Include="Model.cpp" />
+    <ClCompile Include="PointLight.cpp" />
     <ClCompile Include="QuadTree.cpp" />
+    <ClCompile Include="ShadowMap.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Water.cpp" />
@@ -159,7 +161,9 @@
     <ClInclude Include="Engine.hpp" />
     <ClInclude Include="IDrawable.hpp" />
     <ClInclude Include="Model.hpp" />
+    <ClInclude Include="PointLight.h" />
     <ClInclude Include="QuadTree.hpp" />
+    <ClInclude Include="ShadowMap.h" />
     <ClInclude Include="Terrain.hpp" />
     <ClInclude Include="Texture.hpp" />
     <ClInclude Include="Water.hpp" />

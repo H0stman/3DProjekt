@@ -1,19 +1,19 @@
 struct VS_OUTPUT
 {
-	float3 inPositionWS : POSITIONWS;
-	float2 inTexCoord : TEXCOORD;
-	float3 inNormalWS : NORMALWS;
-    float3 inTangentWS : TANGENTWS;
-    float3 inBiTangentWS : BITANGENTWS;
+	float3 inPositionWS		: POSITIONWS;
+	float2 inTexCoord		: TEXCOORD;
+	float3 inNormalWS		: NORMALWS;
+    float3 inTangentWS		: TANGENTWS;
+    float3 inBiTangentWS	: BITANGENTWS;
 };
 
 struct HS_POINT_OUTPUT
 {
-	float3 outPositionWS : POSITIONWS;
-	float2 outTexCoord : TEXCOORD;
-	float3 outNormalWS : NORMALWS;
-    float3 outTangentWS : TANGENTWS;
-    float3 outBiTangentWS : BITANGENTWS;
+	float3 outPositionWS	: POSITIONWS;
+	float2 outTexCoord		: TEXCOORD;
+	float3 outNormalWS		: NORMALWS;
+    float3 outTangentWS		: TANGENTWS;
+    float3 outBiTangentWS	: BITANGENTWS;
 };
 
 struct HS_PATCH_OUTPUT

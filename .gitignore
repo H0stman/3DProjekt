@@ -75,6 +75,15 @@ StyleCopReport.xml
 *.ilk
 *.meta
 *.obj
+!cube.obj
+!cubemetal.obj
+!FalloutGirl.obj
+!sphere.obj
+!suzanne.obj
+!texTree.obj
+!water.obj
+!xyz.obj
+!moon.obj
 *.iobj
 *.pch
 *.pdb

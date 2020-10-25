@@ -6,7 +6,7 @@ Model::Model(std::string file, ID3D11Device* device)
 	Assimp::Importer importer;
 
 	const aiScene* pScene = importer.ReadFile(file.c_str(),
-		aiProcess_Triangulate
+		  aiProcess_Triangulate
 		| aiProcess_ConvertToLeftHanded
 		| aiProcess_CalcTangentSpace
 		| aiProcess_GenNormals
@@ -127,7 +127,7 @@ Model::Model(std::string file, ID3D11Device* device)
 		ZeroMemory(&indexBufferDescriptor, sizeof(D3D11_BUFFER_DESC));
 
 		indexBufferDescriptor.Usage = D3D11_USAGE_IMMUTABLE;
-		indexBufferDescriptor.ByteWidth = sizeof(DWORD) * indices.size();
+		indexBufferDescriptor.ByteWidth = static_cast<UINT>(sizeof(DWORD) * indices.size());
 		indexBufferDescriptor.BindFlags = D3D11_BIND_INDEX_BUFFER;
 		indexBufferDescriptor.CPUAccessFlags = 0u;
 		indexBufferDescriptor.MiscFlags = 0u;
@@ -143,29 +143,16 @@ Model::Model(std::string file, ID3D11Device* device)
 			OutputDebugString(L"Error creating Index Buffer for model.");
 
 		worldmatrix = XMMatrixIdentity();
+		//if(texture[1] != nullptr)
+		//	clockwise = true;
+		//else
+		//	clockwise = false;
 		clockwise = false;
 	}
 }
 
 Model::~Model()
 {
-}
-
-UINT Model::GetIndexCount()
-{
-	return indices.size();
-}
-
-
-UINT Model::GetStartIndexLocation()
-{
-	return 0u;
-}
-
-
-INT Model::GetBaseVertexLocation()
-{
-	return 0u;
 }
 
 ID3D11Buffer** Model::GetVertexBuffer()
