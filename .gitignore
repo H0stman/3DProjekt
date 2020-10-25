@@ -77,6 +77,7 @@ StyleCopReport.xml
 *.obj
 !cube.obj
 !cubemetal.obj
+!cubebrick.obj
 !FalloutGirl.obj
 !sphere.obj
 !suzanne.obj

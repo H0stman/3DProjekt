@@ -31,13 +31,10 @@ VS_OUTPUT vs_tess_main(VS_INPUT vsInput)
 	VS_OUTPUT vsOutput;
 	
 	//Convert position, normal, tangent and bitangent to world space. 
-    //vsOutput.outTangentWS = normalize(mul(float4(vsInput.inTangent, 0.0f), world).xyz);
-    //vsOutput.outBiTangentWS = normalize(mul(float4(vsInput.inBiTangent, 0.0f), world).xyz);
-	
     vsOutput.outPositionWS = mul(float4(vsInput.inPosition, 1.0f), world).xyz;
     vsOutput.outNormalWS = normalize(mul(float4(vsInput.inNormal, 0.0f), world).xyz);
-    vsOutput.outTangentWS = vsInput.inTangent;
-    vsOutput.outBiTangentWS = vsInput.inBiTangent;
+    vsOutput.outTangentWS = normalize(mul(float4(vsInput.inTangent, 0.0f), world).xyz);
+    vsOutput.outBiTangentWS = normalize(mul(float4(vsInput.inBiTangent, 0.0f), world).xyz);
 	
     //Forwarding texture coord.
 	vsOutput.outTexCoord = vsInput.inTexCoord;

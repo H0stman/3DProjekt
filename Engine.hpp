@@ -10,14 +10,15 @@
 #include <DirectXTK\Keyboard.h>
 #include <string>
 #include <vector>
+#include <time.h>
 
 #include <DirectXCollision.h>
 #include "Terrain.hpp"
 #include "Texture.hpp"
 #include "Camera.hpp"
 #include "Model.hpp"
-#include "PointLight.h"
-#include "ShadowMap.h"
+#include "PointLight.hpp"
+#include "ShadowMap.hpp"
 #include "QuadTree.hpp"
 #include "Water.hpp"
 
@@ -83,7 +84,7 @@ private:
 	ID3D11DepthStencilView* depthstencilview;
 	ID3D11DepthStencilState* defaultstencilstate, * nozstencilstate;
 
-	ID3D11PixelShader* pixelshader, * pixelshader2D, * pixelshadergbuf, * pixelshadergbufnorm, * pixelshaderlight;
+	ID3D11PixelShader* pixelshader, * pixelshader2D, * pixelshadergbuf, *pixelshadergbufnorm,* pixelshaderlight;
 	ID3D11VertexShader* vertexshader, * vertexshader2D, * vertexshadertess, * vertexshaderdeferred, * vertexshadershadow, * vertexshaderparticle;
 	ID3D11ComputeShader* csblurshader;
 	ID3D11HullShader* hullshader;
@@ -93,7 +94,7 @@ private:
 
 	UINT stride, offset;
 
-	ID3DBlob* blobpixelvanilla, * blobpixel2D, * blobpixelgbuf, * blobpixellight, * blobvertexvanilla, * blobvertextess, * blobvertex2D, * blobvertexDeferred, * blobvertexshadow, * blobcsblur, * blobhullshader, * blobdomainshader, * blobgeometryparticle, * blobvertexparticle;
+	ID3DBlob* blobpixelvanilla, * blobpixel2D, * blobpixelgbuf, *blobpixelgbufnorm,* blobpixellight, * blobvertexvanilla, * blobvertextess, * blobvertex2D, * blobvertexDeferred, * blobvertexshadow, * blobcsblur, * blobhullshader, * blobdomainshader, * blobgeometryparticle, * blobvertexparticle;
 
 	ID3D11InputLayout* inputlayout, * inputlayoutdeferred;
 
@@ -125,6 +126,8 @@ private:
 	Texture* gbufDiffuse;
 	Texture* gbufPosition;
 	Texture* gbufLightCS;
+
+	Texture *particle;
 
 	PhongLight_ConstantBuffer_PS* phongLight;
 	ShadowMap shadowMap;

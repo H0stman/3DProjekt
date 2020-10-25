@@ -32,8 +32,8 @@ struct DS_OUTPUT
 	float2 outTexCoord      : TEXCOORD;
 	float3 outNormalWS      : NORMALWS;
 	float3 outPositionWS    : POSITIONWS;
-    //float3 outTangentWS : TANGENTWS;
-    //float3 outBiTangentWS : BITANGENTWS;
+    float3 outTangentWS : TANGENTWS;
+    float3 outBiTangentWS : BITANGENTWS;
     float4 outPositionLightCS : POSITIONLIGHTCS;
 };
 
@@ -55,6 +55,12 @@ DS_OUTPUT ds_main(const OutputPatch<HS_POINT_OUTPUT, 3> TriPatch, float3 Coords 
 	// Calculate the interpolated texture coordinates
     output.outTexCoord = Coords.x * TriPatch[0].inTexCoord + Coords.y * TriPatch[1].inTexCoord + Coords.z * TriPatch[2].inTexCoord;
 	
+    // Calculate the interpolated tangent coordinates
+    output.outTangentWS = Coords.x * TriPatch[0].inTangentWS + Coords.y * TriPatch[1].inTangentWS + Coords.z * TriPatch[2].inTangentWS;
+
+	//Calculate the interpolated bitangent coordinates
+    output.outBiTangentWS = Coords.x * TriPatch[0].inBiTangentWS + Coords.y * TriPatch[1].inBiTangentWS + Coords.z * TriPatch[2].inBiTangentWS;
+    
     // Calculate MIP level to fetch normal from
     float fHeightMapMIPLevel = clamp((distance(vWorldPos, camerapos) - 20.0f) / 20.0f, 0.0f, 3.0f);
     

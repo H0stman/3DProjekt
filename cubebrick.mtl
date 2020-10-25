@@ -1,7 +1,7 @@
 # Blender MTL File: 'None'
 # Material Count: 1
 
-newmtl cubemetal.mtl
+newmtl cubebrick.mtl
 Ns 323.999994
 Ka 1.000000 1.000000 1.000000
 Kd 0.800000 0.800000 0.800000
@@ -11,3 +11,4 @@ Ni 1.450000
 d 1.000000
 illum 2
 map_Kd brick_wall_diffuse.jpg
+map_Kn brick_wall_normal.jpg

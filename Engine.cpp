@@ -303,6 +303,8 @@ Engine::Engine(HWND hndl) : windowhandle(hndl), clearcolour{ 0.0f, 0.0f, 0.0f, 1
 	CreateParticles();
 	InitializeDeferredRendererResources(width, height);
 	shadowMap.Initialize(device, 1024, 1024);
+
+	particle = new Texture("star.png", device);
 }
 
 Engine::~Engine()
@@ -321,6 +323,7 @@ Engine::~Engine()
 	pixelshader->Release();
 	pixelshader2D->Release();
 	pixelshadergbuf->Release();
+	pixelshadergbufnorm->Release();
 	pixelshaderlight->Release();
 	vertexshader->Release();
 	vertexshader2D->Release();
@@ -412,9 +415,10 @@ VOID Engine::CreateParticles()
 {
 	Particle p;
 	//Fill particle position vector.
-	for (FLOAT i = 0; i < 512; i++)
+	srand(time(nullptr));
+	for (FLOAT i = 0, x = 0, z = 0; i < 512; x = rand() % 200, z = rand() % 200, i++ )
 	{
-		p.pos = { i,0.0f,0.0f };
+		p.pos = { x,100.0f,z };
 		particlepositions.push_back(p);
 	}
 
@@ -562,6 +566,36 @@ VOID Engine::CompileShaders()
 	if (FAILED(hr))
 	{
 		OutputDebugString(L"Error creating PixelShader G-buffer");
+		errorBlob->Release();
+	}
+
+	/*****Pixelshader for Gbuffer N-MAP compilation*****/
+	hr = D3DCompileFromFile(L"pixelshader_Gbuffer_Normal.hlsl",		//Name of the pixel shader.
+							nullptr,								//PixelShader macro, ignore.
+							D3D_COMPILE_STANDARD_FILE_INCLUDE,		//Will essentially find the file.
+							"ps_gbuffer_normal",					//Entry point for shader function.
+							"ps_5_0",								//Pixel shader target (version).
+							flags,									//Flags, in our case adding more debug output.
+							0u,										//Additional flags.
+							&blobpixelgbufnorm,						//The pixel shader blob to be filled.
+							&errorBlob);							//Error blob that will catch additional error messages.
+	if (FAILED(hr))
+	{
+		if (errorBlob != nullptr)
+			OutputDebugStringA((char*)errorBlob->GetBufferPointer());			//Will yield additional debug information from Pixel shader.
+
+		OutputDebugString(L"Error compiling PixelShader G-Buffer N-MAP");
+		errorBlob->Release();
+	}
+
+	/*****Pixelshader Gbuffer N-MAP creation*****/
+	hr = device->CreatePixelShader(blobpixelgbufnorm->GetBufferPointer(),	//Pointer to the compiled Pixel shader buffer.
+								   blobpixelgbufnorm->GetBufferSize(),		//Size of the compiled Pixel shader buffer.
+								   nullptr,								//Advanced topic, not used here.
+								   &pixelshadergbufnorm);					//Address of pointer to the Pixel VertexShader.
+	if (FAILED(hr))
+	{
+		OutputDebugString(L"Error creating PixelShader G-buffer N-MAP");
 		errorBlob->Release();
 	}
 
@@ -954,6 +988,7 @@ VOID Engine::ReadyGeometryPassResources()
 	context->PSSetSamplers(0u, 1u, &texturesampler);
 	context->IASetInputLayout(inputlayout);
 	context->RSSetViewports(1u, &defaultviewport);
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	ReadyTessellation();
 }
 
@@ -967,7 +1002,7 @@ VOID Engine::ReadyLightPassResources()
 	context->Map(lightbuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &lightresource);
 	phongLight = (PhongLight_ConstantBuffer_PS*)lightresource.pData;
 	phongLight->ambientColor = XMFLOAT3(1.0f, 1.0f, 1.0f);
-	phongLight->ambientLightIntensity = 0.15f;
+	phongLight->ambientLightIntensity = 0.25f;
 	phongLight->diffuseColor = pointLight.GetColor();
 	phongLight->diffuseLightIntensity = pointLight.GetDiffuseIntensity();
 	phongLight->diffuseLightPosition = pointLight.GetPosition();
@@ -981,6 +1016,7 @@ VOID Engine::ReadyLightPassResources()
 	context->Map(matrixbuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &transformresource);
 	transform = (TransformationMatrices*)transformresource.pData;
 	transform->projectionmatrix = XMMatrixTranspose(camera.GetOrthoMatrix());
+	XMStoreFloat3(&transform->camerapos, camera.GetPosition());
 	context->Unmap(matrixbuffer, 0);
 
 	// Update Shadow Data:
@@ -992,6 +1028,7 @@ VOID Engine::ReadyLightPassResources()
 	context->Unmap(shadowbuffer, 0);
 
 	// Bind new components:
+
 	ClearRenderTargets(QUADTARGET); //?
 	context->VSSetShader(vertexshaderdeferred, nullptr, 0u);
 	context->VSSetConstantBuffers(0u, 1u, &matrixbuffer);
@@ -1043,9 +1080,7 @@ VOID Engine::DeferredGeometryPass()
 		transform->viewmatrix = XMMatrixTranspose(camera.GetViewMatrix());
 		transform->projectionmatrix = XMMatrixTranspose(camera.GetProjectionMatrix());
 		transform->lightVPMatrix = XMMatrixTranspose(pointLight.GetViewMatrix() * pointLight.GetProjectionMatrix());
-		transform->lightWVPMatrix = XMMatrixTranspose(model->GetWorldMatrix() * 
-													  pointLight.GetViewMatrix() * 
-													  pointLight.GetProjectionMatrix());
+		transform->lightWVPMatrix = XMMatrixTranspose(model->GetWorldMatrix() * pointLight.GetViewMatrix() * pointLight.GetProjectionMatrix());
 		XMStoreFloat3(&transform->camerapos, camera.GetPosition());
 		context->Unmap(matrixbuffer, 0);
 		context->VSSetConstantBuffers(0u, 1u, &matrixbuffer);
@@ -1079,7 +1114,6 @@ VOID Engine::DeferredGeometryPass()
 			context->VSSetShader(vertexshadertess, nullptr, 0u);
 			context->HSSetShader(hullshader, nullptr, 0u);
 			context->DSSetShader(domainshader, nullptr, 0u);
-			context->DSSetConstantBuffers(0u, 1u, &matrixbuffer);
 			context->DSSetShaderResources(0u, 1u, displacement);
 			if (textures[NORMALMAP] == nullptr)
 				context->PSSetShader(pixelshadergbuf, nullptr, 0u);
@@ -1104,6 +1138,7 @@ VOID Engine::DeferredGeometryPass()
 			context->DSSetShader(nullptr, nullptr, 0u);
 		}
 	}
+	DrawParticles();
 }
 
 VOID Engine::DeferredLightPass()
@@ -1117,7 +1152,6 @@ VOID Engine::DeferredLightPass()
 	else
 		SetRenderTargets(QUADTARGET);
 
-	
 	// Simple:
 	context->Draw(4u, 0u);
 
@@ -1136,10 +1170,10 @@ VOID Engine::ShadowPass()
 {
 	for (auto model : currentrenderqueue) // Render Queue here...?
 	{
-		if (model->IsClockwise())
-			context->RSSetState(clockwise);
-		else
-			context->RSSetState(counterclockwise);
+		//if (model->IsClockwise())
+		//	context->RSSetState(clockwise);
+		//else
+		//	context->RSSetState(counterclockwise);
 
 		context->Map(matrixbuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &transformresource);
 		transform = (TransformationMatrices*)transformresource.pData;
@@ -1147,6 +1181,7 @@ VOID Engine::ShadowPass()
 															   pointLight.GetViewMatrix() *
 															   pointLight.GetProjectionMatrix());
 		context->Unmap(matrixbuffer, 0);
+		context->VSSetConstantBuffers(0u, 1u, &matrixbuffer);
 
 		context->IASetVertexBuffers(0u, 1u, model->GetVertexBuffer(), &stride, &offset);
 		context->IASetIndexBuffer(model->GetIndexBuffer(), DXGI_FORMAT_R32_UINT, 0u);
@@ -1284,10 +1319,7 @@ VOID Engine::Update()
 	bicam.Update(camera.GetPosition(), camera.GetForward());
 	currentrenderqueue = quadtree.GetRenderQueue(camera.GetFrustum());
 	DeferredRenderer();
-
 	water->UpdateWater(context);
-		
-	//DrawParticles();
 
 	//Terrain collision
 	Terrain* terrain = (Terrain*)models[0];
@@ -1297,8 +1329,6 @@ VOID Engine::Update()
 		if ((XMVectorGetX(camera.GetPosition()) > v->at(i).position.x - 0.5f && XMVectorGetY(camera.GetPosition()) < v->at(i).position.x + 0.5f) && (XMVectorGetZ(camera.GetPosition()) > v->at(i).position.z - 0.5f && XMVectorGetZ(camera.GetPosition()) < v->at(i).position.z + 0.5f))
 			camera.SetPositionY(v->at(i).position.y + 6.0f);
 	}
-
-	water->UpdateWater(context);
 
 	HRESULT HR = swapchain->Present(1u, 0u);
 	assert(SUCCEEDED(HR));
@@ -1323,8 +1353,12 @@ VOID Engine::LoadDrawables()
 	for (size_t i = 0; i < models.size(); ++i) 
 		models[i]->Transform(XMMatrixTranslation((float)(-20.0 + (float)i * 5.0), (float)0.0, (float)-15.0));
 	water->Transform(XMMatrixTranslation(5.0, -4.0, 9.0));
-	models.push_back(new Model("cubemetal.obj", device));
+	models.push_back(new Model("cubebrick.obj", device));
 	models.back()->Transform(XMMatrixTranslation(7.0, 14.0, 9.0));
+	models.push_back(new Model("cubebrick.obj", device));
+	models.back()->Transform(XMMatrixTranslation(7.0, 19.0, 9.0));
+	models.push_back(new Model("cubemetal.obj", device));
+	models.back()->Transform(XMMatrixTranslation(9.0, 14.0, 9.0));
 	models.push_back(new Model("moon.obj", device));
 	models.back()->Transform(XMMatrixTranslation(8.0, 70.0, 20.0));
 	quadtree.Add(models);
@@ -1332,7 +1366,9 @@ VOID Engine::LoadDrawables()
 
 VOID Engine::DrawParticles()
 {
-	//context->RSSetState(clockwise);
+	ID3D11ShaderResourceView* view = particle->GetShaderResourceView();
+	context->PSSetShaderResources(0u, 1u, &view);
+	context->RSSetState(clockwise);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 	context->VSSetShader(vertexshaderparticle, nullptr, 0u);
 	context->GSSetShader(geometryshaderparticle, nullptr, 0u);
@@ -1341,4 +1377,5 @@ VOID Engine::DrawParticles()
 	context->DrawInstancedIndirect(indirectargs, 0u);
 	context->GSSetShader(nullptr, nullptr, 0u);
 	context->VSSetShader(nullptr, nullptr, 0u);
+	context->RSSetState(counterclockwise);
 }
