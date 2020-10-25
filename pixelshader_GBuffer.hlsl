@@ -7,8 +7,8 @@ struct PS_INPUT
     float2 inTexCoord           : TEXCOORD;
     float3 inNormalWS           : NORMALWS;
     float3 inPositionWS         : POSITIONWS;
-    //float3 inTangentWS        : TANGENTWS;
-    //float3 inBiTangentWS      : BITANGENTWS;
+    float3 inTangentWS          : TANGENTWS;        //NOT USED IN THIS PS 
+    float3 inBiTangentWS        : BITANGENTWS;      //NOT USED IN THIS PS
     float4 inPositionLightCS    : POSITIONLIGHTCS;
 };
 

@@ -136,5 +136,8 @@
     <FxCompile Include="geometryshader_particle.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
+    <FxCompile Include="pixelshader_GBuffer_Normal.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

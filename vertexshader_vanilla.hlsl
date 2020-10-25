@@ -23,8 +23,8 @@ struct VS_OUTPUT
     float2 outTexCoord          : TEXCOORD;
     float3 outNormalWS          : NORMALWS;
     float3 outPositionWS        : POSITIONWS;
-    //float3 outTangentWS       : TANGENTWS;
-    //float3 outBiTangentWS     : BITANGENTWS;
+    float3 outTangentWS         : TANGENTWS;
+    float3 outBiTangentWS       : BITANGENTWS;
     float4 outPositionLightCS   : POSITIONLIGHTCS;
 };
 
@@ -36,6 +36,8 @@ VS_OUTPUT vs_main(VS_INPUT vsInput)
     vsOutput.outPositionCS = mul(mul(float4(vsOutput.outPositionWS, 1.0f), view), projection);
 
     vsOutput.outNormalWS = normalize(mul(float4(vsInput.inNormal, 0.0f), world).xyz);
+    vsOutput.outTangentWS = normalize(mul(float4(vsInput.inTangent, 0.0f), world).xyz);
+    vsOutput.outBiTangentWS = normalize(mul(float4(vsInput.inBiTangent, 0.0f), world).xyz);
 
     //Transform the position into light projection plane clip space
     vsOutput.outPositionLightCS = mul(float4(vsInput.inPosition, 1.0f), lightWVP);
