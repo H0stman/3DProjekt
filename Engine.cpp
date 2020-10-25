@@ -1102,6 +1102,8 @@ VOID Engine::Render2D(Texture* tex)
 	// Set Rasterizer State
 	context->RSSetState(counterclockwise);
 
+	context->IASetInputLayout(inputlayout);
+
 	// Set Shaders for 2D rendering
 	context->VSSetShader(vertexshader2D, nullptr, 0u);
 	context->PSSetShader(pixelshader2D, nullptr, 0u);
@@ -1234,7 +1236,7 @@ VOID Engine::Update()
 			camera.SetPositionY(v->at(i).position.y + 6.0f);
 	}
 
-
+	water->UpdateWater(context);
 
 	HRESULT HR = swapchain->Present(1u, 0u);
 	assert(SUCCEEDED(HR));
